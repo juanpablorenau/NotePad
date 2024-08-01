@@ -17,6 +17,6 @@ sealed class NotesUiState {
 @HiltViewModel
 class NotesViewModel @Inject constructor() : ViewModel() {
 
-    private val _uiState = MutableStateFlow<NotesUiState>(NotesUiState.Success(mockNoteList))
+    private val _uiState = MutableStateFlow<NotesUiState>(NotesUiState.Success(mockNoteList + mockNoteList + mockNoteList + mockNoteList))
     val uiState = _uiState.asStateFlow()
 }

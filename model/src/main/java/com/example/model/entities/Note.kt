@@ -15,7 +15,9 @@ data class Note(
     val isFavorite: Boolean = false,
     val isArchived: Boolean = false,
     val isLocked: Boolean = false,
-    val heightFactor: Float = 0f
+    val heightFactor: Float = 0f,
+    val offsetX : Float = 0f,
+    val offsetY : Float = 0f
 ) {
     val id : String = UUID.randomUUID().toString()
 }
