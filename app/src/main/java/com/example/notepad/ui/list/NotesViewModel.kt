@@ -2,6 +2,7 @@ package com.example.notepad.ui.list
 
 import androidx.lifecycle.ViewModel
 import com.example.model.entities.Note
+import com.example.notepad.utils.mockNoteList
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -16,6 +17,6 @@ sealed class NotesUiState {
 @HiltViewModel
 class NotesViewModel @Inject constructor() : ViewModel() {
 
-    private val _uiState = MutableStateFlow<NotesUiState>(NotesUiState.Loading)
+    private val _uiState = MutableStateFlow<NotesUiState>(NotesUiState.Success(mockNoteList))
     val uiState = _uiState.asStateFlow()
 }
