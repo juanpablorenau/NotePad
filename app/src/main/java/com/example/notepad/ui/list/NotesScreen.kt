@@ -27,6 +27,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.dp
@@ -53,7 +54,8 @@ fun NotesScreen() {
             SuccessScreen(
                 notes = state.notes,
                 onCardClick = { index -> viewModel.checkNote(index) },
-                onCardLongClick = { index, offset -> viewModel.saveOffSetInNotes(index, offset) }
+                onCardLongClick = { index, offset -> viewModel.saveOffSetInNotes(index, offset) },
+                onIconClick = { viewModel.deleteCheckedNotes() }
             )
     }
 }
@@ -64,9 +66,10 @@ fun SuccessScreen(
     notes: List<Note> = mockNoteList,
     onCardClick: (index: Int) -> Unit = {},
     onCardLongClick: (index: Int, offset: IntOffset) -> Unit = { _, _ -> },
+    onIconClick: () -> Unit = {}
 ) {
     Scaffold(
-        topBar = { NotesTopBar() },
+        topBar = { NotesTopBar(notes, onIconClick) },
         content = { padding ->
             NotesContent(
                 padding,
@@ -80,14 +83,33 @@ fun SuccessScreen(
 }
 
 @Composable
-fun NotesTopBar() {
-    Text(
-        modifier = Modifier.padding(start = 16.dp, top = 24.dp, bottom = 24.dp),
-        text = stringResource(R.string.notes_title),
-        color = Color.Black,
-        fontSize = 24.sp,
-        fontWeight = FontWeight.Bold,
-    )
+fun NotesTopBar(notes: List<Note>, onIconClick: () -> Unit = {}) {
+    Box(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(horizontal = 16.dp, vertical = 24.dp),
+    ) {
+        Text(
+            text = stringResource(R.string.notes_title),
+            color = Color.Black,
+            fontSize = 24.sp,
+            fontWeight = FontWeight.Bold,
+        )
+
+        if (notes.any { it.isChecked }) {
+            Row(
+                modifier = Modifier
+                    .align(Alignment.CenterEnd)
+                    .clickable { onIconClick() }
+            ) {
+                Icon(
+                    painter = painterResource(id = R.drawable.ic_delete),
+                    contentDescription = "Delete icon",
+                    tint = YellowDark
+                )
+            }
+        }
+    }
 }
 
 @Composable
@@ -239,6 +261,7 @@ fun ItemNote(
                     text = note.title,
                     fontWeight = FontWeight.Bold,
                     textAlign = TextAlign.Start,
+                    overflow = TextOverflow.Ellipsis,
                     maxLines = 2,
                     fontSize = 16.sp,
                     color = Color.Black
@@ -282,7 +305,7 @@ fun ItemNote(
 fun AddNoteButton(onClick: () -> Unit = {}) {
     FloatingActionButton(
         containerColor = Color.White,
-        onClick = { onClick }
+        onClick = { onClick() }
     ) {
         Icon(
             modifier = Modifier.size(36.dp),

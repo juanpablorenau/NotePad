@@ -56,4 +56,14 @@ class NotesViewModel @Inject constructor() : ViewModel() {
             }
         }
     }
+
+    fun deleteCheckedNotes() {
+        _uiState.getAndUpdate {
+            with((it as NotesUiState.Success)) {
+                copy(
+                    notes = notes.filter { !it.isChecked }
+                )
+            }
+        }
+    }
 }
