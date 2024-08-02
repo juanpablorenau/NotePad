@@ -31,7 +31,6 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import androidx.compose.ui.zIndex
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.example.model.entities.Note
 import com.example.notepad.R
@@ -50,16 +49,32 @@ fun NotesScreen() {
     when (val state = uiState) {
         is NotesUiState.Loading -> Unit
         is NotesUiState.Error -> Unit
-        is NotesUiState.Success -> SuccessScreen(state.notes)
+        is NotesUiState.Success ->
+            SuccessScreen(
+                notes = state.notes,
+                onCardClick = { index -> viewModel.checkNote(index) },
+                onCardLongClick = { index, offset -> viewModel.saveOffSetInNotes(index, offset) }
+            )
     }
 }
 
 @Preview(showBackground = true)
 @Composable
-fun SuccessScreen(notes: List<Note> = mockNoteList) {
+fun SuccessScreen(
+    notes: List<Note> = mockNoteList,
+    onCardClick: (index: Int) -> Unit = {},
+    onCardLongClick: (index: Int, offset: IntOffset) -> Unit = { _, _ -> },
+) {
     Scaffold(
         topBar = { NotesTopBar() },
-        content = { padding -> NotesContent(padding, notes) },
+        content = { padding ->
+            NotesContent(
+                padding,
+                notes,
+                onCardClick = onCardClick,
+                onCardLongClick = onCardLongClick
+            )
+        },
         floatingActionButton = { AddNoteButton() }
     )
 }
@@ -81,10 +96,12 @@ fun NotesContent(
     notes: List<Note> = mockNoteList,
     onSearch: (String) -> Unit = {},
     getNotes: () -> Unit = {},
+    onCardClick: (index: Int) -> Unit = {},
+    onCardLongClick: (index: Int, offset: IntOffset) -> Unit = { _, _ -> },
 ) {
     Column(
         modifier = Modifier.padding(
-            top = padding.calculateTopPadding(),
+            top = padding.calculateTopPadding() - 5.dp,
             bottom = 16.dp,
             start = 16.dp,
             end = 16.dp
@@ -92,7 +109,7 @@ fun NotesContent(
     ) {
         SearchNote(onSearch = onSearch, getNotes = getNotes)
         Spacer(modifier = Modifier.height(16.dp))
-        NotesList(notes)
+        NotesList(notes, onCardClick, onCardLongClick)
     }
 }
 
@@ -152,10 +169,11 @@ private fun SearchNote(onSearch: (String) -> Unit, getNotes: () -> Unit) {
 }
 
 @Composable
-fun NotesList(notes: List<Note>) {
-    val notePositions =
-        remember { mutableStateListOf(*notes.map { IntOffset(0, 0) }.toTypedArray()) }
-
+fun NotesList(
+    notes: List<Note>,
+    onCardClick: (index: Int) -> Unit = {},
+    onCardLongClick: (index: Int, offset: IntOffset) -> Unit = { _, _ -> },
+) {
     LazyVerticalStaggeredGrid(
         modifier = Modifier.fillMaxSize(),
         columns = StaggeredGridCells.Fixed(2),
@@ -163,25 +181,30 @@ fun NotesList(notes: List<Note>) {
         horizontalArrangement = Arrangement.spacedBy(16.dp),
         content = {
             itemsIndexed(notes) { index, note ->
-                ItemNote(note, notePositions, index)
+                ItemNote(note, index, onCardClick, onCardLongClick)
             }
         })
 }
 
 @Composable
-fun ItemNote(note: Note, notePositions: MutableList<IntOffset>, index: Int) {
+fun ItemNote(
+    note: Note,
+    index: Int,
+    onCardClick: (index: Int) -> Unit = {},
+    onCardLongClick: (index: Int, offset: IntOffset) -> Unit,
+) {
     val color = Color(android.graphics.Color.parseColor(note.color))
-    val height = 100.dp * note.heightFactor
 
     var isDragging by remember { mutableStateOf(false) }
-    var offsetX by remember { mutableFloatStateOf(notePositions[index].x.toFloat()) }
-    var offsetY by remember { mutableFloatStateOf(notePositions[index].y.toFloat()) }
+    var offsetX by remember { mutableFloatStateOf(note.offsetX) }
+    var offsetY by remember { mutableFloatStateOf(note.offsetY) }
 
     Card(
         shape = Shapes().medium,
         modifier = Modifier
             .fillMaxSize()
             .offset { IntOffset(offsetX.roundToInt(), offsetY.roundToInt()) }
+            .clickable { onCardClick(index) }
             .pointerInput(Unit) {
                 detectDragGesturesAfterLongPress(
                     onDragStart = {
@@ -194,7 +217,10 @@ fun ItemNote(note: Note, notePositions: MutableList<IntOffset>, index: Int) {
                         change.consume()
                         offsetX += dragAmount.x
                         offsetY += dragAmount.y
-                        notePositions[index] = IntOffset(offsetX.roundToInt(), offsetY.roundToInt())
+                        onCardLongClick(
+                            index,
+                            IntOffset(offsetX.roundToInt(), offsetY.roundToInt())
+                        )
                     }
                 )
             },
@@ -204,15 +230,16 @@ fun ItemNote(note: Note, notePositions: MutableList<IntOffset>, index: Int) {
             modifier = Modifier
                 .background(if (isDragging) Color.LightGray else color)
                 .padding(16.dp)
-                .height(height)
-                .fillMaxSize()
         ) {
             Box(
-                modifier = Modifier.fillMaxWidth(),
+                modifier = Modifier.fillMaxWidth()
             ) {
                 Text(
+                    modifier = Modifier.padding(end = 12.dp),
                     text = note.title,
                     fontWeight = FontWeight.Bold,
+                    textAlign = TextAlign.Start,
+                    maxLines = 2,
                     fontSize = 16.sp,
                     color = Color.Black
                 )
@@ -228,12 +255,24 @@ fun ItemNote(note: Note, notePositions: MutableList<IntOffset>, index: Int) {
                 }
             }
 
-            Spacer(modifier = Modifier.height(8.dp))
+            Spacer(modifier = Modifier.height(16.dp))
+
             Text(
                 text = note.content,
                 fontSize = 12.sp,
                 textAlign = TextAlign.Justify,
-                color = Color.Black
+                color = Color.DarkGray
+            )
+
+            Spacer(modifier = Modifier.height(12.dp))
+
+            Icon(
+                modifier = Modifier
+                    .size(18.dp)
+                    .align(Alignment.End),
+                painter = painterResource(id = R.drawable.ic_check_circle),
+                tint = if (note.isChecked) Color.Black else Color.Transparent,
+                contentDescription = "Selected_icon "
             )
         }
     }
