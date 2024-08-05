@@ -11,7 +11,8 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.*
+import androidx.compose.material.icons.filled.Close
+import androidx.compose.material.icons.filled.Search
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -32,7 +33,6 @@ import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
-import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.model.entities.Note
 import com.example.notepad.R
 import com.example.notepad.components.Dialog
@@ -62,7 +62,8 @@ fun NotesScreen() {
                 onCardLongClick = { index, offset -> viewModel.saveOffSetInNotes(index, offset) },
                 deleteNotes = { viewModel.deleteCheckedNotes() },
                 pinUpNotes = { viewModel.pinUpCheckedNotes() },
-                changeItemsView = { viewModel.changeItemsView() }
+                changeItemsView = { viewModel.changeItemsView() },
+                refreshPositions = { viewModel.refreshPositions() }
             )
     }
 }
@@ -79,6 +80,7 @@ fun SuccessScreen(
     deleteNotes: () -> Unit = {},
     pinUpNotes: () -> Unit = {},
     changeItemsView: () -> Unit = {},
+    refreshPositions: () -> Unit = {},
 ) {
     Scaffold(
         topBar = {
@@ -87,7 +89,8 @@ fun SuccessScreen(
                 itemsView = itemsView,
                 deleteNotes = deleteNotes,
                 pinUpNotes = pinUpNotes,
-                changeItemsView = changeItemsView
+                changeItemsView = changeItemsView,
+                refreshPositions = refreshPositions
             )
         },
         content = { padding ->
@@ -113,6 +116,7 @@ fun NotesTopBar(
     deleteNotes: () -> Unit = {},
     pinUpNotes: () -> Unit = {},
     changeItemsView: () -> Unit = {},
+    refreshPositions: () -> Unit = {},
 ) {
 
     var showMenu by remember { mutableStateOf(false) }
@@ -131,20 +135,34 @@ fun NotesTopBar(
         actions = {
             IconButton(onClick = { changeItemsView() }) {
                 Icon(
-                    painter = painterResource(id = if(itemsView == 1) R.drawable.ic_grid_view else R.drawable.ic_list),
+                    painter = painterResource(id = if (itemsView == 1) R.drawable.ic_grid_view else R.drawable.ic_list),
                     contentDescription = "Grid icon",
                     tint = YellowDark
                 )
             }
+
+            IconButton(onClick = { refreshPositions() }) {
+                Icon(
+                    painter = painterResource(id = R.drawable.ic_refresh),
+                    contentDescription = "Refresh icon",
+                    tint = YellowDark
+                )
+            }
+
             if (notes.any { it.isChecked }) {
                 IconButton(onClick = { showMenu = !showMenu }) {
-                    Icon(
-                        painter = painterResource(id = R.drawable.ic_more_horiz),
-                        contentDescription = "More icon",
-                        tint = YellowDark
-                    )
+                    Row {
+                        Text(text = notes.count { it.isChecked }.toString(), color = YellowDark)
+                        Spacer(modifier = Modifier.width(8.dp))
+                        Icon(
+                            painter = painterResource(id = R.drawable.ic_more_horiz),
+                            contentDescription = "More icon",
+                            tint = YellowDark
+                        )
+                    }
                 }
             }
+
             DropdownMenu(
                 expanded = showMenu,
                 onDismissRequest = { showMenu = false }
@@ -298,7 +316,7 @@ fun ItemNote(
         shape = Shapes().medium,
         modifier = Modifier
             .fillMaxSize()
-            .offset { IntOffset(offsetX.roundToInt(), offsetY.roundToInt()) }
+            .offset { IntOffset(note.offsetX.roundToInt(), note.offsetY.roundToInt()) }
             .clickable { onCardClick(index) }
             .pointerInput(Unit) {
                 detectDragGesturesAfterLongPress(

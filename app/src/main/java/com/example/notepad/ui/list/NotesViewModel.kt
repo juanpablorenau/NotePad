@@ -103,4 +103,12 @@ class NotesViewModel @Inject constructor() : ViewModel() {
             }
         }
     }
+
+    fun refreshPositions(){
+        _uiState.getAndUpdate {
+            with((it as NotesUiState.Success)) {
+                copy(notes = notes.map { note -> note.copy(offsetX = 0f, offsetY = 0f) })
+            }
+        }
+    }
 }
