@@ -11,8 +11,7 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Close
-import androidx.compose.material.icons.filled.Search
+import androidx.compose.material.icons.filled.*
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -33,8 +32,11 @@ import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.model.entities.Note
 import com.example.notepad.R
+import com.example.notepad.components.Dialog
+import com.example.notepad.components.MenuItem
 import com.example.notepad.theme.LightGray1
 import com.example.notepad.theme.YellowDark
 import com.example.notepad.utils.getViewModel
@@ -53,9 +55,14 @@ fun NotesScreen() {
         is NotesUiState.Success ->
             SuccessScreen(
                 notes = state.notes,
+                itemsView = state.itemsView,
+                onSearch = { searchText -> viewModel.searchNotes(searchText) },
+                getNotes = { viewModel.getNotes() },
                 onCardClick = { index -> viewModel.checkNote(index) },
                 onCardLongClick = { index, offset -> viewModel.saveOffSetInNotes(index, offset) },
-                onIconClick = { viewModel.deleteCheckedNotes() }
+                deleteNotes = { viewModel.deleteCheckedNotes() },
+                pinUpNotes = { viewModel.pinUpCheckedNotes() },
+                changeItemsView = { viewModel.changeItemsView() }
             )
     }
 }
@@ -64,51 +71,113 @@ fun NotesScreen() {
 @Composable
 fun SuccessScreen(
     notes: List<Note> = mockNoteList,
+    itemsView: Int = 2,
+    onSearch: (String) -> Unit = {},
+    getNotes: () -> Unit = {},
     onCardClick: (index: Int) -> Unit = {},
     onCardLongClick: (index: Int, offset: IntOffset) -> Unit = { _, _ -> },
-    onIconClick: () -> Unit = {}
+    deleteNotes: () -> Unit = {},
+    pinUpNotes: () -> Unit = {},
+    changeItemsView: () -> Unit = {},
 ) {
     Scaffold(
-        topBar = { NotesTopBar(notes, onIconClick) },
+        topBar = {
+            NotesTopBar(
+                notes = notes,
+                itemsView = itemsView,
+                deleteNotes = deleteNotes,
+                pinUpNotes = pinUpNotes,
+                changeItemsView = changeItemsView
+            )
+        },
         content = { padding ->
             NotesContent(
-                padding,
-                notes,
+                padding = padding,
+                notes = notes,
+                itemsView = itemsView,
+                onSearch = onSearch,
+                getNotes = getNotes,
                 onCardClick = onCardClick,
-                onCardLongClick = onCardLongClick
+                onCardLongClick = onCardLongClick,
             )
         },
         floatingActionButton = { AddNoteButton() }
     )
 }
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun NotesTopBar(notes: List<Note>, onIconClick: () -> Unit = {}) {
-    Box(
-        modifier = Modifier
-            .fillMaxWidth()
-            .padding(horizontal = 16.dp, vertical = 24.dp),
-    ) {
-        Text(
-            text = stringResource(R.string.notes_title),
-            color = Color.Black,
-            fontSize = 24.sp,
-            fontWeight = FontWeight.Bold,
-        )
+fun NotesTopBar(
+    notes: List<Note> = mockNoteList,
+    itemsView: Int = 2,
+    deleteNotes: () -> Unit = {},
+    pinUpNotes: () -> Unit = {},
+    changeItemsView: () -> Unit = {},
+) {
 
-        if (notes.any { it.isChecked }) {
-            Row(
-                modifier = Modifier
-                    .align(Alignment.CenterEnd)
-                    .clickable { onIconClick() }
-            ) {
+    var showMenu by remember { mutableStateOf(false) }
+    var deleteButtonClicked by remember { mutableStateOf(false) }
+
+    TopAppBar(
+        modifier = Modifier.padding(end = 12.dp),
+        title = {
+            Text(
+                text = stringResource(R.string.notes_title),
+                color = Color.Black,
+                fontSize = 24.sp,
+                fontWeight = FontWeight.Bold,
+            )
+        },
+        actions = {
+            IconButton(onClick = { changeItemsView() }) {
                 Icon(
-                    painter = painterResource(id = R.drawable.ic_delete),
-                    contentDescription = "Delete icon",
+                    painter = painterResource(id = if(itemsView == 1) R.drawable.ic_grid_view else R.drawable.ic_list),
+                    contentDescription = "Grid icon",
                     tint = YellowDark
                 )
             }
-        }
+            if (notes.any { it.isChecked }) {
+                IconButton(onClick = { showMenu = !showMenu }) {
+                    Icon(
+                        painter = painterResource(id = R.drawable.ic_more_horiz),
+                        contentDescription = "More icon",
+                        tint = YellowDark
+                    )
+                }
+            }
+            DropdownMenu(
+                expanded = showMenu,
+                onDismissRequest = { showMenu = false }
+            ) {
+                DropdownMenuItem(
+                    text = {
+                        MenuItem(R.drawable.ic_delete_outline, stringResource(R.string.delete))
+                    },
+                    onClick = {
+                        showMenu = false
+                        deleteButtonClicked = true
+                    },
+                )
+                DropdownMenuItem(
+                    text = {
+                        MenuItem(R.drawable.ic_pin, stringResource(R.string.pin))
+                    },
+                    onClick = {
+                        showMenu = false
+                        pinUpNotes()
+                    },
+                )
+            }
+        })
+
+    if (deleteButtonClicked) {
+        Dialog(
+            text = stringResource(R.string.delete_question),
+            yesAction = {
+                deleteButtonClicked = false
+                deleteNotes()
+            },
+            noAction = { deleteButtonClicked = false })
     }
 }
 
@@ -116,6 +185,7 @@ fun NotesTopBar(notes: List<Note>, onIconClick: () -> Unit = {}) {
 fun NotesContent(
     padding: PaddingValues = PaddingValues(),
     notes: List<Note> = mockNoteList,
+    itemsView: Int = 2,
     onSearch: (String) -> Unit = {},
     getNotes: () -> Unit = {},
     onCardClick: (index: Int) -> Unit = {},
@@ -123,7 +193,7 @@ fun NotesContent(
 ) {
     Column(
         modifier = Modifier.padding(
-            top = padding.calculateTopPadding() - 5.dp,
+            top = padding.calculateTopPadding(),
             bottom = 16.dp,
             start = 16.dp,
             end = 16.dp
@@ -131,7 +201,7 @@ fun NotesContent(
     ) {
         SearchNote(onSearch = onSearch, getNotes = getNotes)
         Spacer(modifier = Modifier.height(16.dp))
-        NotesList(notes, onCardClick, onCardLongClick)
+        NotesList(notes, itemsView, onCardClick, onCardLongClick)
     }
 }
 
@@ -145,8 +215,10 @@ private fun SearchNote(onSearch: (String) -> Unit, getNotes: () -> Unit) {
             .fillMaxWidth()
             .heightIn(max = 50.dp),
         colors = TextFieldDefaults.colors(
-            focusedIndicatorColor = Color.Transparent, unfocusedIndicatorColor = Color.Transparent,
-            focusedContainerColor = LightGray1, unfocusedContainerColor = LightGray1
+            focusedIndicatorColor = Color.Transparent,
+            unfocusedIndicatorColor = Color.Transparent,
+            focusedContainerColor = LightGray1,
+            unfocusedContainerColor = LightGray1
         ),
         placeholder = {
             Text(
@@ -192,13 +264,14 @@ private fun SearchNote(onSearch: (String) -> Unit, getNotes: () -> Unit) {
 
 @Composable
 fun NotesList(
-    notes: List<Note>,
+    notes: List<Note> = mockNoteList,
+    itemsView: Int = 2,
     onCardClick: (index: Int) -> Unit = {},
     onCardLongClick: (index: Int, offset: IntOffset) -> Unit = { _, _ -> },
 ) {
     LazyVerticalStaggeredGrid(
         modifier = Modifier.fillMaxSize(),
-        columns = StaggeredGridCells.Fixed(2),
+        columns = StaggeredGridCells.Fixed(itemsView),
         verticalItemSpacing = 16.dp,
         horizontalArrangement = Arrangement.spacedBy(16.dp),
         content = {

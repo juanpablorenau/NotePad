@@ -3,4 +3,9 @@
     <string name="notes_title">Notes</string>
     <string name="search">Search</string>
     <string name="close">Close</string>
+    <string name="delete">Delete</string>
+    <string name="pin">Pin</string>
+    <string name="accept">Accept</string>
+    <string name="cancel">Cancel</string>
+    <string name="delete_question">Are you sure you want to delete?</string>
 </resources>
