@@ -29,24 +29,25 @@ import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import androidx.navigation.NavHostController
 import com.example.model.entities.Note
 import com.example.notepad.R
 import com.example.notepad.components.Dialog
 import com.example.notepad.components.MenuItem
+import com.example.notepad.navigation.AppScreens
 import com.example.notepad.theme.LightGray1
 import com.example.notepad.theme.YellowDark
+import com.example.notepad.utils.getColor
 import com.example.notepad.utils.getViewModel
 import com.example.notepad.utils.mockNoteList
 import kotlin.math.roundToInt
 
 @Composable
-fun NotesScreen() {
-
+fun NotesScreen(navController: NavHostController) {
     val viewModel = LocalContext.current.getViewModel<NotesViewModel>()
     val uiState: NotesUiState by viewModel.uiState.collectAsStateWithLifecycle()
 
@@ -66,7 +67,7 @@ fun NotesScreen() {
                 changeItemsView = { viewModel.changeItemsView() },
                 resetPositions = { viewModel.resetPositions() },
                 selectAllNotes = { viewModel.selectAllNotes() },
-
+                navigate = { route -> navController.navigate(route) }
             )
     }
 }
@@ -84,6 +85,7 @@ fun SuccessScreen(
     changeItemsView: () -> Unit = {},
     resetPositions: () -> Unit = {},
     selectAllNotes: () -> Unit = {},
+    navigate: (String) -> Unit = {},
 ) {
     Scaffold(
         topBar = {
@@ -106,6 +108,7 @@ fun SuccessScreen(
                 getNotes = getNotes,
                 onCardClick = onCardClick,
                 onCardLongClick = onCardLongClick,
+                navigate = navigate
             )
         },
         floatingActionButton = { AddNoteButton() }
@@ -123,7 +126,6 @@ fun NotesTopBar(
     resetPositions: () -> Unit = {},
     selectAllNotes: () -> Unit = {},
 ) {
-
     var showMenu by remember { mutableStateOf(false) }
     var deleteButtonClicked by remember { mutableStateOf(false) }
 
@@ -221,6 +223,7 @@ fun NotesContent(
     getNotes: () -> Unit = {},
     onCardClick: (index: Int) -> Unit = {},
     onCardLongClick: (index: Int, offset: IntOffset) -> Unit = { _, _ -> },
+    navigate: (String) -> Unit = {},
 ) {
     Column(
         modifier = Modifier.padding(
@@ -232,7 +235,7 @@ fun NotesContent(
     ) {
         SearchNote(onSearch = onSearch, getNotes = getNotes)
         Spacer(modifier = Modifier.height(16.dp))
-        NotesList(notes, itemsView, onCardClick, onCardLongClick)
+        NotesList(notes, itemsView, onCardClick, onCardLongClick, navigate)
     }
 }
 
@@ -299,6 +302,7 @@ fun NotesList(
     itemsView: Int = 2,
     onCardClick: (index: Int) -> Unit = {},
     onCardLongClick: (index: Int, offset: IntOffset) -> Unit = { _, _ -> },
+    navigate: (String) -> Unit = {},
 ) {
     LazyVerticalStaggeredGrid(
         modifier = Modifier.fillMaxSize(),
@@ -307,7 +311,7 @@ fun NotesList(
         horizontalArrangement = Arrangement.spacedBy(16.dp),
         content = {
             itemsIndexed(notes) { index, note ->
-                ItemNote(note, index, onCardClick, onCardLongClick)
+                ItemNote(note, index, onCardClick, onCardLongClick, navigate)
             }
         })
 }
@@ -318,8 +322,10 @@ fun ItemNote(
     index: Int,
     onCardClick: (index: Int) -> Unit = {},
     onCardLongClick: (index: Int, offset: IntOffset) -> Unit,
+    navigate: (String) -> Unit = {},
 ) {
-    val color = Color(android.graphics.Color.parseColor(note.color))
+    val color = getColor(note.color)
+    val route = AppScreens.NoteDetailScreen.route.plus("/" + note.id)
 
     var isDragging by remember { mutableStateOf(false) }
     var offsetX by remember { mutableFloatStateOf(0f) }
@@ -397,7 +403,8 @@ fun ItemNote(
             Icon(
                 modifier = Modifier
                     .align(Alignment.End)
-                    .size(12.dp),
+                    .size(12.dp)
+                    .clickable { navigate(route) },
                 painter = painterResource(id = R.drawable.ic_open_in_full),
                 tint = Color.Black,
                 contentDescription = "Fullscreen Icon "
