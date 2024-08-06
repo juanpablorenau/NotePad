@@ -1,5 +1,6 @@
 package com.example.notepad.ui.list
 
+import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.gestures.detectDragGesturesAfterLongPress
@@ -63,12 +64,13 @@ fun NotesScreen() {
                 deleteNotes = { viewModel.deleteCheckedNotes() },
                 pinUpNotes = { viewModel.pinUpCheckedNotes() },
                 changeItemsView = { viewModel.changeItemsView() },
-                refreshPositions = { viewModel.refreshPositions() }
+                resetPositions = { viewModel.resetPositions() },
+                selectAllNotes = { viewModel.selectAllNotes() },
+
             )
     }
 }
 
-@Preview(showBackground = true)
 @Composable
 fun SuccessScreen(
     notes: List<Note> = mockNoteList,
@@ -80,7 +82,8 @@ fun SuccessScreen(
     deleteNotes: () -> Unit = {},
     pinUpNotes: () -> Unit = {},
     changeItemsView: () -> Unit = {},
-    refreshPositions: () -> Unit = {},
+    resetPositions: () -> Unit = {},
+    selectAllNotes: () -> Unit = {},
 ) {
     Scaffold(
         topBar = {
@@ -90,7 +93,8 @@ fun SuccessScreen(
                 deleteNotes = deleteNotes,
                 pinUpNotes = pinUpNotes,
                 changeItemsView = changeItemsView,
-                refreshPositions = refreshPositions
+                resetPositions = resetPositions,
+                selectAllNotes = selectAllNotes
             )
         },
         content = { padding ->
@@ -116,7 +120,8 @@ fun NotesTopBar(
     deleteNotes: () -> Unit = {},
     pinUpNotes: () -> Unit = {},
     changeItemsView: () -> Unit = {},
-    refreshPositions: () -> Unit = {},
+    resetPositions: () -> Unit = {},
+    selectAllNotes: () -> Unit = {},
 ) {
 
     var showMenu by remember { mutableStateOf(false) }
@@ -141,32 +146,39 @@ fun NotesTopBar(
                 )
             }
 
-            IconButton(onClick = { refreshPositions() }) {
+            IconButton(onClick = { resetPositions() }) {
                 Icon(
                     painter = painterResource(id = R.drawable.ic_refresh),
-                    contentDescription = "Refresh icon",
+                    contentDescription = "Reset icon",
                     tint = YellowDark
                 )
             }
 
             if (notes.any { it.isChecked }) {
+                Text(text = notes.count { it.isChecked }.toString(), color = YellowDark)
+
                 IconButton(onClick = { showMenu = !showMenu }) {
-                    Row {
-                        Text(text = notes.count { it.isChecked }.toString(), color = YellowDark)
-                        Spacer(modifier = Modifier.width(8.dp))
-                        Icon(
-                            painter = painterResource(id = R.drawable.ic_more_horiz),
-                            contentDescription = "More icon",
-                            tint = YellowDark
-                        )
-                    }
+                    Icon(
+                        painter = painterResource(id = R.drawable.ic_more_horiz),
+                        contentDescription = "More icon",
+                        tint = YellowDark
+                    )
                 }
             }
-
             DropdownMenu(
                 expanded = showMenu,
                 onDismissRequest = { showMenu = false }
             ) {
+                DropdownMenuItem(
+                    text = {
+                        MenuItem(
+                            R.drawable.ic_check_circle,
+                            stringResource(R.string.select_all)
+                        )
+                    },
+                    onClick = { selectAllNotes() },
+                )
+
                 DropdownMenuItem(
                     text = {
                         MenuItem(R.drawable.ic_delete_outline, stringResource(R.string.delete))
@@ -186,7 +198,8 @@ fun NotesTopBar(
                     },
                 )
             }
-        })
+        }
+    )
 
     if (deleteButtonClicked) {
         Dialog(
@@ -309,14 +322,18 @@ fun ItemNote(
     val color = Color(android.graphics.Color.parseColor(note.color))
 
     var isDragging by remember { mutableStateOf(false) }
-    var offsetX by remember { mutableFloatStateOf(note.offsetX) }
-    var offsetY by remember { mutableFloatStateOf(note.offsetY) }
+    var offsetX by remember { mutableFloatStateOf(0f) }
+    var offsetY by remember { mutableFloatStateOf(0f) }
+
+    offsetX = note.offsetX
+    offsetY = note.offsetY
 
     Card(
         shape = Shapes().medium,
+        border = BorderStroke(2.dp, if (note.isChecked) Color.Gray else Color.Transparent),
         modifier = Modifier
             .fillMaxSize()
-            .offset { IntOffset(note.offsetX.roundToInt(), note.offsetY.roundToInt()) }
+            .offset { IntOffset(offsetX.roundToInt(), offsetY.roundToInt()) }
             .clickable { onCardClick(index) }
             .pointerInput(Unit) {
                 detectDragGesturesAfterLongPress(
@@ -325,15 +342,12 @@ fun ItemNote(
                     },
                     onDragEnd = {
                         isDragging = false
+                        onCardLongClick(index, IntOffset(offsetX.roundToInt(), offsetY.roundToInt()))
                     },
                     onDrag = { change, dragAmount ->
                         change.consume()
                         offsetX += dragAmount.x
                         offsetY += dragAmount.y
-                        onCardLongClick(
-                            index,
-                            IntOffset(offsetX.roundToInt(), offsetY.roundToInt())
-                        )
                     }
                 )
             },
@@ -382,11 +396,11 @@ fun ItemNote(
 
             Icon(
                 modifier = Modifier
-                    .size(18.dp)
-                    .align(Alignment.End),
-                painter = painterResource(id = R.drawable.ic_check_circle),
-                tint = if (note.isChecked) Color.Black else Color.Transparent,
-                contentDescription = "Selected_icon "
+                    .align(Alignment.End)
+                    .size(12.dp),
+                painter = painterResource(id = R.drawable.ic_open_in_full),
+                tint = Color.Black,
+                contentDescription = "Fullscreen Icon "
             )
         }
     }

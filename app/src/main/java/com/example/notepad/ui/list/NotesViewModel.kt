@@ -2,7 +2,6 @@ package com.example.notepad.ui.list
 
 import androidx.compose.ui.unit.IntOffset
 import androidx.lifecycle.ViewModel
-import com.bumptech.glide.Glide.init
 import com.example.model.entities.Note
 import com.example.model.utils.normalize
 import com.example.notepad.utils.mockNoteList
@@ -104,10 +103,18 @@ class NotesViewModel @Inject constructor() : ViewModel() {
         }
     }
 
-    fun refreshPositions(){
+    fun resetPositions() {
         _uiState.getAndUpdate {
             with((it as NotesUiState.Success)) {
                 copy(notes = notes.map { note -> note.copy(offsetX = 0f, offsetY = 0f) })
+            }
+        }
+    }
+
+    fun selectAllNotes() {
+        _uiState.getAndUpdate {
+            with((it as NotesUiState.Success)) {
+                copy(notes = notes.map { note -> note.copy(isChecked = true) })
             }
         }
     }
