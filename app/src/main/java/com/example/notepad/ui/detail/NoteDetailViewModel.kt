@@ -22,6 +22,10 @@ class NoteDetailViewModel @Inject constructor() : ViewModel() {
     val uiState = _uiState.asStateFlow()
 
     fun getNoteById(id: String) {
-        _uiState.value = NoteDetailUiState.Success(mockNoteList.first { it.id == id })
+        mockNoteList.firstOrNull { it.id == id}?.let {  note ->
+            _uiState.value = NoteDetailUiState.Success(note)
+        } ?: run {
+            _uiState.value = NoteDetailUiState.Error("Note not found + $id")
+        }
     }
 }

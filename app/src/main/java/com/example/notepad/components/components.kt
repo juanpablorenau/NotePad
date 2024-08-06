@@ -40,24 +40,30 @@ fun Chip(text: String = "Chip", chipColor: Color = Color.White, textColor: Color
 
 
 @Composable
-fun MenuItem(icon: Int = R.drawable.ic_delete_outline, text: String = "Delete") {
+fun MenuItem(
+    icon: Int = R.drawable.ic_delete_outline,
+    text: String = "Delete",
+    iconColor: Color = YellowDark,
+    textColor: Color = Color.Black,
+) {
     Row(
         modifier = Modifier.fillMaxWidth(),
         horizontalArrangement = Arrangement.Start,
         verticalAlignment = Alignment.CenterVertically
     ) {
-        Spacer(modifier = Modifier.width(8.dp))
+        Spacer(modifier = Modifier.width(12.dp))
         Icon(
             painter = painterResource(id = icon),
             contentDescription = "Menu icon",
-            tint = YellowDark
+            tint = iconColor
         )
         Spacer(modifier = Modifier.width(8.dp))
         Text(
             text = text,
             overflow = TextOverflow.Ellipsis,
-            color = Color.Black,
+            color = textColor
         )
+        Spacer(modifier = Modifier.width(12.dp))
     }
 }
 

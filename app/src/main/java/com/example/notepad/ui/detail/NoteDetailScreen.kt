@@ -1,10 +1,16 @@
 package com.example.notepad.ui.detail
 
+import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.material3.*
-import androidx.compose.runtime.*
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
@@ -20,6 +26,9 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.NavHostController
 import com.example.model.entities.Note
 import com.example.notepad.R
+import com.example.notepad.components.Dialog
+import com.example.notepad.components.MenuItem
+import com.example.notepad.theme.YellowDark
 import com.example.notepad.utils.getColor
 import com.example.notepad.utils.getViewModel
 import com.example.notepad.utils.mockNote
@@ -30,16 +39,42 @@ fun NoteDetailScreen(navController: NavHostController, noteId: String) {
     val viewModel = LocalContext.current.getViewModel<NoteDetailViewModel>()
     val uiState: NoteDetailUiState by viewModel.uiState.collectAsStateWithLifecycle()
 
-    LaunchedEffect(noteId) {
-        viewModel.getNoteById(noteId)
-    }
+    viewModel.getNoteById(noteId)
 
     when (val state = uiState) {
         is NoteDetailUiState.Loading -> Unit
-        is NoteDetailUiState.Error -> Unit
-        is NoteDetailUiState.Success -> SuccessScreen(note = state.note,
-            onBackClick = { navController.popBackStack() })
+        is NoteDetailUiState.Error -> {
+            ErrorScreen(
+                onBackClick = { navController.popBackStack() },
+                error = state.error
+            )
+        }
+
+        is NoteDetailUiState.Success -> {
+            SuccessScreen(note = state.note,
+                onBackClick = { navController.popBackStack() })
+        }
     }
+}
+
+@Composable
+private fun ErrorScreen(onBackClick: () -> Unit, error: String) {
+    AlertDialog(
+        onDismissRequest = { },
+        title = { Text(stringResource(R.string.generic_error_msg)) },
+        text = { Text(error) },
+        confirmButton = {
+            Text(
+                modifier = Modifier.clickable { onBackClick() },
+                text = stringResource(R.string.accept),
+            )
+        },
+        icon = {
+            Icon(
+                painter = painterResource(id = R.drawable.ic_error),
+                contentDescription = "Error Icon"
+            )
+        })
 }
 
 @Composable
@@ -59,27 +94,86 @@ fun SuccessScreen(
 fun NoteTopBar(
     note: Note = mockNote,
     onBackClick: () -> Unit = {},
+    pinUpNote: () -> Unit = {},
+    deleteNote: () -> Unit = {},
+    changeColor: () -> Unit = {},
 ) {
+    var showMenu by remember { mutableStateOf(false) }
+    var deleteButtonClicked by remember { mutableStateOf(false) }
+
     TopAppBar(
         title = {
             Row {
                 Icon(
                     modifier = Modifier.clickable { onBackClick() },
-                    painter = painterResource(id = R.drawable.ic_baclk),
+                    painter = painterResource(id = R.drawable.ic_back),
                     contentDescription = "Back icon",
-                    tint = Color.Black
+                    tint = YellowDark
                 )
 
                 Spacer(modifier = Modifier.width(8.dp))
 
                 Text(
                     text = stringResource(R.string.notes_title),
-                    color = Color.Black,
+                    color = YellowDark,
                     fontSize = 24.sp,
                 )
             }
-        }, actions = {}
+        }, actions = {
+            IconButton(onClick = { showMenu = !showMenu }) {
+                Icon(
+                    painter = painterResource(id = R.drawable.ic_more_vert),
+                    contentDescription = "More icon",
+                    tint = YellowDark
+                )
+            }
+
+            DropdownMenu(
+                expanded = showMenu,
+                onDismissRequest = { showMenu = false }
+            ) {
+                DropdownMenuItem(
+                    text = {
+                        MenuItem(R.drawable.ic_pin, stringResource(R.string.pin))
+                    },
+                    onClick = {
+                        showMenu = false
+                        pinUpNote()
+                    },
+                )
+
+                DropdownMenuItem(
+                    text = {
+                        MenuItem(R.drawable.ic_color_lens, stringResource(R.string.change_color))
+                    },
+                    onClick = {
+                        showMenu = false
+                        changeColor()
+                    },
+                )
+
+                DropdownMenuItem(
+                    text = {
+                        MenuItem(R.drawable.ic_delete_outline, stringResource(R.string.delete))
+                    },
+                    onClick = {
+                        showMenu = false
+                        deleteButtonClicked = true
+                    },
+                )
+            }
+        }
     )
+
+    if (deleteButtonClicked) {
+        Dialog(
+            text = stringResource(R.string.delete_question),
+            yesAction = {
+                deleteButtonClicked = false
+                deleteNote()
+            },
+            noAction = { deleteButtonClicked = false })
+    }
 }
 
 @Preview(showBackground = true)
@@ -93,48 +187,72 @@ fun NoteContent(
     var titleTextState by remember { mutableStateOf(TextFieldValue(note.title)) }
     var contentTextState by remember { mutableStateOf(TextFieldValue(note.content)) }
 
-    Column(
+    Card(
+        shape = Shapes().medium,
+        border = BorderStroke(2.dp, if (note.isChecked) Color.Gray else Color.Transparent),
         modifier = Modifier
             .fillMaxSize()
             .padding(top = padding.calculateTopPadding())
-            .background(color)
+            .padding(12.dp)
     ) {
-        TextField(
+        Column(
             modifier = Modifier
-                .fillMaxWidth()
-                .padding(top = 16.dp),
-            value = titleTextState,
-            onValueChange = { newText ->
-                titleTextState = newText
-            },
-            colors = TextFieldDefaults.colors(
-                focusedIndicatorColor = color,
-                unfocusedIndicatorColor = color,
-                focusedContainerColor = color,
-                unfocusedContainerColor = color
-            ),
-            maxLines = 1,
+                .fillMaxSize()
+                .background(color)
+                .padding(top = 16.dp, start = 8.dp, end = 8.dp)
+        ) {
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(end = 16.dp),
+                horizontalArrangement = Arrangement.SpaceBetween
+            ) {
+                TextField(
+                    modifier = Modifier.fillMaxWidth(0.75f),
+                    value = titleTextState,
+                    onValueChange = { newText ->
+                        titleTextState = newText
+                    },
+                    colors = TextFieldDefaults.colors(
+                        focusedIndicatorColor = color,
+                        unfocusedIndicatorColor = color,
+                        focusedContainerColor = color,
+                        unfocusedContainerColor = color
+                    ),
+                    textStyle = TextStyle(
+                        fontWeight = FontWeight.Bold,
+                        fontSize = 24.sp,
+                    )
+                )
 
-            textStyle = TextStyle(
-                fontWeight = FontWeight.Bold,
-                fontSize = 24.sp,
+                if (note.isPinned) {
+                    Icon(
+                        modifier = Modifier
+                            .size(24.dp)
+                            .align(Alignment.CenterVertically),
+                        painter = painterResource(id = R.drawable.ic_pin),
+                        contentDescription = "Pinned icon",
+                        tint = Color.Black
+                    )
+                }
+
+            }
+
+            TextField(
+                value = contentTextState,
+                onValueChange = { newText ->
+                    contentTextState = newText
+                },
+                modifier = Modifier.fillMaxWidth(),
+                colors = TextFieldDefaults.colors(
+                    focusedIndicatorColor = color,
+                    unfocusedIndicatorColor = color,
+                    focusedContainerColor = color,
+                    unfocusedContainerColor = color
+                ),
+                textStyle = MaterialTheme.typography.bodyMedium,
             )
-        )
-
-        TextField(
-            value = contentTextState,
-            onValueChange = { newText ->
-                contentTextState = newText
-            },
-            modifier = Modifier.fillMaxWidth(),
-            colors = TextFieldDefaults.colors(
-                focusedIndicatorColor = color,
-                unfocusedIndicatorColor = color,
-                focusedContainerColor = color,
-                unfocusedContainerColor = color
-            ),
-            textStyle = MaterialTheme.typography.bodyMedium,
-        )
+        }
     }
 }
 

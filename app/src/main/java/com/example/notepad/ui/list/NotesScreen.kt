@@ -29,6 +29,7 @@ import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -72,6 +73,7 @@ fun NotesScreen(navController: NavHostController) {
     }
 }
 
+@Preview
 @Composable
 fun SuccessScreen(
     notes: List<Note> = mockNoteList,
@@ -161,7 +163,7 @@ fun NotesTopBar(
 
                 IconButton(onClick = { showMenu = !showMenu }) {
                     Icon(
-                        painter = painterResource(id = R.drawable.ic_more_horiz),
+                        painter = painterResource(id = R.drawable.ic_more_vert),
                         contentDescription = "More icon",
                         tint = YellowDark
                     )
@@ -172,24 +174,10 @@ fun NotesTopBar(
                 onDismissRequest = { showMenu = false }
             ) {
                 DropdownMenuItem(
-                    text = {
-                        MenuItem(
-                            R.drawable.ic_check_circle,
-                            stringResource(R.string.select_all)
-                        )
-                    },
+                    text = { MenuItem(R.drawable.ic_check_circle, stringResource(R.string.select_all)) },
                     onClick = { selectAllNotes() },
                 )
 
-                DropdownMenuItem(
-                    text = {
-                        MenuItem(R.drawable.ic_delete_outline, stringResource(R.string.delete))
-                    },
-                    onClick = {
-                        showMenu = false
-                        deleteButtonClicked = true
-                    },
-                )
                 DropdownMenuItem(
                     text = {
                         MenuItem(R.drawable.ic_pin, stringResource(R.string.pin))
@@ -197,6 +185,14 @@ fun NotesTopBar(
                     onClick = {
                         showMenu = false
                         pinUpNotes()
+                    },
+                )
+
+                DropdownMenuItem(
+                    text = { MenuItem(R.drawable.ic_delete_outline, stringResource(R.string.delete),) },
+                    onClick = {
+                        showMenu = false
+                        deleteButtonClicked = true
                     },
                 )
             }
