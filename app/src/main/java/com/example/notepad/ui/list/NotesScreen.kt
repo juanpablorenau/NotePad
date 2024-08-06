@@ -1,5 +1,6 @@
 package com.example.notepad.ui.list
 
+import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.gestures.detectDragGesturesAfterLongPress
@@ -11,7 +12,8 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.*
+import androidx.compose.material.icons.filled.Close
+import androidx.compose.material.icons.filled.Search
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -32,20 +34,21 @@ import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
-import androidx.lifecycle.viewmodel.compose.viewModel
+import androidx.navigation.NavHostController
 import com.example.model.entities.Note
 import com.example.notepad.R
 import com.example.notepad.components.Dialog
 import com.example.notepad.components.MenuItem
+import com.example.notepad.navigation.AppScreens
 import com.example.notepad.theme.LightGray1
 import com.example.notepad.theme.YellowDark
+import com.example.notepad.utils.getColor
 import com.example.notepad.utils.getViewModel
 import com.example.notepad.utils.mockNoteList
 import kotlin.math.roundToInt
 
 @Composable
-fun NotesScreen() {
-
+fun NotesScreen(navController: NavHostController) {
     val viewModel = LocalContext.current.getViewModel<NotesViewModel>()
     val uiState: NotesUiState by viewModel.uiState.collectAsStateWithLifecycle()
 
@@ -62,12 +65,15 @@ fun NotesScreen() {
                 onCardLongClick = { index, offset -> viewModel.saveOffSetInNotes(index, offset) },
                 deleteNotes = { viewModel.deleteCheckedNotes() },
                 pinUpNotes = { viewModel.pinUpCheckedNotes() },
-                changeItemsView = { viewModel.changeItemsView() }
+                changeItemsView = { viewModel.changeItemsView() },
+                resetPositions = { viewModel.resetPositions() },
+                selectAllNotes = { viewModel.selectAllNotes() },
+                navigate = { route -> navController.navigate(route) }
             )
     }
 }
 
-@Preview(showBackground = true)
+@Preview
 @Composable
 fun SuccessScreen(
     notes: List<Note> = mockNoteList,
@@ -79,6 +85,9 @@ fun SuccessScreen(
     deleteNotes: () -> Unit = {},
     pinUpNotes: () -> Unit = {},
     changeItemsView: () -> Unit = {},
+    resetPositions: () -> Unit = {},
+    selectAllNotes: () -> Unit = {},
+    navigate: (String) -> Unit = {},
 ) {
     Scaffold(
         topBar = {
@@ -87,7 +96,9 @@ fun SuccessScreen(
                 itemsView = itemsView,
                 deleteNotes = deleteNotes,
                 pinUpNotes = pinUpNotes,
-                changeItemsView = changeItemsView
+                changeItemsView = changeItemsView,
+                resetPositions = resetPositions,
+                selectAllNotes = selectAllNotes
             )
         },
         content = { padding ->
@@ -99,6 +110,7 @@ fun SuccessScreen(
                 getNotes = getNotes,
                 onCardClick = onCardClick,
                 onCardLongClick = onCardLongClick,
+                navigate = navigate
             )
         },
         floatingActionButton = { AddNoteButton() }
@@ -113,8 +125,9 @@ fun NotesTopBar(
     deleteNotes: () -> Unit = {},
     pinUpNotes: () -> Unit = {},
     changeItemsView: () -> Unit = {},
+    resetPositions: () -> Unit = {},
+    selectAllNotes: () -> Unit = {},
 ) {
-
     var showMenu by remember { mutableStateOf(false) }
     var deleteButtonClicked by remember { mutableStateOf(false) }
 
@@ -131,15 +144,26 @@ fun NotesTopBar(
         actions = {
             IconButton(onClick = { changeItemsView() }) {
                 Icon(
-                    painter = painterResource(id = if(itemsView == 1) R.drawable.ic_grid_view else R.drawable.ic_list),
+                    painter = painterResource(id = if (itemsView == 1) R.drawable.ic_grid_view else R.drawable.ic_list),
                     contentDescription = "Grid icon",
                     tint = YellowDark
                 )
             }
+
+            IconButton(onClick = { resetPositions() }) {
+                Icon(
+                    painter = painterResource(id = R.drawable.ic_refresh),
+                    contentDescription = "Reset icon",
+                    tint = YellowDark
+                )
+            }
+
             if (notes.any { it.isChecked }) {
+                Text(text = notes.count { it.isChecked }.toString(), color = YellowDark)
+
                 IconButton(onClick = { showMenu = !showMenu }) {
                     Icon(
-                        painter = painterResource(id = R.drawable.ic_more_horiz),
+                        painter = painterResource(id = R.drawable.ic_more_vert),
                         contentDescription = "More icon",
                         tint = YellowDark
                     )
@@ -150,14 +174,10 @@ fun NotesTopBar(
                 onDismissRequest = { showMenu = false }
             ) {
                 DropdownMenuItem(
-                    text = {
-                        MenuItem(R.drawable.ic_delete_outline, stringResource(R.string.delete))
-                    },
-                    onClick = {
-                        showMenu = false
-                        deleteButtonClicked = true
-                    },
+                    text = { MenuItem(R.drawable.ic_check_circle, stringResource(R.string.select_all)) },
+                    onClick = { selectAllNotes() },
                 )
+
                 DropdownMenuItem(
                     text = {
                         MenuItem(R.drawable.ic_pin, stringResource(R.string.pin))
@@ -167,8 +187,17 @@ fun NotesTopBar(
                         pinUpNotes()
                     },
                 )
+
+                DropdownMenuItem(
+                    text = { MenuItem(R.drawable.ic_delete_outline, stringResource(R.string.delete),) },
+                    onClick = {
+                        showMenu = false
+                        deleteButtonClicked = true
+                    },
+                )
             }
-        })
+        }
+    )
 
     if (deleteButtonClicked) {
         Dialog(
@@ -190,6 +219,7 @@ fun NotesContent(
     getNotes: () -> Unit = {},
     onCardClick: (index: Int) -> Unit = {},
     onCardLongClick: (index: Int, offset: IntOffset) -> Unit = { _, _ -> },
+    navigate: (String) -> Unit = {},
 ) {
     Column(
         modifier = Modifier.padding(
@@ -201,7 +231,7 @@ fun NotesContent(
     ) {
         SearchNote(onSearch = onSearch, getNotes = getNotes)
         Spacer(modifier = Modifier.height(16.dp))
-        NotesList(notes, itemsView, onCardClick, onCardLongClick)
+        NotesList(notes, itemsView, onCardClick, onCardLongClick, navigate)
     }
 }
 
@@ -268,6 +298,7 @@ fun NotesList(
     itemsView: Int = 2,
     onCardClick: (index: Int) -> Unit = {},
     onCardLongClick: (index: Int, offset: IntOffset) -> Unit = { _, _ -> },
+    navigate: (String) -> Unit = {},
 ) {
     LazyVerticalStaggeredGrid(
         modifier = Modifier.fillMaxSize(),
@@ -276,7 +307,7 @@ fun NotesList(
         horizontalArrangement = Arrangement.spacedBy(16.dp),
         content = {
             itemsIndexed(notes) { index, note ->
-                ItemNote(note, index, onCardClick, onCardLongClick)
+                ItemNote(note, index, onCardClick, onCardLongClick, navigate)
             }
         })
 }
@@ -287,15 +318,21 @@ fun ItemNote(
     index: Int,
     onCardClick: (index: Int) -> Unit = {},
     onCardLongClick: (index: Int, offset: IntOffset) -> Unit,
+    navigate: (String) -> Unit = {},
 ) {
-    val color = Color(android.graphics.Color.parseColor(note.color))
+    val color = getColor(note.color)
+    val route = AppScreens.NoteDetailScreen.route.plus("/" + note.id)
 
     var isDragging by remember { mutableStateOf(false) }
-    var offsetX by remember { mutableFloatStateOf(note.offsetX) }
-    var offsetY by remember { mutableFloatStateOf(note.offsetY) }
+    var offsetX by remember { mutableFloatStateOf(0f) }
+    var offsetY by remember { mutableFloatStateOf(0f) }
+
+    offsetX = note.offsetX
+    offsetY = note.offsetY
 
     Card(
         shape = Shapes().medium,
+        border = BorderStroke(2.dp, if (note.isChecked) Color.Gray else Color.Transparent),
         modifier = Modifier
             .fillMaxSize()
             .offset { IntOffset(offsetX.roundToInt(), offsetY.roundToInt()) }
@@ -307,15 +344,12 @@ fun ItemNote(
                     },
                     onDragEnd = {
                         isDragging = false
+                        onCardLongClick(index, IntOffset(offsetX.roundToInt(), offsetY.roundToInt()))
                     },
                     onDrag = { change, dragAmount ->
                         change.consume()
                         offsetX += dragAmount.x
                         offsetY += dragAmount.y
-                        onCardLongClick(
-                            index,
-                            IntOffset(offsetX.roundToInt(), offsetY.roundToInt())
-                        )
                     }
                 )
             },
@@ -364,11 +398,12 @@ fun ItemNote(
 
             Icon(
                 modifier = Modifier
-                    .size(18.dp)
-                    .align(Alignment.End),
-                painter = painterResource(id = R.drawable.ic_check_circle),
-                tint = if (note.isChecked) Color.Black else Color.Transparent,
-                contentDescription = "Selected_icon "
+                    .align(Alignment.End)
+                    .size(12.dp)
+                    .clickable { navigate(route) },
+                painter = painterResource(id = R.drawable.ic_open_in_full),
+                tint = Color.Black,
+                contentDescription = "Fullscreen Icon "
             )
         }
     }
