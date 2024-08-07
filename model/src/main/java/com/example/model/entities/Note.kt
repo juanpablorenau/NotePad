@@ -4,6 +4,7 @@ import java.util.Date
 import java.util.UUID
 
 data class Note(
+    val id : String = UUID.randomUUID().toString(),
     val title: String = "",
     val content: String = "",
     val author: Author = Author(),
@@ -18,6 +19,4 @@ data class Note(
     val offsetX : Float = 0f,
     val offsetY : Float = 0f,
     val isChecked: Boolean = false
-) {
-    val id : String = UUID.randomUUID().toString()
-}
+)

@@ -1,5 +1,8 @@
 package com.example.notepad.ui.detail
 
+import androidx.compose.animation.AnimatedContentScope
+import androidx.compose.animation.ExperimentalSharedTransitionApi
+import androidx.compose.animation.SharedTransitionScope
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
@@ -33,8 +36,14 @@ import com.example.notepad.utils.getColor
 import com.example.notepad.utils.getViewModel
 import com.example.notepad.utils.mockNote
 
+@OptIn(ExperimentalSharedTransitionApi::class)
 @Composable
-fun NoteDetailScreen(navController: NavHostController, noteId: String) {
+fun NoteDetailScreen(
+    navController: NavHostController,
+    noteId: String,
+    sharedTransitionScope: SharedTransitionScope,
+    animatedContentScope: AnimatedContentScope,
+) {
 
     val viewModel = LocalContext.current.getViewModel<NoteDetailViewModel>()
     val uiState: NoteDetailUiState by viewModel.uiState.collectAsStateWithLifecycle()
@@ -51,8 +60,12 @@ fun NoteDetailScreen(navController: NavHostController, noteId: String) {
         }
 
         is NoteDetailUiState.Success -> {
-            SuccessScreen(note = state.note,
-                onBackClick = { navController.popBackStack() })
+            SuccessScreen(
+                note = state.note,
+                sharedTransitionScope = sharedTransitionScope,
+                animatedContentScope = animatedContentScope,
+                onBackClick = { navController.popBackStack() }
+            )
         }
     }
 }
@@ -77,14 +90,24 @@ private fun ErrorScreen(onBackClick: () -> Unit, error: String) {
         })
 }
 
+@OptIn(ExperimentalSharedTransitionApi::class)
 @Composable
 fun SuccessScreen(
     note: Note = mockNote,
+    sharedTransitionScope: SharedTransitionScope,
+    animatedContentScope: AnimatedContentScope,
     onBackClick: () -> Unit = {},
 ) {
     Scaffold(
-        topBar = { NoteTopBar(note = note, onBackClick = onBackClick) },
-        content = { padding -> NoteContent(padding = padding, note = note) },
+        topBar = { NoteTopBar(onBackClick = onBackClick) },
+        content = { padding ->
+            NoteContent(
+                padding = padding,
+                note = note,
+                sharedTransitionScope = sharedTransitionScope,
+                animatedContentScope = animatedContentScope,
+            )
+        },
     )
 }
 
@@ -92,7 +115,6 @@ fun SuccessScreen(
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun NoteTopBar(
-    note: Note = mockNote,
     onBackClick: () -> Unit = {},
     pinUpNote: () -> Unit = {},
     deleteNote: () -> Unit = {},
@@ -176,83 +198,90 @@ fun NoteTopBar(
     }
 }
 
-@Preview(showBackground = true)
+@OptIn(ExperimentalSharedTransitionApi::class)
 @Composable
 fun NoteContent(
     padding: PaddingValues = PaddingValues(),
     note: Note = mockNote,
+    sharedTransitionScope: SharedTransitionScope,
+    animatedContentScope: AnimatedContentScope,
 ) {
     val color = getColor(note.color)
 
     var titleTextState by remember { mutableStateOf(TextFieldValue(note.title)) }
     var contentTextState by remember { mutableStateOf(TextFieldValue(note.content)) }
 
-    Card(
-        shape = Shapes().medium,
-        border = BorderStroke(2.dp, if (note.isChecked) Color.Gray else Color.Transparent),
-        modifier = Modifier
-            .fillMaxSize()
-            .padding(top = padding.calculateTopPadding())
-            .padding(12.dp)
-    ) {
-        Column(
-            modifier = Modifier
+    with(sharedTransitionScope) {
+        Card(
+            shape = Shapes().medium,
+            border = BorderStroke(2.dp, if (note.isChecked) Color.Gray else Color.Transparent),
+            modifier = Modifier.Companion
+                .sharedElement(
+                    sharedTransitionScope.rememberSharedContentState(key = note.id),
+                    animatedVisibilityScope = animatedContentScope
+                )
                 .fillMaxSize()
-                .background(color)
-                .padding(top = 16.dp, start = 8.dp, end = 8.dp)
+                .padding(top = padding.calculateTopPadding())
+                .padding(12.dp)
         ) {
-            Row(
+            Column(
                 modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(end = 16.dp),
-                horizontalArrangement = Arrangement.SpaceBetween
+                    .fillMaxSize()
+                    .background(color)
+                    .padding(top = 16.dp, start = 8.dp, end = 8.dp)
             ) {
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(end = 16.dp),
+                    horizontalArrangement = Arrangement.SpaceBetween
+                ) {
+                    TextField(
+                        modifier = Modifier.fillMaxWidth(0.75f),
+                        value = titleTextState,
+                        onValueChange = { newText ->
+                            titleTextState = newText
+                        },
+                        colors = TextFieldDefaults.colors(
+                            focusedIndicatorColor = color,
+                            unfocusedIndicatorColor = color,
+                            focusedContainerColor = color,
+                            unfocusedContainerColor = color
+                        ),
+                        textStyle = TextStyle(
+                            fontWeight = FontWeight.Bold,
+                            fontSize = 24.sp,
+                        )
+                    )
+
+                    if (note.isPinned) {
+                        Icon(
+                            modifier = Modifier
+                                .size(24.dp)
+                                .align(Alignment.CenterVertically),
+                            painter = painterResource(id = R.drawable.ic_pin),
+                            contentDescription = "Pinned icon",
+                            tint = Color.Black
+                        )
+                    }
+
+                }
+
                 TextField(
-                    modifier = Modifier.fillMaxWidth(0.75f),
-                    value = titleTextState,
+                    value = contentTextState,
                     onValueChange = { newText ->
-                        titleTextState = newText
+                        contentTextState = newText
                     },
+                    modifier = Modifier.fillMaxWidth(),
                     colors = TextFieldDefaults.colors(
                         focusedIndicatorColor = color,
                         unfocusedIndicatorColor = color,
                         focusedContainerColor = color,
                         unfocusedContainerColor = color
                     ),
-                    textStyle = TextStyle(
-                        fontWeight = FontWeight.Bold,
-                        fontSize = 24.sp,
-                    )
+                    textStyle = MaterialTheme.typography.bodyMedium,
                 )
-
-                if (note.isPinned) {
-                    Icon(
-                        modifier = Modifier
-                            .size(24.dp)
-                            .align(Alignment.CenterVertically),
-                        painter = painterResource(id = R.drawable.ic_pin),
-                        contentDescription = "Pinned icon",
-                        tint = Color.Black
-                    )
-                }
-
             }
-
-            TextField(
-                value = contentTextState,
-                onValueChange = { newText ->
-                    contentTextState = newText
-                },
-                modifier = Modifier.fillMaxWidth(),
-                colors = TextFieldDefaults.colors(
-                    focusedIndicatorColor = color,
-                    unfocusedIndicatorColor = color,
-                    focusedContainerColor = color,
-                    unfocusedContainerColor = color
-                ),
-                textStyle = MaterialTheme.typography.bodyMedium,
-            )
         }
     }
 }
-

@@ -72,6 +72,7 @@ dependencies {
     implementation(libs.androidx.lifecycle.runtime.compose)
     androidTestImplementation(platform(libs.androidx.compose.bom))
     implementation(libs.androidx.navigation.compose)
+    implementation(libs.androidx.animation)
 
     // UI Tests
     androidTestImplementation(libs.androidx.ui.test.junit4)

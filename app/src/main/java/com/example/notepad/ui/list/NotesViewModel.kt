@@ -26,7 +26,7 @@ class NotesViewModel @Inject constructor() : ViewModel() {
     private var list = listOf<Note>()
 
     init {
-        list = (mockNoteList + mockNoteList + mockNoteList + mockNoteList).sortedBy { !it.isPinned }
+        list = (mockNoteList).sortedBy { !it.isPinned }
         _uiState.value = NotesUiState.Success(list)
     }
 
