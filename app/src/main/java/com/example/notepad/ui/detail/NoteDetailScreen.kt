@@ -20,6 +20,7 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.input.TextFieldValue
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -203,9 +204,15 @@ fun NoteContent(
     note: Note = mockNote,
     sharedTransitionScope: SharedTransitionScope,
     animatedContentScope: AnimatedContentScope,
-){
+) {
     with(sharedTransitionScope) {
         val color = getColor(note.color)
+
+        var titleTextField by remember { mutableStateOf(TextFieldValue("")) }
+        var contentTextField by remember { mutableStateOf(TextFieldValue("")) }
+
+        titleTextField = TextFieldValue(note.title)
+        contentTextField = TextFieldValue(note.content)
 
         Card(
             shape = Shapes().medium,
@@ -232,8 +239,10 @@ fun NoteContent(
                 ) {
                     TextField(
                         modifier = Modifier.fillMaxWidth(0.75f),
-                        value = note.title,
-                        onValueChange = { newText -> },
+                        value = titleTextField,
+                        onValueChange = { newText ->
+                          titleTextField = newText
+                        },
                         colors = TextFieldDefaults.colors(
                             focusedIndicatorColor = color,
                             unfocusedIndicatorColor = color,
@@ -260,8 +269,10 @@ fun NoteContent(
                 }
 
                 TextField(
-                    value = note.content,
-                    onValueChange = { newText -> },
+                    value = contentTextField,
+                    onValueChange = { newText ->
+                        contentTextField = newText
+                    },
                     modifier = Modifier.fillMaxWidth(),
                     colors = TextFieldDefaults.colors(
                         focusedIndicatorColor = color,
