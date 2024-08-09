@@ -21,7 +21,14 @@ class NoteDetailViewModel @Inject constructor() : ViewModel() {
     private val _uiState = MutableStateFlow<NoteDetailUiState>(NoteDetailUiState.Loading)
     val uiState = _uiState.asStateFlow()
 
-    fun getNoteById(id: String) {
+    fun manageNote(id: String) {
+        if (id == "new_element") {
+            _uiState.value = NoteDetailUiState.Success(Note())
+        }
+        else getNoteById(id)
+    }
+
+    private fun getNoteById(id: String) {
         mockNoteList.firstOrNull { it.id == id}?.let {  note ->
             _uiState.value = NoteDetailUiState.Success(note)
         } ?: run {

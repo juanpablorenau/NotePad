@@ -1,9 +1,10 @@
 package com.example.notepad.ui.list
 
-import androidx.compose.ui.unit.IntOffset
 import androidx.lifecycle.ViewModel
 import com.example.model.entities.Note
+import com.example.model.utils.add
 import com.example.model.utils.normalize
+import com.example.model.utils.removeAt
 import com.example.notepad.utils.mockNoteList
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -13,7 +14,7 @@ import javax.inject.Inject
 
 sealed class NotesUiState {
     data object Loading : NotesUiState()
-    data class Success(val notes: List<Note>,val itemsView: Int = 2) : NotesUiState()
+    data class Success(val notes: List<Note>, val itemsView: Int = 2) : NotesUiState()
     data class Error(val error: String) : NotesUiState()
 }
 
@@ -35,8 +36,9 @@ class NotesViewModel @Inject constructor() : ViewModel() {
             with((it as NotesUiState.Success)) {
                 val normalizedQuery = query.normalize()
                 copy(notes = notes.filter { note ->
-                    note.title.normalize().contains(normalizedQuery, ignoreCase = true) ||
-                            note.content.normalize().contains(normalizedQuery, ignoreCase = true)
+                    note.title.normalize()
+                        .contains(normalizedQuery, ignoreCase = true) || note.content.normalize()
+                        .contains(normalizedQuery, ignoreCase = true)
                 })
             }
         }
@@ -50,16 +52,10 @@ class NotesViewModel @Inject constructor() : ViewModel() {
         }
     }
 
-    fun saveOffSetInNotes(index: Int, offset: IntOffset) {
+    fun swipeNotes(oldIndex: Int, newIndex: Int) {
         _uiState.getAndUpdate {
             with((it as NotesUiState.Success)) {
-                copy(notes = notes.mapIndexed { i, note ->
-                    if (i == index) {
-                        note.copy(
-                            offsetX = offset.x.toFloat(), offsetY = offset.y.toFloat()
-                        )
-                    } else note
-                })
+                copy(notes = notes.apply { add(newIndex, removeAt(oldIndex)) })
             }
         }
     }
@@ -99,14 +95,6 @@ class NotesViewModel @Inject constructor() : ViewModel() {
         _uiState.getAndUpdate {
             with((it as NotesUiState.Success)) {
                 copy(itemsView = if (itemsView == 2) 1 else 2)
-            }
-        }
-    }
-
-    fun resetPositions() {
-        _uiState.getAndUpdate {
-            with((it as NotesUiState.Success)) {
-                copy(notes = notes.map { note -> note.copy(offsetX = 0f, offsetY = 0f) })
             }
         }
     }

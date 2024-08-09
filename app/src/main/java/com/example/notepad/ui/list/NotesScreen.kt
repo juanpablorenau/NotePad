@@ -3,14 +3,8 @@ package com.example.notepad.ui.list
 import androidx.compose.animation.AnimatedContentScope
 import androidx.compose.animation.ExperimentalSharedTransitionApi
 import androidx.compose.animation.SharedTransitionScope
-import androidx.compose.foundation.BorderStroke
-import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
-import androidx.compose.foundation.gestures.detectDragGesturesAfterLongPress
 import androidx.compose.foundation.layout.*
-import androidx.compose.foundation.lazy.staggeredgrid.LazyVerticalStaggeredGrid
-import androidx.compose.foundation.lazy.staggeredgrid.StaggeredGridCells
-import androidx.compose.foundation.lazy.staggeredgrid.itemsIndexed
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
@@ -18,11 +12,13 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.Search
 import androidx.compose.material3.*
-import androidx.compose.runtime.*
-import androidx.compose.ui.Alignment
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalSoftwareKeyboardController
 import androidx.compose.ui.res.painterResource
@@ -30,9 +26,6 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardType
-import androidx.compose.ui.text.style.TextAlign
-import androidx.compose.ui.text.style.TextOverflow
-import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
@@ -44,10 +37,8 @@ import com.example.notepad.components.MenuItem
 import com.example.notepad.navigation.AppScreens
 import com.example.notepad.theme.LightGray1
 import com.example.notepad.theme.YellowDark
-import com.example.notepad.utils.getColor
 import com.example.notepad.utils.getViewModel
 import com.example.notepad.utils.mockNoteList
-import kotlin.math.roundToInt
 
 @OptIn(ExperimentalSharedTransitionApi::class)
 @Composable
@@ -70,12 +61,11 @@ fun NotesScreen(
                 animatedContentScope = animatedContentScope,
                 onSearch = { searchText -> viewModel.searchNotes(searchText) },
                 getNotes = { viewModel.getNotes() },
-                onCardClick = { index -> viewModel.checkNote(index) },
-                onCardLongClick = { index, offset -> viewModel.saveOffSetInNotes(index, offset) },
+                checkNote = { index -> viewModel.checkNote(index) },
+                swipeNotes = { oldIndex, newIndex -> viewModel.swipeNotes(oldIndex, newIndex) },
                 deleteNotes = { viewModel.deleteCheckedNotes() },
                 pinUpNotes = { viewModel.pinUpCheckedNotes() },
                 changeItemsView = { viewModel.changeItemsView() },
-                resetPositions = { viewModel.resetPositions() },
                 selectAllNotes = { viewModel.selectAllNotes() },
                 navigate = { route -> navController.navigate(route) }
             )
@@ -91,12 +81,11 @@ fun SuccessScreen(
     animatedContentScope: AnimatedContentScope,
     onSearch: (String) -> Unit = {},
     getNotes: () -> Unit = {},
-    onCardClick: (index: Int) -> Unit = {},
-    onCardLongClick: (index: Int, offset: IntOffset) -> Unit = { _, _ -> },
+    checkNote: (index: Int) -> Unit = {},
+    swipeNotes: (oldIndex: Int, newIndex: Int) -> Unit = { _, _ -> },
     deleteNotes: () -> Unit = {},
     pinUpNotes: () -> Unit = {},
     changeItemsView: () -> Unit = {},
-    resetPositions: () -> Unit = {},
     selectAllNotes: () -> Unit = {},
     navigate: (String) -> Unit = {},
 ) {
@@ -108,7 +97,6 @@ fun SuccessScreen(
                 deleteNotes = deleteNotes,
                 pinUpNotes = pinUpNotes,
                 changeItemsView = changeItemsView,
-                resetPositions = resetPositions,
                 selectAllNotes = selectAllNotes
             )
         },
@@ -121,12 +109,12 @@ fun SuccessScreen(
                 animatedContentScope = animatedContentScope,
                 onSearch = onSearch,
                 getNotes = getNotes,
-                onCardClick = onCardClick,
-                onCardLongClick = onCardLongClick,
+                checkNote = checkNote,
+                swipeNotes = swipeNotes,
                 navigate = navigate
             )
         },
-        floatingActionButton = { AddNoteButton() }
+        floatingActionButton = { AddNoteButton(navigate) }
     )
 }
 
@@ -138,7 +126,6 @@ fun NotesTopBar(
     deleteNotes: () -> Unit = {},
     pinUpNotes: () -> Unit = {},
     changeItemsView: () -> Unit = {},
-    resetPositions: () -> Unit = {},
     selectAllNotes: () -> Unit = {},
 ) {
     var showMenu by remember { mutableStateOf(false) }
@@ -159,14 +146,6 @@ fun NotesTopBar(
                 Icon(
                     painter = painterResource(id = if (itemsView == 1) R.drawable.ic_grid_view else R.drawable.ic_list),
                     contentDescription = "Grid icon",
-                    tint = YellowDark
-                )
-            }
-
-            IconButton(onClick = { resetPositions() }) {
-                Icon(
-                    painter = painterResource(id = R.drawable.ic_refresh),
-                    contentDescription = "Reset icon",
                     tint = YellowDark
                 )
             }
@@ -243,8 +222,8 @@ fun NotesContent(
     animatedContentScope: AnimatedContentScope,
     onSearch: (String) -> Unit = {},
     getNotes: () -> Unit = {},
-    onCardClick: (index: Int) -> Unit = {},
-    onCardLongClick: (index: Int, offset: IntOffset) -> Unit = { _, _ -> },
+    checkNote: (index: Int) -> Unit = {},
+    swipeNotes: (oldIndex: Int, newIndex: Int) -> Unit = { _, _ -> },
     navigate: (String) -> Unit = {},
 ) {
     Column(
@@ -257,13 +236,13 @@ fun NotesContent(
     ) {
         SearchNote(onSearch = onSearch, getNotes = getNotes)
         Spacer(modifier = Modifier.height(16.dp))
-        NotesList(
+        NotesStaggeredGrid(
             notes = notes,
             itemsView = itemsView,
             sharedTransitionScope = sharedTransitionScope,
             animatedContentScope = animatedContentScope,
-            onCardClick = onCardClick,
-            onCardLongClick = onCardLongClick,
+            checkNote = checkNote,
+            swipeNotes = swipeNotes,
             navigate = navigate
         )
     }
@@ -326,151 +305,13 @@ private fun SearchNote(onSearch: (String) -> Unit, getNotes: () -> Unit) {
 
 }
 
-@OptIn(ExperimentalSharedTransitionApi::class)
 @Composable
-fun NotesList(
-    notes: List<Note> = mockNoteList,
-    itemsView: Int = 2,
-    sharedTransitionScope: SharedTransitionScope,
-    animatedContentScope: AnimatedContentScope,
-    onCardClick: (index: Int) -> Unit = {},
-    onCardLongClick: (index: Int, offset: IntOffset) -> Unit = { _, _ -> },
-    navigate: (String) -> Unit = {},
-) {
-    LazyVerticalStaggeredGrid(
-        modifier = Modifier.fillMaxSize(),
-        columns = StaggeredGridCells.Fixed(itemsView),
-        verticalItemSpacing = 16.dp,
-        horizontalArrangement = Arrangement.spacedBy(16.dp),
-        content = {
-            itemsIndexed(notes) { index, note ->
-                ItemNote(
-                    note,
-                    index,
-                    sharedTransitionScope,
-                    animatedContentScope,
-                    onCardClick,
-                    onCardLongClick,
-                    navigate
-                )
-            }
-        })
-}
+fun AddNoteButton(onClick: (String) -> Unit = {}) {
+    val route = AppScreens.NoteDetailScreen.route.plus("/" + "new_element")
 
-@OptIn(ExperimentalSharedTransitionApi::class)
-@Composable
-fun ItemNote(
-    note: Note,
-    index: Int,
-    sharedTransitionScope: SharedTransitionScope,
-    animatedContentScope: AnimatedContentScope,
-    onCardClick: (index: Int) -> Unit = {},
-    onCardLongClick: (index: Int, offset: IntOffset) -> Unit,
-    navigate: (String) -> Unit = {},
-) {
-    val color = getColor(note.color)
-    val route = AppScreens.NoteDetailScreen.route.plus("/" + note.id)
-
-    var isDragging by remember { mutableStateOf(false) }
-    var offsetX by remember { mutableFloatStateOf(0f) }
-    var offsetY by remember { mutableFloatStateOf(0f) }
-
-    offsetX = note.offsetX
-    offsetY = note.offsetY
-
-    with(sharedTransitionScope) {
-        Card(
-            shape = Shapes().medium,
-            border = BorderStroke(2.dp, if (note.isChecked) Color.Gray else Color.Transparent),
-            modifier = Modifier.Companion
-                .sharedElement(
-                    sharedTransitionScope.rememberSharedContentState(key = note.id),
-                    animatedVisibilityScope = animatedContentScope
-                )
-                .fillMaxSize()
-                .offset { IntOffset(offsetX.roundToInt(), offsetY.roundToInt()) }
-                .clickable { onCardClick(index) }
-                .pointerInput(Unit) {
-                    detectDragGesturesAfterLongPress(
-                        onDragStart = {
-                            isDragging = true
-                        },
-                        onDragEnd = {
-                            isDragging = false
-                            onCardLongClick(
-                                index,
-                                IntOffset(offsetX.roundToInt(), offsetY.roundToInt())
-                            )
-                        },
-                        onDrag = { change, dragAmount ->
-                            change.consume()
-                            offsetX += dragAmount.x
-                            offsetY += dragAmount.y
-                        }
-                    )
-                },
-            elevation = CardDefaults.cardElevation(defaultElevation = 4.dp),
-        ) {
-            Column(
-                modifier = Modifier
-                    .background(if (isDragging) Color.LightGray else color)
-                    .padding(16.dp)
-            ) {
-                Box(
-                    modifier = Modifier.fillMaxWidth()
-                ) {
-                    Text(
-                        modifier = Modifier.padding(end = 12.dp),
-                        text = note.title,
-                        fontWeight = FontWeight.Bold,
-                        textAlign = TextAlign.Start,
-                        overflow = TextOverflow.Ellipsis,
-                        maxLines = 2,
-                        fontSize = 16.sp,
-                        color = Color.Black
-                    )
-                    if (note.isPinned) {
-                        Icon(
-                            modifier = Modifier
-                                .size(12.dp)
-                                .align(Alignment.TopEnd),
-                            painter = painterResource(id = R.drawable.ic_pin),
-                            contentDescription = "Pinned icon",
-                            tint = Color.Black
-                        )
-                    }
-                }
-
-                Spacer(modifier = Modifier.height(16.dp))
-
-                Text(
-                    text = note.content,
-                    fontSize = 12.sp,
-                    textAlign = TextAlign.Justify,
-                    color = Color.DarkGray
-                )
-
-                Spacer(modifier = Modifier.height(12.dp))
-
-                Icon(
-                    modifier = Modifier
-                        .align(Alignment.End)
-                        .size(12.dp)
-                        .clickable { navigate(route) },
-                    painter = painterResource(id = R.drawable.ic_open_in_full),
-                    tint = Color.Black,
-                    contentDescription = "Fullscreen Icon "
-                )
-            }
-        }
-    }
-}
-
-@Composable
-fun AddNoteButton(onClick: () -> Unit = {}) {
     FloatingActionButton(
         containerColor = Color.White,
-        onClick = { onClick() }
+        onClick = { onClick(route) }
     ) {
         Icon(
             modifier = Modifier.size(36.dp),

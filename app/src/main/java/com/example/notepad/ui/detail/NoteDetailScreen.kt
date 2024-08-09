@@ -3,7 +3,6 @@ package com.example.notepad.ui.detail
 import androidx.compose.animation.AnimatedContentScope
 import androidx.compose.animation.ExperimentalSharedTransitionApi
 import androidx.compose.animation.SharedTransitionScope
-import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
@@ -21,7 +20,6 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.text.input.TextFieldValue
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -48,7 +46,7 @@ fun NoteDetailScreen(
     val viewModel = LocalContext.current.getViewModel<NoteDetailViewModel>()
     val uiState: NoteDetailUiState by viewModel.uiState.collectAsStateWithLifecycle()
 
-    viewModel.getNoteById(noteId)
+    viewModel.manageNote(noteId)
 
     when (val state = uiState) {
         is NoteDetailUiState.Loading -> Unit
@@ -205,16 +203,12 @@ fun NoteContent(
     note: Note = mockNote,
     sharedTransitionScope: SharedTransitionScope,
     animatedContentScope: AnimatedContentScope,
-) {
-    val color = getColor(note.color)
-
-    var titleTextState by remember { mutableStateOf(TextFieldValue(note.title)) }
-    var contentTextState by remember { mutableStateOf(TextFieldValue(note.content)) }
-
+){
     with(sharedTransitionScope) {
+        val color = getColor(note.color)
+
         Card(
             shape = Shapes().medium,
-            border = BorderStroke(2.dp, if (note.isChecked) Color.Gray else Color.Transparent),
             modifier = Modifier.Companion
                 .sharedElement(
                     sharedTransitionScope.rememberSharedContentState(key = note.id),
@@ -238,10 +232,8 @@ fun NoteContent(
                 ) {
                     TextField(
                         modifier = Modifier.fillMaxWidth(0.75f),
-                        value = titleTextState,
-                        onValueChange = { newText ->
-                            titleTextState = newText
-                        },
+                        value = note.title,
+                        onValueChange = { newText -> },
                         colors = TextFieldDefaults.colors(
                             focusedIndicatorColor = color,
                             unfocusedIndicatorColor = color,
@@ -268,10 +260,8 @@ fun NoteContent(
                 }
 
                 TextField(
-                    value = contentTextState,
-                    onValueChange = { newText ->
-                        contentTextState = newText
-                    },
+                    value = note.content,
+                    onValueChange = { newText -> },
                     modifier = Modifier.fillMaxWidth(),
                     colors = TextFieldDefaults.colors(
                         focusedIndicatorColor = color,
