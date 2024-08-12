@@ -20,7 +20,7 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.notepad.R
-import com.example.notepad.theme.YellowDark
+import com.example.notepad.theme.DarkGray
 
 @Composable
 fun Chip(text: String = "Chip", chipColor: Color = Color.White, textColor: Color = Color.Black) {
@@ -47,8 +47,8 @@ fun Chip(text: String = "Chip", chipColor: Color = Color.White, textColor: Color
 fun MenuItem(
     icon: Int = R.drawable.ic_delete_outline,
     text: String = "Delete",
-    iconColor: Color = YellowDark,
-    textColor: Color = Color.Black,
+    iconColor: Color = DarkGray,
+    textColor: Color = DarkGray,
 ) {
     Row(
         modifier = Modifier.fillMaxWidth(),

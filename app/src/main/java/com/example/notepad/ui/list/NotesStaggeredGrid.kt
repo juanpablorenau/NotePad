@@ -75,13 +75,15 @@ fun NotesStaggeredGrid(
         itemsIndexed(list, key = { _, item -> item.id }) { index, item ->
             ReorderableItem(reorderableLazyStaggeredGridState, item.id) {
                 val interactionSource = remember { MutableInteractionSource() }
+
                 val route = AppScreens.NoteDetailScreen.route.plus("/" + item.id)
+                val color = getColor(item.color)
 
                 with(sharedTransitionScope) {
                     Card(
                         modifier = Modifier
                             .combinedClickable(
-                                onClick = { navigate(route) }, onLongClick = { checkNote(index) }
+                                onClick = { navigate(route) }, onDoubleClick = { checkNote(index) }
                             )
                             .sharedElement(
                                 sharedTransitionScope.rememberSharedContentState(key = item.id),
@@ -125,51 +127,49 @@ fun NotesStaggeredGrid(
                             ),
                         border = BorderStroke(
                             2.dp,
-                            if (item.isChecked) Color.Gray else Color.Transparent
+                            if (item.isChecked) Color.Black else Color.Transparent
                         ),
                     ) {
-                        Box(Modifier.fillMaxSize()) {
-                            val color = getColor(item.color)
-                            Column(
-                                modifier = Modifier
-                                    .background(color)
-                                    .padding(16.dp)
+                        Column(
+                            modifier = Modifier
+                                .fillMaxSize()
+                                .background(color)
+                                .padding(16.dp)
+                        ) {
+                            Box(
+                                modifier = Modifier.fillMaxWidth()
                             ) {
-                                Box(
-                                    modifier = Modifier.fillMaxWidth()
-                                ) {
-                                    Text(
-                                        modifier = Modifier.padding(end = 12.dp),
-                                        text = item.title,
-                                        fontWeight = FontWeight.Bold,
-                                        textAlign = TextAlign.Start,
-                                        overflow = TextOverflow.Ellipsis,
-                                        maxLines = 2,
-                                        fontSize = 16.sp,
-                                        color = Color.Black
-                                    )
-                                    if (item.isPinned) {
-                                        Icon(
-                                            modifier = Modifier
-                                                .size(12.dp)
-                                                .align(Alignment.TopEnd),
-                                            painter = painterResource(id = R.drawable.ic_pin),
-                                            contentDescription = "Pinned icon",
-                                            tint = Color.Black
-                                        )
-                                    }
-                                }
-
-                                Spacer(modifier = Modifier.height(16.dp))
-
                                 Text(
-                                    text = item.content,
-                                    fontSize = 12.sp,
+                                    modifier = Modifier.padding(end = 12.dp),
+                                    text = item.title,
+                                    fontWeight = FontWeight.Bold,
                                     textAlign = TextAlign.Start,
-                                    color = Color.DarkGray,
-                                    maxLines = 8
+                                    overflow = TextOverflow.Ellipsis,
+                                    maxLines = 2,
+                                    fontSize = 16.sp,
+                                    color = Color.Black
                                 )
+                                if (item.isPinned) {
+                                    Icon(
+                                        modifier = Modifier
+                                            .size(12.dp)
+                                            .align(Alignment.TopEnd),
+                                        painter = painterResource(id = R.drawable.ic_pin),
+                                        contentDescription = "Pinned icon",
+                                        tint = Color.Black
+                                    )
+                                }
                             }
+
+                            Spacer(modifier = Modifier.height(16.dp))
+
+                            Text(
+                                text = item.content,
+                                fontSize = 12.sp,
+                                textAlign = TextAlign.Start,
+                                color = Color.DarkGray,
+                                maxLines = 8
+                            )
                         }
                     }
                 }

@@ -19,6 +19,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.Color.Companion.Red
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalSoftwareKeyboardController
 import androidx.compose.ui.res.painterResource
@@ -26,6 +27,7 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardType
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
@@ -35,7 +37,7 @@ import com.example.notepad.R
 import com.example.notepad.components.Dialog
 import com.example.notepad.components.MenuItem
 import com.example.notepad.navigation.AppScreens
-import com.example.notepad.theme.LightGray1
+import com.example.notepad.theme.LightGray
 import com.example.notepad.theme.YellowDark
 import com.example.notepad.utils.getViewModel
 import com.example.notepad.utils.mockNoteList
@@ -66,7 +68,7 @@ fun NotesScreen(
                 deleteNotes = { viewModel.deleteCheckedNotes() },
                 pinUpNotes = { viewModel.pinUpCheckedNotes() },
                 changeItemsView = { viewModel.changeItemsView() },
-                selectAllNotes = { viewModel.selectAllNotes() },
+                selectAllNotes = { select -> viewModel.selectAllNotes(select) },
                 navigate = { route -> navController.navigate(route) }
             )
     }
@@ -86,7 +88,7 @@ fun SuccessScreen(
     deleteNotes: () -> Unit = {},
     pinUpNotes: () -> Unit = {},
     changeItemsView: () -> Unit = {},
-    selectAllNotes: () -> Unit = {},
+    selectAllNotes: (Boolean) -> Unit = {},
     navigate: (String) -> Unit = {},
 ) {
     Scaffold(
@@ -118,6 +120,7 @@ fun SuccessScreen(
     )
 }
 
+@Preview(showBackground = true)
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun NotesTopBar(
@@ -126,7 +129,7 @@ fun NotesTopBar(
     deleteNotes: () -> Unit = {},
     pinUpNotes: () -> Unit = {},
     changeItemsView: () -> Unit = {},
-    selectAllNotes: () -> Unit = {},
+    selectAllNotes: (Boolean) -> Unit = {},
 ) {
     var showMenu by remember { mutableStateOf(false) }
     var deleteButtonClicked by remember { mutableStateOf(false) }
@@ -136,7 +139,7 @@ fun NotesTopBar(
         title = {
             Text(
                 text = stringResource(R.string.notes_title),
-                color = Color.Black,
+                color = YellowDark,
                 fontSize = 24.sp,
                 fontWeight = FontWeight.Bold,
             )
@@ -172,7 +175,20 @@ fun NotesTopBar(
                             stringResource(R.string.select_all)
                         )
                     },
-                    onClick = { selectAllNotes() },
+                    onClick = { selectAllNotes(true) },
+                )
+
+                DropdownMenuItem(
+                    text = {
+                        MenuItem(
+                            R.drawable.ic_check_circle_outline,
+                            stringResource(R.string.unselect_all)
+                        )
+                    },
+                    onClick = {
+                        showMenu = false
+                        selectAllNotes(false)
+                    },
                 )
 
                 DropdownMenuItem(
@@ -190,6 +206,8 @@ fun NotesTopBar(
                         MenuItem(
                             R.drawable.ic_delete_outline,
                             stringResource(R.string.delete),
+                            iconColor = Red,
+                            textColor = Red
                         )
                     },
                     onClick = {
@@ -260,8 +278,8 @@ private fun SearchNote(onSearch: (String) -> Unit, getNotes: () -> Unit) {
         colors = TextFieldDefaults.colors(
             focusedIndicatorColor = Color.Transparent,
             unfocusedIndicatorColor = Color.Transparent,
-            focusedContainerColor = LightGray1,
-            unfocusedContainerColor = LightGray1
+            focusedContainerColor = LightGray,
+            unfocusedContainerColor = LightGray
         ),
         placeholder = {
             Text(

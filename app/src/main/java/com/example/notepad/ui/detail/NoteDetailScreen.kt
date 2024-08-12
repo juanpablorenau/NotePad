@@ -3,18 +3,18 @@ package com.example.notepad.ui.detail
 import androidx.compose.animation.AnimatedContentScope
 import androidx.compose.animation.ExperimentalSharedTransitionApi
 import androidx.compose.animation.SharedTransitionScope
+import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.combinedClickable
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material3.*
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
+import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.Color.Companion.Red
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
@@ -33,6 +33,7 @@ import com.example.notepad.components.MenuItem
 import com.example.notepad.theme.YellowDark
 import com.example.notepad.utils.getColor
 import com.example.notepad.utils.getViewModel
+import com.example.notepad.utils.mockColorList
 import com.example.notepad.utils.mockNote
 
 @OptIn(ExperimentalSharedTransitionApi::class)
@@ -47,7 +48,9 @@ fun NoteDetailScreen(
     val viewModel = LocalContext.current.getViewModel<NoteDetailViewModel>()
     val uiState: NoteDetailUiState by viewModel.uiState.collectAsStateWithLifecycle()
 
-    viewModel.manageNote(noteId)
+    LaunchedEffect(noteId) {
+        viewModel.manageNote(noteId)
+    }
 
     when (val state = uiState) {
         is NoteDetailUiState.Loading -> Unit
@@ -61,9 +64,13 @@ fun NoteDetailScreen(
         is NoteDetailUiState.Success -> {
             SuccessScreen(
                 note = state.note,
+                colors = state.colors,
                 sharedTransitionScope = sharedTransitionScope,
                 animatedContentScope = animatedContentScope,
-                onBackClick = { navController.popBackStack() }
+                onBackClick = { navController.popBackStack() },
+                pinUpNote = { viewModel.pinUpNote() },
+                deleteNote = { },
+                changeColor = { color -> viewModel.changeColor(color) }
             )
         }
     }
@@ -93,12 +100,24 @@ private fun ErrorScreen(onBackClick: () -> Unit, error: String) {
 @Composable
 fun SuccessScreen(
     note: Note = mockNote,
+    colors: List<String> = mockColorList,
     sharedTransitionScope: SharedTransitionScope,
     animatedContentScope: AnimatedContentScope,
     onBackClick: () -> Unit = {},
+    pinUpNote: () -> Unit = {},
+    deleteNote: () -> Unit = {},
+    changeColor: (String) -> Unit = {},
 ) {
     Scaffold(
-        topBar = { NoteTopBar(onBackClick = onBackClick) },
+        topBar = {
+            NoteTopBar(
+                colors = colors,
+                onBackClick = onBackClick,
+                changeColor = changeColor,
+                pinUpNote = pinUpNote,
+                deleteNote = deleteNote
+            )
+        },
         content = { padding ->
             NoteContent(
                 padding = padding,
@@ -114,12 +133,14 @@ fun SuccessScreen(
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun NoteTopBar(
+    colors: List<String> = mockColorList,
     onBackClick: () -> Unit = {},
     pinUpNote: () -> Unit = {},
     deleteNote: () -> Unit = {},
-    changeColor: () -> Unit = {},
+    changeColor: (String) -> Unit = {},
 ) {
     var showMenu by remember { mutableStateOf(false) }
+    var showColor by remember { mutableStateOf(false) }
     var deleteButtonClicked by remember { mutableStateOf(false) }
 
     TopAppBar(
@@ -141,6 +162,14 @@ fun NoteTopBar(
                 )
             }
         }, actions = {
+            IconButton(onClick = { showColor = !showColor }) {
+                Icon(
+                    painter = painterResource(id = R.drawable.ic_color_lens),
+                    contentDescription = "More icon",
+                    tint = YellowDark
+                )
+            }
+
             IconButton(onClick = { showMenu = !showMenu }) {
                 Icon(
                     painter = painterResource(id = R.drawable.ic_more_vert),
@@ -165,17 +194,7 @@ fun NoteTopBar(
 
                 DropdownMenuItem(
                     text = {
-                        MenuItem(R.drawable.ic_color_lens, stringResource(R.string.change_color))
-                    },
-                    onClick = {
-                        showMenu = false
-                        changeColor()
-                    },
-                )
-
-                DropdownMenuItem(
-                    text = {
-                        MenuItem(R.drawable.ic_delete_outline, stringResource(R.string.delete))
+                        MenuItem(R.drawable.ic_delete_outline, stringResource(R.string.delete), Red, Red)
                     },
                     onClick = {
                         showMenu = false
@@ -183,17 +202,66 @@ fun NoteTopBar(
                     },
                 )
             }
+
+            DropdownMenu(
+                expanded = showColor,
+                onDismissRequest = { showColor = false }
+            ) {
+                ChangeColorMenu(colors, changeColor)
+            }
         }
     )
 
-    if (deleteButtonClicked) {
-        Dialog(
-            text = stringResource(R.string.delete_question),
-            yesAction = {
-                deleteButtonClicked = false
-                deleteNote()
-            },
-            noAction = { deleteButtonClicked = false })
+    if (deleteButtonClicked) DeleteNoteDialog(deleteNote) { deleteButtonClicked = false }
+}
+
+@Composable
+fun DeleteNoteDialog(deleteNote: () -> Unit = {}, action: () -> Unit = {}) {
+    Dialog(
+        text = stringResource(R.string.delete_question),
+        yesAction = {
+            deleteNote()
+            action()
+        },
+        noAction = { action() }
+    )
+}
+
+@Preview(showBackground = true)
+@Composable
+fun ChangeColorMenu(
+    colors: List<String> = mockColorList,
+    changeColor: (String) -> Unit = {},
+) {
+    for (i in 0 until colors.size.div(4)) {
+        Row(
+            modifier = Modifier.padding(8.dp)
+        ) {
+            for (j in 0 until 4) {
+                ColorItem(item = colors[i * 4 + j], changeColor)
+                Spacer(modifier = Modifier.width(8.dp))
+            }
+        }
+    }
+}
+
+@OptIn(ExperimentalFoundationApi::class)
+@Composable
+fun ColorItem(item: String = "", changeColor: (String) -> Unit = {}) {
+    Card(
+        shape = CircleShape,
+        modifier = Modifier
+            .size(36.dp)
+            .combinedClickable(
+                onClick = { changeColor(item) },
+                onLongClick = { }
+            )
+    ) {
+        Box(
+            modifier = Modifier
+                .background(getColor(item))
+                .fillMaxSize()
+        )
     }
 }
 
@@ -241,7 +309,7 @@ fun NoteContent(
                         modifier = Modifier.fillMaxWidth(0.75f),
                         value = titleTextField,
                         onValueChange = { newText ->
-                          titleTextField = newText
+                            titleTextField = newText
                         },
                         colors = TextFieldDefaults.colors(
                             focusedIndicatorColor = color,
@@ -265,7 +333,6 @@ fun NoteContent(
                             tint = Color.Black
                         )
                     }
-
                 }
 
                 TextField(

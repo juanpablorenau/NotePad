@@ -17,7 +17,7 @@ val mockNoteList by lazy {
             title = "Ideas para el nuevo proyecto",
             content = "1. Implementar una función de búsqueda avanzada\n2. Agregar soporte para múltiples idiomas\n3. Mejorar la experiencia del usuario en dispositivos móviles",
             color = "#77DD77",
-            ),
+        ),
         mockNote.copy(
             id = "3",
             title = "Cita del día",
@@ -111,3 +111,19 @@ val mockNote =
         isArchived = true,
         isLocked = true,
     )
+
+val mockColorList = listOf(
+    "#FF7F7F",
+    "#FFBF80",
+    "#FFFF99",
+    "#BFFF80",
+    "#80FFBF",
+    "#80DFFF",
+    "#9999FF",
+    "#BF80FF",
+    "#FF80BF",
+    "#FFB380",
+    "#B3FF99",
+    "#FFD9E1"
+)
+

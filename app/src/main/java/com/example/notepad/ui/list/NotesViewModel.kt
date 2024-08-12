@@ -99,10 +99,10 @@ class NotesViewModel @Inject constructor() : ViewModel() {
         }
     }
 
-    fun selectAllNotes() {
+    fun selectAllNotes(select: Boolean) {
         _uiState.getAndUpdate {
             with((it as NotesUiState.Success)) {
-                copy(notes = notes.map { note -> note.copy(isChecked = true) })
+                copy(notes = notes.map { note -> note.copy(isChecked = select) })
             }
         }
     }
