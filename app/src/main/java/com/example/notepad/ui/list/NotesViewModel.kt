@@ -1,15 +1,19 @@
 package com.example.notepad.ui.list
 
 import androidx.lifecycle.ViewModel
+import androidx.lifecycle.viewModelScope
+import com.example.domain.usecase.GetNotesUseCase
 import com.example.model.entities.Note
 import com.example.model.utils.add
 import com.example.model.utils.normalize
 import com.example.model.utils.removeAt
-import com.example.notepad.utils.mockNoteList
 import dagger.hilt.android.lifecycle.HiltViewModel
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.catch
 import kotlinx.coroutines.flow.getAndUpdate
+import kotlinx.coroutines.launch
 import javax.inject.Inject
 
 sealed class NotesUiState {
@@ -19,16 +23,23 @@ sealed class NotesUiState {
 }
 
 @HiltViewModel
-class NotesViewModel @Inject constructor() : ViewModel() {
+class NotesViewModel @Inject constructor(
+    private val getNotesUseCase: GetNotesUseCase,
+) : ViewModel() {
 
     private val _uiState = MutableStateFlow<NotesUiState>(NotesUiState.Loading)
     val uiState = _uiState.asStateFlow()
 
-    private var list = listOf<Note>()
+    fun getNotes() {
+        viewModelScope.launch(Dispatchers.Main) {
+            getNotesUseCase()
+                .catch { }
+                .collect { notes -> setSuccessState(notes) }
+        }
+    }
 
-    init {
-        list = (mockNoteList).sortedBy { !it.isPinned }
-        _uiState.value = NotesUiState.Success(list)
+    private fun setSuccessState(notes: List<Note>) {
+        _uiState.value = NotesUiState.Success(notes)
     }
 
     fun searchNotes(query: String) {
@@ -40,14 +51,6 @@ class NotesViewModel @Inject constructor() : ViewModel() {
                         .contains(normalizedQuery, ignoreCase = true) || note.content.normalize()
                         .contains(normalizedQuery, ignoreCase = true)
                 })
-            }
-        }
-    }
-
-    fun getNotes() {
-        _uiState.getAndUpdate {
-            with((it as NotesUiState.Success)) {
-                copy(notes = list)
             }
         }
     }

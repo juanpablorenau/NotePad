@@ -16,7 +16,5 @@ data class Note(
     val isFavorite: Boolean = false,
     val isArchived: Boolean = false,
     val isLocked: Boolean = false,
-    val offsetX : Float = 0f,
-    val offsetY : Float = 0f,
     val isChecked: Boolean = false
 )

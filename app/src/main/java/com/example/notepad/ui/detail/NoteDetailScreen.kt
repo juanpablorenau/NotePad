@@ -67,7 +67,10 @@ fun NoteDetailScreen(
                 colors = state.colors,
                 sharedTransitionScope = sharedTransitionScope,
                 animatedContentScope = animatedContentScope,
-                onBackClick = { navController.popBackStack() },
+                onBackClick = {
+                    viewModel.updateNote()
+                    navController.popBackStack()
+                },
                 pinUpNote = { viewModel.pinUpNote() },
                 deleteNote = { },
                 changeColor = { color -> viewModel.changeColor(color) }
@@ -194,7 +197,12 @@ fun NoteTopBar(
 
                 DropdownMenuItem(
                     text = {
-                        MenuItem(R.drawable.ic_delete_outline, stringResource(R.string.delete), Red, Red)
+                        MenuItem(
+                            R.drawable.ic_delete_outline,
+                            stringResource(R.string.delete),
+                            Red,
+                            Red
+                        )
                     },
                     onClick = {
                         showMenu = false
