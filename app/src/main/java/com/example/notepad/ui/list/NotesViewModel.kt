@@ -1,33 +1,47 @@
 package com.example.notepad.ui.list
 
-import androidx.compose.ui.unit.IntOffset
 import androidx.lifecycle.ViewModel
+import androidx.lifecycle.viewModelScope
+import com.example.domain.usecase.GetNotesUseCase
 import com.example.model.entities.Note
+import com.example.model.utils.add
 import com.example.model.utils.normalize
-import com.example.notepad.utils.mockNoteList
+import com.example.model.utils.removeAt
 import dagger.hilt.android.lifecycle.HiltViewModel
+import kotlinx.coroutines.CoroutineDispatcher
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.catch
 import kotlinx.coroutines.flow.getAndUpdate
+import kotlinx.coroutines.launch
 import javax.inject.Inject
 
 sealed class NotesUiState {
     data object Loading : NotesUiState()
-    data class Success(val notes: List<Note>,val itemsView: Int = 2) : NotesUiState()
+    data class Success(val notes: List<Note>, val itemsView: Int = 2) : NotesUiState()
     data class Error(val error: String) : NotesUiState()
 }
 
 @HiltViewModel
-class NotesViewModel @Inject constructor() : ViewModel() {
+class NotesViewModel @Inject constructor(
+    private val dispatcher: CoroutineDispatcher = Dispatchers.Main,
+    private val getNotesUseCase: GetNotesUseCase,
+) : ViewModel() {
 
     private val _uiState = MutableStateFlow<NotesUiState>(NotesUiState.Loading)
     val uiState = _uiState.asStateFlow()
 
-    private var list = listOf<Note>()
+    fun getNotes() {
+        viewModelScope.launch(dispatcher) {
+            getNotesUseCase()
+                .catch { }
+                .collect { notes -> setSuccessState(notes.sortedBy { !it.isPinned }) }
+        }
+    }
 
-    init {
-        list = (mockNoteList + mockNoteList + mockNoteList + mockNoteList).sortedBy { !it.isPinned }
-        _uiState.value = NotesUiState.Success(list)
+    private fun setSuccessState(notes: List<Note>) {
+        _uiState.value = NotesUiState.Success(notes)
     }
 
     fun searchNotes(query: String) {
@@ -42,24 +56,10 @@ class NotesViewModel @Inject constructor() : ViewModel() {
         }
     }
 
-    fun getNotes() {
+    fun swipeNotes(oldIndex: Int, newIndex: Int) {
         _uiState.getAndUpdate {
             with((it as NotesUiState.Success)) {
-                copy(notes = list)
-            }
-        }
-    }
-
-    fun saveOffSetInNotes(index: Int, offset: IntOffset) {
-        _uiState.getAndUpdate {
-            with((it as NotesUiState.Success)) {
-                copy(notes = notes.mapIndexed { i, note ->
-                    if (i == index) {
-                        note.copy(
-                            offsetX = offset.x.toFloat(), offsetY = offset.y.toFloat()
-                        )
-                    } else note
-                })
+                copy(notes = notes.apply { add(newIndex, removeAt(oldIndex)) })
             }
         }
     }
@@ -103,18 +103,10 @@ class NotesViewModel @Inject constructor() : ViewModel() {
         }
     }
 
-    fun resetPositions() {
+    fun selectAllNotes(select: Boolean) {
         _uiState.getAndUpdate {
             with((it as NotesUiState.Success)) {
-                copy(notes = notes.map { note -> note.copy(offsetX = 0f, offsetY = 0f) })
-            }
-        }
-    }
-
-    fun selectAllNotes() {
-        _uiState.getAndUpdate {
-            with((it as NotesUiState.Success)) {
-                copy(notes = notes.map { note -> note.copy(isChecked = true) })
+                copy(notes = notes.map { note -> note.copy(isChecked = select) })
             }
         }
     }

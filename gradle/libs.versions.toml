@@ -1,6 +1,7 @@
 [versions]
 accompanist-systemuicontroller = "0.27.0"
 androidx-junit = "1.1.5"
+animation = "1.7.0-beta04"
 coil-compose = "2.5.0"
 compose-bom = "2024.02.01"
 converter-gson = "2.9.0"
@@ -57,6 +58,7 @@ androidx-compose-ui-graphics = { module = "androidx.compose.ui:ui-graphics", ver
 androidx-compose-tooling-preview = { module = "androidx.compose.ui:ui-tooling-preview", version.ref = "ui-graphics" }
 androidx-lifecycle-runtime-compose = { module = "androidx.lifecycle:lifecycle-runtime-compose", version.ref = "lifecycle-runtime-ktx" }
 androidx-navigation-compose = { module = "androidx.navigation:navigation-compose", version.ref = "navigation-compose" }
+androidx-animation = { module = "androidx.compose.animation:animation", version.ref = "animation" }
 
 # UI Tests
 androidx-ui-test-junit4 = { module = "androidx.compose.ui:ui-test-junit4", version.ref = "ui-graphics" }

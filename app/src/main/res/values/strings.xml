@@ -11,4 +11,8 @@
     <string name="select_all">Select all</string>
     <string name="generic_error_msg">An error has occurred</string>
     <string name="change_color">Change color</string>
+    <string name="unselect_all">Unselect all</string>
+    <string name="select_color">Select color</string>
+    <string name="try_again_later">Please try again later</string>
+    <string name="unpin">Unpin</string>
 </resources>
