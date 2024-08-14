@@ -274,8 +274,8 @@ fun NoteContent(
     with(sharedTransitionScope) {
         val color = getColor(note.color)
 
-        var titleTextField by remember { mutableStateOf(TextFieldValue(note.title)) }
-        var contentTextField by remember { mutableStateOf(TextFieldValue(note.content)) }
+        var titleTextField by remember(note.id) { mutableStateOf(TextFieldValue(note.title)) }
+        var contentTextField by remember(note.id) { mutableStateOf(TextFieldValue(note.content)) }
 
         Card(
             shape = Shapes().medium,
