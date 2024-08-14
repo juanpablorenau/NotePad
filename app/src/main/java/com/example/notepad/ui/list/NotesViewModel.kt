@@ -8,6 +8,7 @@ import com.example.model.utils.add
 import com.example.model.utils.normalize
 import com.example.model.utils.removeAt
 import dagger.hilt.android.lifecycle.HiltViewModel
+import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -24,6 +25,7 @@ sealed class NotesUiState {
 
 @HiltViewModel
 class NotesViewModel @Inject constructor(
+    private val dispatcher: CoroutineDispatcher = Dispatchers.Main,
     private val getNotesUseCase: GetNotesUseCase,
 ) : ViewModel() {
 
@@ -31,10 +33,10 @@ class NotesViewModel @Inject constructor(
     val uiState = _uiState.asStateFlow()
 
     fun getNotes() {
-        viewModelScope.launch(Dispatchers.Main) {
+        viewModelScope.launch(dispatcher) {
             getNotesUseCase()
                 .catch { }
-                .collect { notes -> setSuccessState(notes) }
+                .collect { notes -> setSuccessState(notes.sortedBy { !it.isPinned }) }
         }
     }
 
@@ -47,9 +49,8 @@ class NotesViewModel @Inject constructor(
             with((it as NotesUiState.Success)) {
                 val normalizedQuery = query.normalize()
                 copy(notes = notes.filter { note ->
-                    note.title.normalize()
-                        .contains(normalizedQuery, ignoreCase = true) || note.content.normalize()
-                        .contains(normalizedQuery, ignoreCase = true)
+                    note.title.normalize().contains(normalizedQuery, ignoreCase = true) ||
+                            note.content.normalize().contains(normalizedQuery, ignoreCase = true)
                 })
             }
         }

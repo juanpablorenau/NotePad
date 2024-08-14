@@ -24,6 +24,7 @@ import androidx.compose.ui.text.input.TextFieldValue
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.lifecycle.compose.LifecycleResumeEffect
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.NavHostController
 import com.example.model.entities.Note
@@ -44,7 +45,6 @@ fun NoteDetailScreen(
     sharedTransitionScope: SharedTransitionScope,
     animatedContentScope: AnimatedContentScope,
 ) {
-
     val viewModel = LocalContext.current.getViewModel<NoteDetailViewModel>()
     val uiState: NoteDetailUiState by viewModel.uiState.collectAsStateWithLifecycle()
 
@@ -52,12 +52,15 @@ fun NoteDetailScreen(
         viewModel.manageNote(noteId)
     }
 
+    LifecycleResumeEffect(noteId) {
+        onPauseOrDispose { viewModel.updateNote() }
+    }
+
     when (val state = uiState) {
         is NoteDetailUiState.Loading -> Unit
         is NoteDetailUiState.Error -> {
             ErrorScreen(
                 onBackClick = { navController.popBackStack() },
-                error = state.error
             )
         }
 
@@ -67,24 +70,26 @@ fun NoteDetailScreen(
                 colors = state.colors,
                 sharedTransitionScope = sharedTransitionScope,
                 animatedContentScope = animatedContentScope,
-                onBackClick = {
-                    viewModel.updateNote()
+                onBackClick = { navController.popBackStack() },
+                saveText = { title, content -> viewModel.saveText(title, content) },
+                pinUpNote = { viewModel.pinUpNote() },
+                deleteNote = {
+                    viewModel.deleteNote()
                     navController.popBackStack()
                 },
-                pinUpNote = { viewModel.pinUpNote() },
-                deleteNote = { },
                 changeColor = { color -> viewModel.changeColor(color) }
             )
         }
     }
 }
 
+@Preview
 @Composable
-private fun ErrorScreen(onBackClick: () -> Unit, error: String) {
+private fun ErrorScreen(onBackClick: () -> Unit = {}) {
     AlertDialog(
         onDismissRequest = { },
         title = { Text(stringResource(R.string.generic_error_msg)) },
-        text = { Text(error) },
+        text = { Text(stringResource(R.string.try_again_later)) },
         confirmButton = {
             Text(
                 modifier = Modifier.clickable { onBackClick() },
@@ -110,10 +115,12 @@ fun SuccessScreen(
     pinUpNote: () -> Unit = {},
     deleteNote: () -> Unit = {},
     changeColor: (String) -> Unit = {},
+    saveText: (String, String) -> Unit = { _, _ -> },
 ) {
     Scaffold(
         topBar = {
             NoteTopBar(
+                note = note,
                 colors = colors,
                 onBackClick = onBackClick,
                 changeColor = changeColor,
@@ -127,6 +134,7 @@ fun SuccessScreen(
                 note = note,
                 sharedTransitionScope = sharedTransitionScope,
                 animatedContentScope = animatedContentScope,
+                saveText = saveText
             )
         },
     )
@@ -136,6 +144,7 @@ fun SuccessScreen(
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun NoteTopBar(
+    note: Note = mockNote,
     colors: List<String> = mockColorList,
     onBackClick: () -> Unit = {},
     pinUpNote: () -> Unit = {},
@@ -187,7 +196,11 @@ fun NoteTopBar(
             ) {
                 DropdownMenuItem(
                     text = {
-                        MenuItem(R.drawable.ic_pin, stringResource(R.string.pin))
+                        if (note.isPinned) {
+                            MenuItem(R.drawable.ic_unpin, stringResource(R.string.unpin))
+                        } else {
+                            MenuItem(R.drawable.ic_pin, stringResource(R.string.pin))
+                        }
                     },
                     onClick = {
                         showMenu = false
@@ -280,15 +293,13 @@ fun NoteContent(
     note: Note = mockNote,
     sharedTransitionScope: SharedTransitionScope,
     animatedContentScope: AnimatedContentScope,
+    saveText: (String, String) -> Unit = { _, _ -> },
 ) {
     with(sharedTransitionScope) {
         val color = getColor(note.color)
 
-        var titleTextField by remember { mutableStateOf(TextFieldValue("")) }
-        var contentTextField by remember { mutableStateOf(TextFieldValue("")) }
-
-        titleTextField = TextFieldValue(note.title)
-        contentTextField = TextFieldValue(note.content)
+        var titleTextField by remember { mutableStateOf(TextFieldValue(note.title)) }
+        var contentTextField by remember { mutableStateOf(TextFieldValue(note.content)) }
 
         Card(
             shape = Shapes().medium,
@@ -318,6 +329,7 @@ fun NoteContent(
                         value = titleTextField,
                         onValueChange = { newText ->
                             titleTextField = newText
+                            saveText(titleTextField.text, contentTextField.text)
                         },
                         colors = TextFieldDefaults.colors(
                             focusedIndicatorColor = color,
@@ -347,6 +359,7 @@ fun NoteContent(
                     value = contentTextField,
                     onValueChange = { newText ->
                         contentTextField = newText
+                        saveText(titleTextField.text, contentTextField.text)
                     },
                     modifier = Modifier.fillMaxWidth(),
                     colors = TextFieldDefaults.colors(
