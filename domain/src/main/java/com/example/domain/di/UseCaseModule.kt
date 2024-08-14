@@ -1,11 +1,13 @@
 package com.example.domain.di
 
 import com.example.data.repository.NoteRepository
-import com.example.domain.usecase.DeleteNoteUseCase
-import com.example.domain.usecase.GetNoteDetailUseCase
-import com.example.domain.usecase.GetNotesUseCase
-import com.example.domain.usecase.InsertNoteUseCase
-import com.example.domain.usecase.UpdateNoteUseCase
+import com.example.domain.usecase.detail.DeleteNoteUseCase
+import com.example.domain.usecase.detail.GetNoteDetailUseCase
+import com.example.domain.usecase.detail.InsertNoteUseCase
+import com.example.domain.usecase.detail.UpdateNoteUseCase
+import com.example.domain.usecase.list.DeleteNotesUseCase
+import com.example.domain.usecase.list.GetNotesUseCase
+import com.example.domain.usecase.list.UpdateNotesUseCase
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
@@ -54,5 +56,21 @@ class UseCaseModule {
         dispatcher: CoroutineDispatcher,
     ): DeleteNoteUseCase {
         return DeleteNoteUseCase(repository, dispatcher)
+    }
+
+    @Provides
+    fun providesDeleteNotesUseCase(
+        repository: NoteRepository,
+        dispatcher: CoroutineDispatcher,
+    ): DeleteNotesUseCase {
+        return DeleteNotesUseCase(repository, dispatcher)
+    }
+
+    @Provides
+    fun providesUpdateNotesUseCase(
+        repository: NoteRepository,
+        dispatcher: CoroutineDispatcher,
+    ): UpdateNotesUseCase {
+        return UpdateNotesUseCase(repository, dispatcher)
     }
 }

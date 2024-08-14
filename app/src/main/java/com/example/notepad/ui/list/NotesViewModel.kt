@@ -1,8 +1,11 @@
 package com.example.notepad.ui.list
 
+import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.example.domain.usecase.GetNotesUseCase
+import com.example.domain.usecase.list.DeleteNotesUseCase
+import com.example.domain.usecase.list.GetNotesUseCase
+import com.example.domain.usecase.list.UpdateNotesUseCase
 import com.example.model.entities.Note
 import com.example.model.utils.add
 import com.example.model.utils.normalize
@@ -20,28 +23,51 @@ import javax.inject.Inject
 sealed class NotesUiState {
     data object Loading : NotesUiState()
     data class Success(val notes: List<Note>, val itemsView: Int = 2) : NotesUiState()
-    data class Error(val error: String) : NotesUiState()
+    data object Error : NotesUiState()
 }
 
 @HiltViewModel
 class NotesViewModel @Inject constructor(
     private val dispatcher: CoroutineDispatcher = Dispatchers.Main,
     private val getNotesUseCase: GetNotesUseCase,
+    private val updateNotesUseCase: UpdateNotesUseCase,
+    private val deleteNotesUseCase: DeleteNotesUseCase,
 ) : ViewModel() {
 
     private val _uiState = MutableStateFlow<NotesUiState>(NotesUiState.Loading)
     val uiState = _uiState.asStateFlow()
 
+    private fun setSuccessState(notes: List<Note>) {
+        _uiState.value = NotesUiState.Success(notes)
+    }
+
+    private fun setErrorState() {
+        _uiState.value = NotesUiState.Error
+    }
+
     fun getNotes() {
         viewModelScope.launch(dispatcher) {
             getNotesUseCase()
-                .catch { }
+                .catch { setErrorState() }
                 .collect { notes -> setSuccessState(notes.sortedBy { !it.isPinned }) }
         }
     }
 
-    private fun setSuccessState(notes: List<Note>) {
-        _uiState.value = NotesUiState.Success(notes)
+    fun updateNotes() {
+        viewModelScope.launch(dispatcher) {
+            with(_uiState.value as NotesUiState.Success) {
+                tryOrError { updateNotesUseCase(notes) }
+            }
+        }
+    }
+
+    fun deleteNotes() {
+        viewModelScope.launch(dispatcher) {
+            with(_uiState.value as NotesUiState.Success) {
+                tryOrError { deleteNotesUseCase(notes.map { it.id }) }
+                getNotes()
+            }
+        }
     }
 
     fun searchNotes(query: String) {
@@ -74,14 +100,6 @@ class NotesViewModel @Inject constructor(
         }
     }
 
-    fun deleteCheckedNotes() {
-        _uiState.getAndUpdate {
-            with((it as NotesUiState.Success)) {
-                copy(notes = notes.filter { note -> !note.isChecked })
-            }
-        }
-    }
-
     fun pinUpCheckedNotes() {
         _uiState.getAndUpdate {
             with((it as NotesUiState.Success)) {
@@ -108,6 +126,15 @@ class NotesViewModel @Inject constructor(
             with((it as NotesUiState.Success)) {
                 copy(notes = notes.map { note -> note.copy(isChecked = select) })
             }
+        }
+    }
+
+    private suspend fun tryOrError(action: suspend () -> Unit) {
+        try {
+            action()
+        } catch (e: Exception) {
+            setErrorState()
+            Log.e("ROOM ERROR", e.toString())
         }
     }
 }

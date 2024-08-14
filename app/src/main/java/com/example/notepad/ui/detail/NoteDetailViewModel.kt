@@ -3,10 +3,10 @@ package com.example.notepad.ui.detail
 import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.example.domain.usecase.DeleteNoteUseCase
-import com.example.domain.usecase.GetNoteDetailUseCase
-import com.example.domain.usecase.InsertNoteUseCase
-import com.example.domain.usecase.UpdateNoteUseCase
+import com.example.domain.usecase.detail.DeleteNoteUseCase
+import com.example.domain.usecase.detail.GetNoteDetailUseCase
+import com.example.domain.usecase.detail.InsertNoteUseCase
+import com.example.domain.usecase.detail.UpdateNoteUseCase
 import com.example.model.entities.Note
 import com.example.notepad.theme.*
 import com.example.notepad.utils.toHexCode
@@ -38,6 +38,14 @@ class NoteDetailViewModel @Inject constructor(
     private val _uiState = MutableStateFlow<NoteDetailUiState>(NoteDetailUiState.Loading)
     val uiState = _uiState.asStateFlow()
 
+    private fun setSuccessState(note: Note) {
+        _uiState.value = NoteDetailUiState.Success(note, colors)
+    }
+
+    private fun setErrorState() {
+        _uiState.value = NoteDetailUiState.Error
+    }
+
     fun manageNote(id: String) {
         if (id == "new_element") createNewNote() else getNoteById(id)
     }
@@ -45,8 +53,10 @@ class NoteDetailViewModel @Inject constructor(
     private fun createNewNote() {
         viewModelScope.launch(dispatcher) {
             val note = Note()
-            tryOrError { insertNoteUseCase(note) }
-            getNoteById(note.id)
+            tryOrError {
+                insertNoteUseCase(note)
+                setSuccessState(note)
+            }
         }
     }
 
@@ -72,14 +82,6 @@ class NoteDetailViewModel @Inject constructor(
                 tryOrError { deleteNoteUseCase(note.id) }
             }
         }
-    }
-
-    private fun setSuccessState(note: Note) {
-        _uiState.value = NoteDetailUiState.Success(note, colors)
-    }
-
-    private fun setErrorState() {
-        _uiState.value = NoteDetailUiState.Error
     }
 
     fun pinUpNote() {
@@ -111,7 +113,7 @@ class NoteDetailViewModel @Inject constructor(
             action()
         } catch (e: Exception) {
             setErrorState()
-            Log.e("ROOM ERROR - ${this.javaClass.name}", e.toString())
+            Log.e("ROOM ERROR", e.toString())
         }
     }
 

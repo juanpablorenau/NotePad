@@ -31,6 +31,8 @@ import com.example.model.entities.Note
 import com.example.notepad.R
 import com.example.notepad.components.Dialog
 import com.example.notepad.components.MenuItem
+import com.example.notepad.components.screens.ErrorScreen
+import com.example.notepad.components.screens.LoadingScreen
 import com.example.notepad.theme.YellowDark
 import com.example.notepad.utils.getColor
 import com.example.notepad.utils.getViewModel
@@ -57,13 +59,8 @@ fun NoteDetailScreen(
     }
 
     when (val state = uiState) {
-        is NoteDetailUiState.Loading -> Unit
-        is NoteDetailUiState.Error -> {
-            ErrorScreen(
-                onBackClick = { navController.popBackStack() },
-            )
-        }
-
+        is NoteDetailUiState.Loading -> LoadingScreen()
+        is NoteDetailUiState.Error -> ErrorScreen { navController.popBackStack() }
         is NoteDetailUiState.Success -> {
             SuccessScreen(
                 note = state.note,
@@ -81,27 +78,6 @@ fun NoteDetailScreen(
             )
         }
     }
-}
-
-@Preview
-@Composable
-private fun ErrorScreen(onBackClick: () -> Unit = {}) {
-    AlertDialog(
-        onDismissRequest = { },
-        title = { Text(stringResource(R.string.generic_error_msg)) },
-        text = { Text(stringResource(R.string.try_again_later)) },
-        confirmButton = {
-            Text(
-                modifier = Modifier.clickable { onBackClick() },
-                text = stringResource(R.string.accept),
-            )
-        },
-        icon = {
-            Icon(
-                painter = painterResource(id = R.drawable.ic_error),
-                contentDescription = "Error Icon"
-            )
-        })
 }
 
 @OptIn(ExperimentalSharedTransitionApi::class)

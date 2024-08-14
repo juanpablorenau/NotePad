@@ -37,6 +37,8 @@ import com.example.model.entities.Note
 import com.example.notepad.R
 import com.example.notepad.components.Dialog
 import com.example.notepad.components.MenuItem
+import com.example.notepad.components.screens.ErrorScreen
+import com.example.notepad.components.screens.LoadingScreen
 import com.example.notepad.navigation.AppScreens
 import com.example.notepad.theme.LightGray
 import com.example.notepad.theme.YellowDark
@@ -55,12 +57,12 @@ fun NotesScreen(
 
     LifecycleResumeEffect(Unit) {
         viewModel.getNotes()
-        onPauseOrDispose {  }
+        onPauseOrDispose { viewModel.updateNotes() }
     }
 
     when (val state = uiState) {
-        is NotesUiState.Loading -> Unit
-        is NotesUiState.Error -> Unit
+        is NotesUiState.Loading -> LoadingScreen()
+        is NotesUiState.Error -> ErrorScreen { navController.popBackStack() }
         is NotesUiState.Success ->
             SuccessScreen(
                 notes = state.notes,
@@ -71,7 +73,7 @@ fun NotesScreen(
                 getNotes = { viewModel.getNotes() },
                 checkNote = { index -> viewModel.checkNote(index) },
                 swipeNotes = { oldIndex, newIndex -> viewModel.swipeNotes(oldIndex, newIndex) },
-                deleteNotes = { viewModel.deleteCheckedNotes() },
+                deleteNotes = { viewModel.deleteNotes() },
                 pinUpNotes = { viewModel.pinUpCheckedNotes() },
                 changeItemsView = { viewModel.changeItemsView() },
                 selectAllNotes = { select -> viewModel.selectAllNotes(select) },
