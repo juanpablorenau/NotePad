@@ -76,7 +76,7 @@ fun NotesStaggeredGrid(
             ReorderableItem(reorderableLazyStaggeredGridState, item.id) {
                 val interactionSource = remember { MutableInteractionSource() }
 
-                val route = AppScreens.NoteDetailScreen.route.plus("/" + item.id)
+                val route = AppScreens.NoteDetailScreen.route.plus("/${item.id}/0")
                 val color = getColor(item.color)
 
                 with(sharedTransitionScope) {

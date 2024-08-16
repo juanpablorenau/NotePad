@@ -11,4 +11,5 @@ data class NoteDbModel(
     @ColumnInfo(name = "content") val content: String = "",
     @ColumnInfo(name = "color") val color: String = "#FDFD96",
     @ColumnInfo(name = "isPinned") val isPinned: Boolean = false,
-)
+    @ColumnInfo(name = "index") val index: Int = 0
+ )

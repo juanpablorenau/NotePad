@@ -44,6 +44,7 @@ import com.example.notepad.utils.mockNote
 fun NoteDetailScreen(
     navController: NavHostController,
     noteId: String,
+    index: Int,
     sharedTransitionScope: SharedTransitionScope,
     animatedContentScope: AnimatedContentScope,
 ) {
@@ -51,7 +52,7 @@ fun NoteDetailScreen(
     val uiState: NoteDetailUiState by viewModel.uiState.collectAsStateWithLifecycle()
 
     LaunchedEffect(noteId) {
-        viewModel.manageNote(noteId)
+        viewModel.manageNote(noteId, index)
     }
 
     LifecycleResumeEffect(noteId) {

@@ -46,13 +46,13 @@ class NoteDetailViewModel @Inject constructor(
         _uiState.value = NoteDetailUiState.Error
     }
 
-    fun manageNote(id: String) {
-        if (id == "new_element") createNewNote() else getNoteById(id)
+    fun manageNote(id: String, index: Int) {
+        if (id.contains("new_element")) createNewNote(index) else getNoteById(id)
     }
 
-    private fun createNewNote() {
+    private fun createNewNote(index: Int) {
         viewModelScope.launch(dispatcher) {
-            val note = Note()
+            val note = Note(index = index)
             tryOrError {
                 insertNoteUseCase(note)
                 setSuccessState(note)

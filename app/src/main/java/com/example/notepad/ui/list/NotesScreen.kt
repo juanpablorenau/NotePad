@@ -124,7 +124,7 @@ fun SuccessScreen(
                 navigate = navigate
             )
         },
-        floatingActionButton = { AddNoteButton(navigate) }
+        floatingActionButton = { AddNoteButton(navigate, notes.size) }
     )
 }
 
@@ -332,8 +332,8 @@ private fun SearchNote(onSearch: (String) -> Unit, getNotes: () -> Unit) {
 }
 
 @Composable
-fun AddNoteButton(onClick: (String) -> Unit = {}) {
-    val route = AppScreens.NoteDetailScreen.route.plus("/" + "new_element")
+fun AddNoteButton(onClick: (String) -> Unit = {}, size: Int) {
+    val route = AppScreens.NoteDetailScreen.route.plus("/new_element/$size")
 
     FloatingActionButton(
         containerColor = Color.White,

@@ -7,9 +7,7 @@ import com.example.domain.usecase.list.DeleteNotesUseCase
 import com.example.domain.usecase.list.GetNotesUseCase
 import com.example.domain.usecase.list.UpdateNotesUseCase
 import com.example.model.entities.Note
-import com.example.model.utils.add
 import com.example.model.utils.normalize
-import com.example.model.utils.removeAt
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.Dispatchers
@@ -49,13 +47,19 @@ class NotesViewModel @Inject constructor(
         viewModelScope.launch(dispatcher) {
             getNotesUseCase()
                 .catch { setErrorState() }
-                .collect { notes -> setSuccessState(notes.sortedBy { !it.isPinned }) }
+                .collect { notes ->
+                    val pinNotes = notes.filter { it.isPinned }.sortedBy { it.index }
+                    val unPinNotes = notes.filter { !it.isPinned }.sortedBy { it.index }
+                    setSuccessState(pinNotes + unPinNotes)
+                }
         }
     }
 
     fun updateNotes() {
         viewModelScope.launch(dispatcher) {
             with(_uiState.value as NotesUiState.Success) {
+                notes.mapIndexed { index, note -> note.copy(index = index) }
+            }.also { notes ->
                 tryOrError { updateNotesUseCase(notes) }
             }
         }
@@ -85,7 +89,7 @@ class NotesViewModel @Inject constructor(
     fun swipeNotes(oldIndex: Int, newIndex: Int) {
         _uiState.getAndUpdate {
             with((it as NotesUiState.Success)) {
-                copy(notes = notes.apply { add(newIndex, removeAt(oldIndex)) })
+                copy(notes = notes.toMutableList().apply { add(newIndex, removeAt(oldIndex)) })
             }
         }
     }

@@ -29,19 +29,26 @@ fun AppNavigation() {
             }
 
             composable(
-                route = AppScreens.NoteDetailScreen.route + "/{noteId}",
+                route = AppScreens.NoteDetailScreen.route + "/{noteId}" + "/{index}",
                 arguments = listOf(
                     navArgument(name = "noteId") {
                         type = NavType.StringType
                         defaultValue = ""
                         nullable = false
+                    },
+                    navArgument(name = "index") {
+                        type = NavType.IntType
+                        defaultValue = 0
+                        nullable = false
                     }
                 )
             ) {
                 val noteId = it.arguments?.getString("noteId").orEmptyString()
+                val index = it.arguments?.getInt("index") ?: 0
                 NoteDetailScreen(
                     navController = navController,
                     noteId = noteId,
+                    index = index,
                     sharedTransitionScope = this@SharedTransitionLayout,
                     animatedContentScope = this
                 )
