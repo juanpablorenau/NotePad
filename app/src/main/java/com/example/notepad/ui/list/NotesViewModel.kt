@@ -89,6 +89,14 @@ class NotesViewModel @Inject constructor(
         }
     }
 
+    fun restoreNotes(originalNotes: List<Note>) {
+        _uiState.getAndUpdate {
+            with((it as NotesUiState.Success)) {
+                copy(notes = originalNotes)
+            }
+        }
+    }
+
     fun swipeNotes(oldIndex: Int, newIndex: Int) {
         _uiState.getAndUpdate {
             with((it as NotesUiState.Success)) {
@@ -97,11 +105,11 @@ class NotesViewModel @Inject constructor(
         }
     }
 
-    fun checkNote(index: Int) {
+    fun checkNote(id: String) {
         _uiState.getAndUpdate {
             with((it as NotesUiState.Success)) {
-                copy(notes = notes.mapIndexed { i, note ->
-                    if (i == index) note.copy(isChecked = !note.isChecked) else note
+                copy(notes = notes.map { note ->
+                    if (note.id == id) note.copy(isChecked = !note.isChecked) else note
                 })
             }
         }

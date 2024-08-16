@@ -70,8 +70,8 @@ fun NotesScreen(
                 sharedTransitionScope = sharedTransitionScope,
                 animatedContentScope = animatedContentScope,
                 onSearch = { searchText -> viewModel.searchNotes(searchText) },
-                getNotes = { viewModel.getNotes() },
-                checkNote = { index -> viewModel.checkNote(index) },
+                restoreNotes = { notes -> viewModel.restoreNotes(notes) },
+                checkNote = { id -> viewModel.checkNote(id) },
                 swipeNotes = { oldIndex, newIndex -> viewModel.swipeNotes(oldIndex, newIndex) },
                 deleteNotes = { viewModel.deleteNotes() },
                 pinUpNotes = { viewModel.pinUpCheckedNotes() },
@@ -90,8 +90,8 @@ fun SuccessScreen(
     sharedTransitionScope: SharedTransitionScope,
     animatedContentScope: AnimatedContentScope,
     onSearch: (String) -> Unit = {},
-    getNotes: () -> Unit = {},
-    checkNote: (index: Int) -> Unit = {},
+    restoreNotes: (List<Note>) -> Unit = {},
+    checkNote: (id: String) -> Unit = {},
     swipeNotes: (oldIndex: Int, newIndex: Int) -> Unit = { _, _ -> },
     deleteNotes: () -> Unit = {},
     pinUpNotes: () -> Unit = {},
@@ -118,7 +118,7 @@ fun SuccessScreen(
                 sharedTransitionScope = sharedTransitionScope,
                 animatedContentScope = animatedContentScope,
                 onSearch = onSearch,
-                getNotes = getNotes,
+                restoreNotes = restoreNotes,
                 checkNote = checkNote,
                 swipeNotes = swipeNotes,
                 navigate = navigate
@@ -247,8 +247,8 @@ fun NotesContent(
     sharedTransitionScope: SharedTransitionScope,
     animatedContentScope: AnimatedContentScope,
     onSearch: (String) -> Unit = {},
-    getNotes: () -> Unit = {},
-    checkNote: (index: Int) -> Unit = {},
+    restoreNotes: (List<Note>) -> Unit = {},
+    checkNote: (id: String) -> Unit = {},
     swipeNotes: (oldIndex: Int, newIndex: Int) -> Unit = { _, _ -> },
     navigate: (String) -> Unit = {},
 ) {
@@ -260,7 +260,7 @@ fun NotesContent(
             end = 16.dp
         )
     ) {
-        SearchNote(onSearch = onSearch, getNotes = getNotes)
+        SearchNote(notes = notes, onSearch = onSearch, restoreNotes = restoreNotes)
         Spacer(modifier = Modifier.height(16.dp))
         NotesStaggeredGrid(
             notes = notes,
@@ -275,7 +275,12 @@ fun NotesContent(
 }
 
 @Composable
-private fun SearchNote(onSearch: (String) -> Unit, getNotes: () -> Unit) {
+private fun SearchNote(
+    notes: List<Note> = mockNoteList,
+    onSearch: (String) -> Unit = {},
+    restoreNotes: (List<Note>) -> Unit = {}
+) {
+    val originalNotes by remember { mutableStateOf(notes) }
     var searchText by remember { mutableStateOf("") }
     val keyboardController = LocalSoftwareKeyboardController.current
 
@@ -323,7 +328,7 @@ private fun SearchNote(onSearch: (String) -> Unit, getNotes: () -> Unit) {
                     modifier = Modifier.clickable(onClick = {
                         searchText = ""
                         keyboardController?.hide()
-                        getNotes()
+                        restoreNotes(originalNotes)
                     })
                 )
             }
