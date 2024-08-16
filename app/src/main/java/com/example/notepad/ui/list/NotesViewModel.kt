@@ -36,7 +36,10 @@ class NotesViewModel @Inject constructor(
     val uiState = _uiState.asStateFlow()
 
     private fun setSuccessState(notes: List<Note>) {
-        _uiState.value = NotesUiState.Success(notes)
+        _uiState.value = when (val state = _uiState.value) {
+            is NotesUiState.Success -> NotesUiState.Success(notes, state.itemsView)
+            else -> NotesUiState.Success(notes)
+        }
     }
 
     private fun setErrorState() {
@@ -68,7 +71,7 @@ class NotesViewModel @Inject constructor(
     fun deleteNotes() {
         viewModelScope.launch(dispatcher) {
             with(_uiState.value as NotesUiState.Success) {
-                tryOrError { deleteNotesUseCase(notes.map { it.id }) }
+                tryOrError { deleteNotesUseCase(notes.filter { it.isChecked }.map { it.id }) }
                 getNotes()
             }
         }
