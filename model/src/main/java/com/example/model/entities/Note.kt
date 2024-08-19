@@ -16,5 +16,6 @@ data class Note(
     val isFavorite: Boolean = false,
     val isArchived: Boolean = false,
     val isLocked: Boolean = false,
-    val isChecked: Boolean = false
+    val isChecked: Boolean = false,
+    val index: Int = 0
 )

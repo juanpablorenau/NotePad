@@ -31,6 +31,8 @@ import com.example.model.entities.Note
 import com.example.notepad.R
 import com.example.notepad.components.Dialog
 import com.example.notepad.components.MenuItem
+import com.example.notepad.components.screens.ErrorScreen
+import com.example.notepad.components.screens.LoadingScreen
 import com.example.notepad.theme.YellowDark
 import com.example.notepad.utils.getColor
 import com.example.notepad.utils.getViewModel
@@ -42,6 +44,7 @@ import com.example.notepad.utils.mockNote
 fun NoteDetailScreen(
     navController: NavHostController,
     noteId: String,
+    index: Int,
     sharedTransitionScope: SharedTransitionScope,
     animatedContentScope: AnimatedContentScope,
 ) {
@@ -49,7 +52,7 @@ fun NoteDetailScreen(
     val uiState: NoteDetailUiState by viewModel.uiState.collectAsStateWithLifecycle()
 
     LaunchedEffect(noteId) {
-        viewModel.manageNote(noteId)
+        viewModel.manageNote(noteId, index)
     }
 
     LifecycleResumeEffect(noteId) {
@@ -57,13 +60,8 @@ fun NoteDetailScreen(
     }
 
     when (val state = uiState) {
-        is NoteDetailUiState.Loading -> Unit
-        is NoteDetailUiState.Error -> {
-            ErrorScreen(
-                onBackClick = { navController.popBackStack() },
-            )
-        }
-
+        is NoteDetailUiState.Loading -> LoadingScreen()
+        is NoteDetailUiState.Error -> ErrorScreen { navController.popBackStack() }
         is NoteDetailUiState.Success -> {
             SuccessScreen(
                 note = state.note,
@@ -81,27 +79,6 @@ fun NoteDetailScreen(
             )
         }
     }
-}
-
-@Preview
-@Composable
-private fun ErrorScreen(onBackClick: () -> Unit = {}) {
-    AlertDialog(
-        onDismissRequest = { },
-        title = { Text(stringResource(R.string.generic_error_msg)) },
-        text = { Text(stringResource(R.string.try_again_later)) },
-        confirmButton = {
-            Text(
-                modifier = Modifier.clickable { onBackClick() },
-                text = stringResource(R.string.accept),
-            )
-        },
-        icon = {
-            Icon(
-                painter = painterResource(id = R.drawable.ic_error),
-                contentDescription = "Error Icon"
-            )
-        })
 }
 
 @OptIn(ExperimentalSharedTransitionApi::class)
@@ -157,7 +134,9 @@ fun NoteTopBar(
 
     TopAppBar(
         title = {
-            Row {
+            Row(
+                verticalAlignment = Alignment.CenterVertically
+            ) {
                 Icon(
                     modifier = Modifier.clickable { onBackClick() },
                     painter = painterResource(id = R.drawable.ic_back),
@@ -298,8 +277,8 @@ fun NoteContent(
     with(sharedTransitionScope) {
         val color = getColor(note.color)
 
-        var titleTextField by remember { mutableStateOf(TextFieldValue(note.title)) }
-        var contentTextField by remember { mutableStateOf(TextFieldValue(note.content)) }
+        var titleTextField by remember(note.id) { mutableStateOf(TextFieldValue(note.title)) }
+        var contentTextField by remember(note.id) { mutableStateOf(TextFieldValue(note.content)) }
 
         Card(
             shape = Shapes().medium,

@@ -1,14 +1,14 @@
-package com.example.domain.usecase
+package com.example.domain.usecase.list
 
 import com.example.data.repository.NoteRepository
-import com.example.model.entities.Note
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.withContext
 import javax.inject.Inject
 
-class UpdateNoteUseCase @Inject constructor(
+class DeleteNotesUseCase @Inject constructor(
     private val repository: NoteRepository,
     private val dispatcher: CoroutineDispatcher,
 ) {
-    suspend operator fun invoke(note: Note) = withContext(dispatcher) { repository.updateNote(note) }
+    suspend operator fun invoke(ids: List<String>) =
+        withContext(dispatcher) { repository.deleteNotes(ids) }
 }
