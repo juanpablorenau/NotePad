@@ -134,7 +134,9 @@ fun NoteTopBar(
 
     TopAppBar(
         title = {
-            Row {
+            Row(
+                verticalAlignment = Alignment.CenterVertically
+            ) {
                 Icon(
                     modifier = Modifier.clickable { onBackClick() },
                     painter = painterResource(id = R.drawable.ic_back),

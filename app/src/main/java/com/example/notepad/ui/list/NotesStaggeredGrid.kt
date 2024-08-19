@@ -64,7 +64,6 @@ fun NotesStaggeredGrid(
         columns = StaggeredGridCells.Fixed(itemsView),
         modifier = Modifier.fillMaxSize(),
         state = lazyStaggeredGridState,
-        contentPadding = PaddingValues(8.dp),
         verticalItemSpacing = 8.dp,
         horizontalArrangement = Arrangement.spacedBy(8.dp),
     ) {
@@ -78,7 +77,7 @@ fun NotesStaggeredGrid(
                 with(sharedTransitionScope) {
                     Card(
                         modifier = Modifier
-                            .clickable { navigate(route) }
+                            .clickable { if(notes.none { it.isChecked }) navigate(route) }
                             .sharedElement(
                                 sharedTransitionScope.rememberSharedContentState(key = item.id),
                                 animatedVisibilityScope = animatedContentScope

@@ -12,12 +12,10 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.Search
 import androidx.compose.material3.*
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
+import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.focus.FocusRequester
+import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.Color.Companion.Red
 import androidx.compose.ui.platform.LocalContext
@@ -99,6 +97,9 @@ fun SuccessScreen(
     selectAllNotes: (Boolean) -> Unit = {},
     navigate: (String) -> Unit = {},
 ) {
+
+    var isSearchBarVisible by remember { mutableStateOf(false) }
+
     Scaffold(
         topBar = {
             NotesTopBar(
@@ -107,7 +108,8 @@ fun SuccessScreen(
                 deleteNotes = deleteNotes,
                 pinUpNotes = pinUpNotes,
                 changeItemsView = changeItemsView,
-                selectAllNotes = selectAllNotes
+                selectAllNotes = selectAllNotes,
+                setSearchBarVisible = { isSearchBarVisible = !isSearchBarVisible }
             )
         },
         content = { padding ->
@@ -121,7 +123,8 @@ fun SuccessScreen(
                 restoreNotes = restoreNotes,
                 checkNote = checkNote,
                 swipeNotes = swipeNotes,
-                navigate = navigate
+                navigate = navigate,
+                getSearchBarVisible = { isSearchBarVisible },
             )
         },
         floatingActionButton = { AddNoteButton(navigate, notes.size) }
@@ -138,12 +141,21 @@ fun NotesTopBar(
     pinUpNotes: () -> Unit = {},
     changeItemsView: () -> Unit = {},
     selectAllNotes: (Boolean) -> Unit = {},
+    setSearchBarVisible: () -> Unit = {},
 ) {
     var showMenu by remember { mutableStateOf(false) }
     var deleteButtonClicked by remember { mutableStateOf(false) }
 
     TopAppBar(
-        modifier = Modifier.padding(end = 12.dp),
+        navigationIcon = {
+            IconButton(onClick = {}) {
+                Icon(
+                    painter = painterResource(id = R.drawable.ic_menu),
+                    contentDescription = "Menu icon",
+                    tint = YellowDark
+                )
+            }
+        },
         title = {
             Text(
                 text = stringResource(R.string.notes_title),
@@ -157,6 +169,14 @@ fun NotesTopBar(
                 Icon(
                     painter = painterResource(id = if (itemsView == 1) R.drawable.ic_grid_view else R.drawable.ic_list),
                     contentDescription = "Grid icon",
+                    tint = YellowDark
+                )
+            }
+
+            IconButton(onClick = { setSearchBarVisible() }) {
+                Icon(
+                    painter = painterResource(id = R.drawable.ic_search),
+                    contentDescription = "Search icon",
                     tint = YellowDark
                 )
             }
@@ -251,6 +271,7 @@ fun NotesContent(
     checkNote: (id: String) -> Unit = {},
     swipeNotes: (oldIndex: Int, newIndex: Int) -> Unit = { _, _ -> },
     navigate: (String) -> Unit = {},
+    getSearchBarVisible: () -> Boolean = { false },
 ) {
     Column(
         modifier = Modifier.padding(
@@ -260,8 +281,12 @@ fun NotesContent(
             end = 16.dp
         )
     ) {
-        SearchNote(notes = notes, onSearch = onSearch, restoreNotes = restoreNotes)
-        Spacer(modifier = Modifier.height(16.dp))
+        SearchNote(
+            notes = notes,
+            onSearch = onSearch,
+            restoreNotes = restoreNotes,
+            getSearchBarVisible = getSearchBarVisible
+        )
         NotesStaggeredGrid(
             notes = notes,
             itemsView = itemsView,
@@ -278,16 +303,20 @@ fun NotesContent(
 private fun SearchNote(
     notes: List<Note> = mockNoteList,
     onSearch: (String) -> Unit = {},
-    restoreNotes: (List<Note>) -> Unit = {}
+    restoreNotes: (List<Note>) -> Unit = {},
+    getSearchBarVisible: () -> Boolean = { false },
 ) {
+    val focusRequester = remember { FocusRequester() }
     val originalNotes by remember { mutableStateOf(notes) }
     var searchText by remember { mutableStateOf("") }
     val keyboardController = LocalSoftwareKeyboardController.current
 
+    if (!getSearchBarVisible()) return
     OutlinedTextField(
         modifier = Modifier
             .fillMaxWidth()
-            .heightIn(max = 50.dp),
+            .heightIn(max = 50.dp)
+            .focusRequester(focusRequester),
         colors = TextFieldDefaults.colors(
             focusedIndicatorColor = Color.Transparent,
             unfocusedIndicatorColor = Color.Transparent,
@@ -309,7 +338,11 @@ private fun SearchNote(
             )
         },
         value = searchText,
-        onValueChange = { newText -> searchText = newText },
+        onValueChange = { newText ->
+            searchText = newText
+            if (searchText.isBlank()) restoreNotes(originalNotes)
+            else onSearch(searchText.lowercase())
+        },
         singleLine = true,
         keyboardOptions = KeyboardOptions(
             keyboardType = KeyboardType.Text, imeAction = ImeAction.Done
@@ -334,6 +367,11 @@ private fun SearchNote(
             }
         })
 
+    Spacer(modifier = Modifier.height(16.dp))
+
+    LaunchedEffect(Unit) {
+        focusRequester.requestFocus()
+    }
 }
 
 @Composable
