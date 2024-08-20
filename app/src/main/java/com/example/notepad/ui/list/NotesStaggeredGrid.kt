@@ -8,6 +8,7 @@ import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.interaction.MutableInteractionSource
+import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.staggeredgrid.LazyVerticalStaggeredGrid
 import androidx.compose.foundation.lazy.staggeredgrid.StaggeredGridCells
@@ -15,6 +16,7 @@ import androidx.compose.foundation.lazy.staggeredgrid.itemsIndexed
 import androidx.compose.foundation.lazy.staggeredgrid.rememberLazyStaggeredGridState
 import androidx.compose.material3.Card
 import androidx.compose.material3.Icon
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
@@ -72,7 +74,7 @@ fun NotesStaggeredGrid(
                 val interactionSource = remember { MutableInteractionSource() }
 
                 val route = AppScreens.NoteDetailScreen.route.plus("/${item.id}/0")
-                val color = getColor(item.color)
+                val color = getColor(if (isSystemInDarkTheme()) item.darkColor else item.lightColor)
 
                 with(sharedTransitionScope) {
                     Card(
@@ -120,7 +122,7 @@ fun NotesStaggeredGrid(
                             ),
                         border = BorderStroke(
                             2.dp,
-                            if (item.isChecked) Color.Black else Color.Transparent
+                            if (item.isChecked) MaterialTheme.colorScheme.secondary else Color.Transparent
                         ),
                     ) {
                         Column(
@@ -140,7 +142,7 @@ fun NotesStaggeredGrid(
                                     overflow = TextOverflow.Ellipsis,
                                     maxLines = 2,
                                     fontSize = 16.sp,
-                                    color = Color.Black
+                                    color = MaterialTheme.colorScheme.secondary,
                                 )
                                 if (item.isPinned) {
                                     Icon(
@@ -149,7 +151,7 @@ fun NotesStaggeredGrid(
                                             .align(Alignment.TopEnd),
                                         painter = painterResource(id = R.drawable.ic_pin),
                                         contentDescription = "Pinned icon",
-                                        tint = Color.Black
+                                        tint = MaterialTheme.colorScheme.secondary,
                                     )
                                 }
                             }
@@ -160,7 +162,7 @@ fun NotesStaggeredGrid(
                                 text = item.content,
                                 fontSize = 12.sp,
                                 textAlign = TextAlign.Start,
-                                color = Color.DarkGray,
+                                color = MaterialTheme.colorScheme.tertiary,
                                 maxLines = 8
                             )
                         }

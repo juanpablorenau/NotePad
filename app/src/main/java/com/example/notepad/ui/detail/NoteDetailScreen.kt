@@ -7,13 +7,13 @@ import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.combinedClickable
+import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.Color.Companion.Red
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
@@ -33,11 +33,10 @@ import com.example.notepad.components.Dialog
 import com.example.notepad.components.MenuItem
 import com.example.notepad.components.screens.ErrorScreen
 import com.example.notepad.components.screens.LoadingScreen
-import com.example.notepad.theme.YellowDark
 import com.example.notepad.utils.getColor
 import com.example.notepad.utils.getViewModel
-import com.example.notepad.utils.mockColorList
 import com.example.notepad.utils.mockNote
+import com.example.model.entities.Color as AppColor
 
 @OptIn(ExperimentalSharedTransitionApi::class)
 @Composable
@@ -85,18 +84,18 @@ fun NoteDetailScreen(
 @Composable
 fun SuccessScreen(
     note: Note = mockNote,
-    colors: List<String> = mockColorList,
+    colors: List<AppColor> = AppColor.entries,
     sharedTransitionScope: SharedTransitionScope,
     animatedContentScope: AnimatedContentScope,
     onBackClick: () -> Unit = {},
     pinUpNote: () -> Unit = {},
     deleteNote: () -> Unit = {},
-    changeColor: (String) -> Unit = {},
+    changeColor: (AppColor) -> Unit = {},
     saveText: (String, String) -> Unit = { _, _ -> },
 ) {
     Scaffold(
         topBar = {
-            NoteTopBar(
+            NoteDetailTopBar(
                 note = note,
                 colors = colors,
                 onBackClick = onBackClick,
@@ -120,19 +119,22 @@ fun SuccessScreen(
 @Preview(showBackground = true)
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun NoteTopBar(
+fun NoteDetailTopBar(
     note: Note = mockNote,
-    colors: List<String> = mockColorList,
+    colors: List<AppColor> = AppColor.entries,
     onBackClick: () -> Unit = {},
     pinUpNote: () -> Unit = {},
     deleteNote: () -> Unit = {},
-    changeColor: (String) -> Unit = {},
+    changeColor: (AppColor) -> Unit = {},
 ) {
     var showMenu by remember { mutableStateOf(false) }
     var showColor by remember { mutableStateOf(false) }
     var deleteButtonClicked by remember { mutableStateOf(false) }
 
     TopAppBar(
+        colors = TopAppBarDefaults.topAppBarColors(
+            containerColor = MaterialTheme.colorScheme.background
+        ),
         title = {
             Row(
                 verticalAlignment = Alignment.CenterVertically
@@ -141,14 +143,14 @@ fun NoteTopBar(
                     modifier = Modifier.clickable { onBackClick() },
                     painter = painterResource(id = R.drawable.ic_back),
                     contentDescription = "Back icon",
-                    tint = YellowDark
+                    tint = MaterialTheme.colorScheme.primary
                 )
 
                 Spacer(modifier = Modifier.width(8.dp))
 
                 Text(
                     text = stringResource(R.string.notes_title),
-                    color = YellowDark,
+                    color = MaterialTheme.colorScheme.primary,
                     fontSize = 24.sp,
                 )
             }
@@ -157,7 +159,7 @@ fun NoteTopBar(
                 Icon(
                     painter = painterResource(id = R.drawable.ic_color_lens),
                     contentDescription = "More icon",
-                    tint = YellowDark
+                    tint = MaterialTheme.colorScheme.primary
                 )
             }
 
@@ -165,7 +167,7 @@ fun NoteTopBar(
                 Icon(
                     painter = painterResource(id = R.drawable.ic_more_vert),
                     contentDescription = "More icon",
-                    tint = YellowDark
+                    tint = MaterialTheme.colorScheme.primary
                 )
             }
 
@@ -176,9 +178,18 @@ fun NoteTopBar(
                 DropdownMenuItem(
                     text = {
                         if (note.isPinned) {
-                            MenuItem(R.drawable.ic_unpin, stringResource(R.string.unpin))
+                            MenuItem(
+                                R.drawable.ic_unpin, stringResource(R.string.unpin),
+                                iconColor = MaterialTheme.colorScheme.secondary,
+                                textColor = MaterialTheme.colorScheme.secondary
+                            )
                         } else {
-                            MenuItem(R.drawable.ic_pin, stringResource(R.string.pin))
+                            MenuItem(
+                                R.drawable.ic_pin,
+                                stringResource(R.string.pin),
+                                iconColor = MaterialTheme.colorScheme.secondary,
+                                textColor = MaterialTheme.colorScheme.secondary
+                            )
                         }
                     },
                     onClick = {
@@ -230,8 +241,8 @@ fun DeleteNoteDialog(deleteNote: () -> Unit = {}, action: () -> Unit = {}) {
 @Preview(showBackground = true)
 @Composable
 fun ChangeColorMenu(
-    colors: List<String> = mockColorList,
-    changeColor: (String) -> Unit = {},
+    colors: List<AppColor> = AppColor.entries,
+    changeColor: (AppColor) -> Unit = {},
 ) {
     for (i in 0 until colors.size.div(4)) {
         Row(
@@ -247,7 +258,9 @@ fun ChangeColorMenu(
 
 @OptIn(ExperimentalFoundationApi::class)
 @Composable
-fun ColorItem(item: String = "", changeColor: (String) -> Unit = {}) {
+fun ColorItem(item: AppColor = AppColor.PALE_YELLOW, changeColor: (AppColor) -> Unit = {}) {
+    val color = getColor(if (isSystemInDarkTheme()) item.darkColor else item.lightColor)
+
     Card(
         shape = CircleShape,
         modifier = Modifier
@@ -259,7 +272,7 @@ fun ColorItem(item: String = "", changeColor: (String) -> Unit = {}) {
     ) {
         Box(
             modifier = Modifier
-                .background(getColor(item))
+                .background(color)
                 .fillMaxSize()
         )
     }
@@ -275,7 +288,7 @@ fun NoteContent(
     saveText: (String, String) -> Unit = { _, _ -> },
 ) {
     with(sharedTransitionScope) {
-        val color = getColor(note.color)
+        val color = getColor(if (isSystemInDarkTheme()) note.darkColor else note.lightColor)
 
         var titleTextField by remember(note.id) { mutableStateOf(TextFieldValue(note.title)) }
         var contentTextField by remember(note.id) { mutableStateOf(TextFieldValue(note.content)) }
@@ -329,7 +342,7 @@ fun NoteContent(
                                 .align(Alignment.CenterVertically),
                             painter = painterResource(id = R.drawable.ic_pin),
                             contentDescription = "Pinned icon",
-                            tint = Color.Black
+                            tint = MaterialTheme.colorScheme.secondary,
                         )
                     }
                 }

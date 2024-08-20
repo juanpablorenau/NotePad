@@ -38,8 +38,6 @@ import com.example.notepad.components.MenuItem
 import com.example.notepad.components.screens.ErrorScreen
 import com.example.notepad.components.screens.LoadingScreen
 import com.example.notepad.navigation.AppScreens
-import com.example.notepad.theme.LightGray
-import com.example.notepad.theme.YellowDark
 import com.example.notepad.utils.getViewModel
 import com.example.notepad.utils.mockNoteList
 
@@ -147,19 +145,22 @@ fun NotesTopBar(
     var deleteButtonClicked by remember { mutableStateOf(false) }
 
     TopAppBar(
+        colors = TopAppBarDefaults.topAppBarColors(
+            containerColor = MaterialTheme.colorScheme.background,
+        ),
         navigationIcon = {
             IconButton(onClick = {}) {
                 Icon(
                     painter = painterResource(id = R.drawable.ic_menu),
                     contentDescription = "Menu icon",
-                    tint = YellowDark
+                    tint = MaterialTheme.colorScheme.primary
                 )
             }
         },
         title = {
             Text(
                 text = stringResource(R.string.notes_title),
-                color = YellowDark,
+                color = MaterialTheme.colorScheme.primary,
                 fontSize = 24.sp,
                 fontWeight = FontWeight.Bold,
             )
@@ -169,7 +170,7 @@ fun NotesTopBar(
                 Icon(
                     painter = painterResource(id = if (itemsView == 1) R.drawable.ic_grid_view else R.drawable.ic_list),
                     contentDescription = "Grid icon",
-                    tint = YellowDark
+                    tint = MaterialTheme.colorScheme.primary
                 )
             }
 
@@ -177,18 +178,21 @@ fun NotesTopBar(
                 Icon(
                     painter = painterResource(id = R.drawable.ic_search),
                     contentDescription = "Search icon",
-                    tint = YellowDark
+                    tint = MaterialTheme.colorScheme.primary
                 )
             }
 
             if (notes.any { it.isChecked }) {
-                Text(text = notes.count { it.isChecked }.toString(), color = YellowDark)
+                Text(
+                    text = notes.count { it.isChecked }.toString(),
+                    color = MaterialTheme.colorScheme.primary
+                )
 
                 IconButton(onClick = { showMenu = !showMenu }) {
                     Icon(
                         painter = painterResource(id = R.drawable.ic_more_vert),
                         contentDescription = "More icon",
-                        tint = YellowDark
+                        tint = MaterialTheme.colorScheme.primary
                     )
                 }
             }
@@ -200,7 +204,9 @@ fun NotesTopBar(
                     text = {
                         MenuItem(
                             R.drawable.ic_check_circle,
-                            stringResource(R.string.select_all)
+                            stringResource(R.string.select_all),
+                            iconColor = MaterialTheme.colorScheme.secondary,
+                            textColor = MaterialTheme.colorScheme.secondary
                         )
                     },
                     onClick = { selectAllNotes(true) },
@@ -210,7 +216,9 @@ fun NotesTopBar(
                     text = {
                         MenuItem(
                             R.drawable.ic_check_circle_outline,
-                            stringResource(R.string.unselect_all)
+                            stringResource(R.string.unselect_all),
+                            iconColor = MaterialTheme.colorScheme.secondary,
+                            textColor = MaterialTheme.colorScheme.secondary
                         )
                     },
                     onClick = {
@@ -221,7 +229,11 @@ fun NotesTopBar(
 
                 DropdownMenuItem(
                     text = {
-                        MenuItem(R.drawable.ic_pin, stringResource(R.string.pin))
+                        MenuItem(
+                            R.drawable.ic_pin, stringResource(R.string.pin),
+                            iconColor = MaterialTheme.colorScheme.secondary,
+                            textColor = MaterialTheme.colorScheme.secondary
+                        )
                     },
                     onClick = {
                         showMenu = false
@@ -320,8 +332,8 @@ private fun SearchNote(
         colors = TextFieldDefaults.colors(
             focusedIndicatorColor = Color.Transparent,
             unfocusedIndicatorColor = Color.Transparent,
-            focusedContainerColor = LightGray,
-            unfocusedContainerColor = LightGray
+            focusedContainerColor = MaterialTheme.colorScheme.tertiary,
+            unfocusedContainerColor = MaterialTheme.colorScheme.tertiary
         ),
         placeholder = {
             Text(
@@ -379,14 +391,14 @@ fun AddNoteButton(onClick: (String) -> Unit = {}, size: Int) {
     val route = AppScreens.NoteDetailScreen.route.plus("/new_element/$size")
 
     FloatingActionButton(
-        containerColor = Color.White,
+        containerColor = MaterialTheme.colorScheme.tertiary,
         onClick = { onClick(route) }
     ) {
         Icon(
             modifier = Modifier.size(36.dp),
             painter = painterResource(id = R.drawable.ic_add),
             contentDescription = "Add_icon",
-            tint = YellowDark
+            tint = MaterialTheme.colorScheme.primary
         )
     }
 }

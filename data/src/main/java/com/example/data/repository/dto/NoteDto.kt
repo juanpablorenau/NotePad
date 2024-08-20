@@ -12,7 +12,8 @@ class NoteDto @Inject constructor() {
                 id = id,
                 title = title,
                 content = content,
-                color = color,
+                lightColor = lightColor,
+                darkColor = darkColor,
                 isPinned = isPinned,
                 index = index
             )
@@ -24,7 +25,8 @@ class NoteDto @Inject constructor() {
                 id = id,
                 title = title,
                 content = content,
-                color = color,
+                lightColor = lightColor,
+                darkColor = darkColor,
                 isPinned = isPinned,
                 index = index
             )
