@@ -7,9 +7,8 @@ import com.example.domain.usecase.detail.DeleteNoteUseCase
 import com.example.domain.usecase.detail.GetNoteDetailUseCase
 import com.example.domain.usecase.detail.InsertNoteUseCase
 import com.example.domain.usecase.detail.UpdateNoteUseCase
+import com.example.model.entities.Color
 import com.example.model.entities.Note
-import com.example.notepad.theme.*
-import com.example.notepad.utils.toHexCode
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.Dispatchers
@@ -19,10 +18,11 @@ import kotlinx.coroutines.flow.catch
 import kotlinx.coroutines.flow.getAndUpdate
 import kotlinx.coroutines.launch
 import javax.inject.Inject
+import com.example.model.entities.Color as AppColor
 
 sealed class NoteDetailUiState {
     data object Loading : NoteDetailUiState()
-    data class Success(val note: Note, val colors: List<String>) : NoteDetailUiState()
+    data class Success(val note: Note, val colors: List<AppColor>) : NoteDetailUiState()
     data object Error : NoteDetailUiState()
 }
 
@@ -39,7 +39,7 @@ class NoteDetailViewModel @Inject constructor(
     val uiState = _uiState.asStateFlow()
 
     private fun setSuccessState(note: Note) {
-        _uiState.value = NoteDetailUiState.Success(note, colors)
+        _uiState.value = NoteDetailUiState.Success(note, AppColor.entries)
     }
 
     private fun setErrorState() {
@@ -52,7 +52,11 @@ class NoteDetailViewModel @Inject constructor(
 
     private fun createNewNote(index: Int) {
         viewModelScope.launch(dispatcher) {
-            val note = Note(index = index)
+            val note = Note(
+                index = index,
+                lightColor = AppColor.PALE_YELLOW.lightColor,
+                darkColor = AppColor.PALE_YELLOW.darkColor
+            )
             tryOrError {
                 insertNoteUseCase(note)
                 setSuccessState(note)
@@ -92,10 +96,15 @@ class NoteDetailViewModel @Inject constructor(
         }
     }
 
-    fun changeColor(newColor: String) {
+    fun changeColor(newColor: AppColor) {
         _uiState.getAndUpdate {
             with((it as NoteDetailUiState.Success)) {
-                copy(note = note.copy(color = newColor))
+                copy(
+                    note = note.copy(
+                        lightColor = newColor.lightColor,
+                        darkColor = newColor.darkColor
+                    )
+                )
             }
         }
     }
@@ -115,26 +124,5 @@ class NoteDetailViewModel @Inject constructor(
             setErrorState()
             Log.e("ROOM ERROR", e.toString())
         }
-    }
-
-    private val colors by lazy {
-        listOf(
-            LightPink,
-            LightRose,
-            LightBlush,
-            LightOrange,
-            LightYellow,
-            PaleYellow,
-            LightGreen,
-            PaleGreen,
-            MintGreen,
-            LightSkyBlue,
-            LightBlue,
-            Lavender,
-            LightBrown,
-            LightGrayBlue,
-            LightGrayGreen,
-            White
-        ).map { color -> color.toHexCode() }
     }
 }

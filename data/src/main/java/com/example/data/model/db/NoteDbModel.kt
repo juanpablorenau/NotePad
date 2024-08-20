@@ -9,7 +9,8 @@ data class NoteDbModel(
     @PrimaryKey val id: String,
     @ColumnInfo(name = "title") val title: String = "New Title",
     @ColumnInfo(name = "content") val content: String = "",
-    @ColumnInfo(name = "color") val color: String = "#FDFD96",
+    @ColumnInfo(name = "lightColor") val lightColor: String = "",
+    @ColumnInfo(name = "darkColor") val darkColor: String = "",
     @ColumnInfo(name = "isPinned") val isPinned: Boolean = false,
     @ColumnInfo(name = "index") val index: Int = 0
  )
