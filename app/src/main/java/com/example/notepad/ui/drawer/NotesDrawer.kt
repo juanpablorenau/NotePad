@@ -20,7 +20,10 @@ import com.example.notepad.navigation.AppScreens
 import kotlinx.coroutines.launch
 
 @Composable
-fun DrawerNotes() {
+fun DrawerNotes(
+    isDarkTheme: Boolean = false,
+    changeDarkTheme: () -> Unit = {},
+) {
     val navController = rememberNavController()
     val drawerState = rememberDrawerState(DrawerValue.Closed)
     val coroutineScope = rememberCoroutineScope()
@@ -52,7 +55,9 @@ fun DrawerNotes() {
         content = {
             AppNavigation(
                 navController = navController,
-                openDrawer = openDrawer
+                openDrawer = openDrawer,
+                isDarkTheme = isDarkTheme,
+                changeDarkTheme = changeDarkTheme
             )
         }
     )

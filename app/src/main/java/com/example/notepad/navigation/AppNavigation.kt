@@ -15,7 +15,12 @@ import com.example.notepad.ui.settings.SettingsScreen
 
 @OptIn(ExperimentalSharedTransitionApi::class)
 @Composable
-fun AppNavigation(navController: NavHostController, openDrawer: () -> Unit) {
+fun AppNavigation(
+    navController: NavHostController,
+    openDrawer: () -> Unit,
+    isDarkTheme: Boolean = false,
+    changeDarkTheme: () -> Unit,
+) {
     SharedTransitionLayout {
         Surface {
             NavHost(
@@ -27,7 +32,8 @@ fun AppNavigation(navController: NavHostController, openDrawer: () -> Unit) {
                         navController = navController,
                         sharedTransitionScope = this@SharedTransitionLayout,
                         animatedContentScope = this,
-                        openDrawer = { openDrawer() }
+                        openDrawer = { openDrawer() },
+                        isDarkTheme = isDarkTheme,
                     )
                 }
 
@@ -53,13 +59,16 @@ fun AppNavigation(navController: NavHostController, openDrawer: () -> Unit) {
                         noteId = noteId,
                         index = index,
                         sharedTransitionScope = this@SharedTransitionLayout,
-                        animatedContentScope = this
+                        animatedContentScope = this,
+                        isDarkTheme = isDarkTheme
                     )
                 }
 
                 composable(route = AppScreens.SettingsScreen.route) {
                     SettingsScreen(
-                        openDrawer = { openDrawer() }
+                        openDrawer = { openDrawer() },
+                        isDarkTheme = isDarkTheme,
+                        changeDarkTheme = { changeDarkTheme() }
                     )
                 }
             }

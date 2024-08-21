@@ -48,6 +48,7 @@ fun NotesScreen(
     sharedTransitionScope: SharedTransitionScope,
     animatedContentScope: AnimatedContentScope,
     openDrawer: () -> Unit = {},
+    isDarkTheme: Boolean = false
 ) {
     val viewModel = LocalContext.current.getViewModel<NotesViewModel>()
     val uiState: NotesUiState by viewModel.uiState.collectAsStateWithLifecycle()
@@ -75,7 +76,8 @@ fun NotesScreen(
                 changeItemsView = { viewModel.changeItemsView() },
                 selectAllNotes = { select -> viewModel.selectAllNotes(select) },
                 navigate = { route -> navController.navigate(route) },
-                openDrawer = { openDrawer() }
+                openDrawer = { openDrawer() },
+                isDarkTheme = isDarkTheme
             )
     }
 }
@@ -97,6 +99,7 @@ fun SuccessScreen(
     selectAllNotes: (Boolean) -> Unit = {},
     navigate: (String) -> Unit = {},
     openDrawer: () -> Unit = {},
+    isDarkTheme: Boolean = false
 ) {
     var isSearchBarVisible by remember { mutableStateOf(false) }
     Scaffold(
@@ -125,6 +128,7 @@ fun SuccessScreen(
                 swipeNotes = swipeNotes,
                 navigate = navigate,
                 getSearchBarVisible = { isSearchBarVisible },
+                isDarkTheme = isDarkTheme
             )
         },
         floatingActionButton = { AddNoteButton(navigate, notes.size) }
@@ -287,6 +291,7 @@ fun NotesContent(
     swipeNotes: (oldIndex: Int, newIndex: Int) -> Unit = { _, _ -> },
     navigate: (String) -> Unit = {},
     getSearchBarVisible: () -> Boolean = { false },
+    isDarkTheme: Boolean = false
 ) {
     Column(
         modifier = Modifier.padding(
@@ -309,7 +314,8 @@ fun NotesContent(
             animatedContentScope = animatedContentScope,
             checkNote = checkNote,
             swipeNotes = swipeNotes,
-            navigate = navigate
+            navigate = navigate,
+            isDarkTheme = isDarkTheme
         )
     }
 }

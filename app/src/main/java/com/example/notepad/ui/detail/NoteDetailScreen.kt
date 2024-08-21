@@ -7,7 +7,6 @@ import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.combinedClickable
-import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material3.*
@@ -46,6 +45,7 @@ fun NoteDetailScreen(
     index: Int,
     sharedTransitionScope: SharedTransitionScope,
     animatedContentScope: AnimatedContentScope,
+    isDarkTheme: Boolean = false
 ) {
     val viewModel = LocalContext.current.getViewModel<NoteDetailViewModel>()
     val uiState: NoteDetailUiState by viewModel.uiState.collectAsStateWithLifecycle()
@@ -74,7 +74,8 @@ fun NoteDetailScreen(
                     viewModel.deleteNote()
                     navController.popBackStack()
                 },
-                changeColor = { color -> viewModel.changeColor(color) }
+                changeColor = { color -> viewModel.changeColor(color) },
+                isDarkTheme = isDarkTheme
             )
         }
     }
@@ -92,6 +93,7 @@ fun SuccessScreen(
     deleteNote: () -> Unit = {},
     changeColor: (AppColor) -> Unit = {},
     saveText: (String, String) -> Unit = { _, _ -> },
+    isDarkTheme: Boolean = false
 ) {
     Scaffold(
         topBar = {
@@ -101,7 +103,8 @@ fun SuccessScreen(
                 onBackClick = onBackClick,
                 changeColor = changeColor,
                 pinUpNote = pinUpNote,
-                deleteNote = deleteNote
+                deleteNote = deleteNote,
+                isDarkTheme = isDarkTheme
             )
         },
         content = { padding ->
@@ -110,7 +113,8 @@ fun SuccessScreen(
                 note = note,
                 sharedTransitionScope = sharedTransitionScope,
                 animatedContentScope = animatedContentScope,
-                saveText = saveText
+                saveText = saveText,
+                isDarkTheme = isDarkTheme
             )
         },
     )
@@ -126,6 +130,7 @@ fun NoteDetailTopBar(
     pinUpNote: () -> Unit = {},
     deleteNote: () -> Unit = {},
     changeColor: (AppColor) -> Unit = {},
+    isDarkTheme: Boolean = false
 ) {
     var showMenu by remember { mutableStateOf(false) }
     var showColor by remember { mutableStateOf(false) }
@@ -218,7 +223,7 @@ fun NoteDetailTopBar(
                 expanded = showColor,
                 onDismissRequest = { showColor = false }
             ) {
-                ChangeColorMenu(colors, changeColor)
+                ChangeColorMenu(colors, changeColor, isDarkTheme)
             }
         }
     )
@@ -243,13 +248,14 @@ fun DeleteNoteDialog(deleteNote: () -> Unit = {}, action: () -> Unit = {}) {
 fun ChangeColorMenu(
     colors: List<AppColor> = AppColor.entries,
     changeColor: (AppColor) -> Unit = {},
+    isDarkTheme: Boolean = false
 ) {
     for (i in 0 until colors.size.div(4)) {
         Row(
             modifier = Modifier.padding(8.dp)
         ) {
             for (j in 0 until 4) {
-                ColorItem(item = colors[i * 4 + j], changeColor)
+                ColorItem(item = colors[i * 4 + j], changeColor, isDarkTheme)
                 Spacer(modifier = Modifier.width(8.dp))
             }
         }
@@ -258,8 +264,12 @@ fun ChangeColorMenu(
 
 @OptIn(ExperimentalFoundationApi::class)
 @Composable
-fun ColorItem(item: AppColor = AppColor.PALE_YELLOW, changeColor: (AppColor) -> Unit = {}) {
-    val color = getColor(if (isSystemInDarkTheme()) item.darkColor else item.lightColor)
+fun ColorItem(
+    item: AppColor = AppColor.PALE_YELLOW,
+    changeColor: (AppColor) -> Unit = {},
+    isDarkTheme: Boolean = false
+) {
+    val color = getColor(if (isDarkTheme) item.darkColor else item.lightColor)
 
     Card(
         shape = CircleShape,
@@ -286,9 +296,10 @@ fun NoteContent(
     sharedTransitionScope: SharedTransitionScope,
     animatedContentScope: AnimatedContentScope,
     saveText: (String, String) -> Unit = { _, _ -> },
+    isDarkTheme: Boolean = false
 ) {
     with(sharedTransitionScope) {
-        val color = getColor(if (isSystemInDarkTheme()) note.darkColor else note.lightColor)
+        val color = getColor(if (isDarkTheme) note.darkColor else note.lightColor)
 
         var titleTextField by remember(note.id) { mutableStateOf(TextFieldValue(note.title)) }
         var contentTextField by remember(note.id) { mutableStateOf(TextFieldValue(note.content)) }

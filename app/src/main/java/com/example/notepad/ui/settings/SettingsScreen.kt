@@ -1,12 +1,16 @@
 package com.example.notepad.ui.settings
 
-import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.foundation.layout.*
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
+import androidx.compose.ui.Alignment
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
+import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.notepad.R
 
@@ -14,14 +18,21 @@ import com.example.notepad.R
 @Composable
 fun SettingsScreen(
     openDrawer: () -> Unit = {},
+    isDarkTheme: Boolean = false,
+    changeDarkTheme: () -> Unit = {},
 ) {
     Scaffold(
         topBar = {
             SettingsTopBar(openDrawer)
         },
         content = { padding ->
-            SettingsContent(padding)
-        }
+            SettingsContent(
+                padding = padding,
+                isDarkTheme = isDarkTheme,
+                changeDarkTheme = changeDarkTheme
+            )
+        },
+        containerColor = MaterialTheme.colorScheme.background
     )
 }
 
@@ -29,9 +40,7 @@ fun SettingsScreen(
 @Composable
 fun SettingsTopBar(openDrawer: () -> Unit) {
     TopAppBar(
-        colors = TopAppBarDefaults.topAppBarColors(
-            containerColor = MaterialTheme.colorScheme.background,
-        ),
+        colors = TopAppBarDefaults.topAppBarColors(containerColor = Color.Transparent),
         navigationIcon = {
             IconButton(onClick = { openDrawer() }) {
                 Icon(
@@ -54,6 +63,41 @@ fun SettingsTopBar(openDrawer: () -> Unit) {
 }
 
 @Composable
-fun SettingsContent(padding: PaddingValues) {
+fun SettingsContent(
+    padding: PaddingValues = PaddingValues(),
+    isDarkTheme: Boolean = false,
+    changeDarkTheme: () -> Unit = {},
+) {
+    Column(
+        modifier = Modifier.padding(padding)
+    ) {
+        DarkModeSwitch(
+            isDarkTheme = isDarkTheme,
+            changeDarkTheme = changeDarkTheme
+        )
+    }
+}
 
+@Composable
+fun DarkModeSwitch(
+    isDarkTheme: Boolean = false,
+    changeDarkTheme: () -> Unit = {},
+) {
+    Row(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(horizontal = 24.dp, vertical = 16.dp),
+        verticalAlignment = Alignment.CenterVertically,
+        horizontalArrangement = Arrangement.SpaceBetween
+    ) {
+        Text(
+            text = stringResource(R.string.dark_mode),
+            color = MaterialTheme.colorScheme.onBackground,
+            fontSize = 20.sp,
+        )
+        Switch(
+            checked = isDarkTheme,
+            onCheckedChange = { changeDarkTheme() }
+        )
+    }
 }
