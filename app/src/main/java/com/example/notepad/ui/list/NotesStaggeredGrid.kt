@@ -79,7 +79,7 @@ fun NotesStaggeredGrid(
                 with(sharedTransitionScope) {
                     Card(
                         modifier = Modifier
-                            .clickable { if(notes.none { it.isChecked }) navigate(route) }
+                            .clickable { if(notes.none { it.isChecked }) navigate(route) else checkNote(item.id) }
                             .sharedElement(
                                 sharedTransitionScope.rememberSharedContentState(key = item.id),
                                 animatedVisibilityScope = animatedContentScope
@@ -162,7 +162,7 @@ fun NotesStaggeredGrid(
                                 text = item.content,
                                 fontSize = 12.sp,
                                 textAlign = TextAlign.Start,
-                                color = MaterialTheme.colorScheme.tertiary,
+                                color = MaterialTheme.colorScheme.secondary,
                                 maxLines = 8
                             )
                         }

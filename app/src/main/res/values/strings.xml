@@ -15,4 +15,5 @@
     <string name="select_color">Select color</string>
     <string name="try_again_later">Please try again later</string>
     <string name="unpin">Unpin</string>
+    <string name="settings">Settings</string>
 </resources>

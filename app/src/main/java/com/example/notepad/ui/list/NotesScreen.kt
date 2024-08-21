@@ -47,6 +47,7 @@ fun NotesScreen(
     navController: NavHostController,
     sharedTransitionScope: SharedTransitionScope,
     animatedContentScope: AnimatedContentScope,
+    openDrawer: () -> Unit = {},
 ) {
     val viewModel = LocalContext.current.getViewModel<NotesViewModel>()
     val uiState: NotesUiState by viewModel.uiState.collectAsStateWithLifecycle()
@@ -73,7 +74,8 @@ fun NotesScreen(
                 pinUpNotes = { viewModel.pinUpCheckedNotes() },
                 changeItemsView = { viewModel.changeItemsView() },
                 selectAllNotes = { select -> viewModel.selectAllNotes(select) },
-                navigate = { route -> navController.navigate(route) }
+                navigate = { route -> navController.navigate(route) },
+                openDrawer = { openDrawer() }
             )
     }
 }
@@ -94,10 +96,9 @@ fun SuccessScreen(
     changeItemsView: () -> Unit = {},
     selectAllNotes: (Boolean) -> Unit = {},
     navigate: (String) -> Unit = {},
+    openDrawer: () -> Unit = {},
 ) {
-
     var isSearchBarVisible by remember { mutableStateOf(false) }
-
     Scaffold(
         topBar = {
             NotesTopBar(
@@ -107,7 +108,8 @@ fun SuccessScreen(
                 pinUpNotes = pinUpNotes,
                 changeItemsView = changeItemsView,
                 selectAllNotes = selectAllNotes,
-                setSearchBarVisible = { isSearchBarVisible = !isSearchBarVisible }
+                setSearchBarVisible = { isSearchBarVisible = !isSearchBarVisible },
+                openDrawer = { openDrawer() }
             )
         },
         content = { padding ->
@@ -140,6 +142,7 @@ fun NotesTopBar(
     changeItemsView: () -> Unit = {},
     selectAllNotes: (Boolean) -> Unit = {},
     setSearchBarVisible: () -> Unit = {},
+    openDrawer: () -> Unit = {},
 ) {
     var showMenu by remember { mutableStateOf(false) }
     var deleteButtonClicked by remember { mutableStateOf(false) }
@@ -149,7 +152,7 @@ fun NotesTopBar(
             containerColor = MaterialTheme.colorScheme.background,
         ),
         navigationIcon = {
-            IconButton(onClick = {}) {
+            IconButton(onClick = { openDrawer() }) {
                 Icon(
                     painter = painterResource(id = R.drawable.ic_menu),
                     contentDescription = "Menu icon",
