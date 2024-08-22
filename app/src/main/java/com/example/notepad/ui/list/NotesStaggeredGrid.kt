@@ -8,13 +8,13 @@ import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.interaction.MutableInteractionSource
-import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.staggeredgrid.LazyVerticalStaggeredGrid
 import androidx.compose.foundation.lazy.staggeredgrid.StaggeredGridCells
 import androidx.compose.foundation.lazy.staggeredgrid.itemsIndexed
 import androidx.compose.foundation.lazy.staggeredgrid.rememberLazyStaggeredGridState
 import androidx.compose.material3.Card
+import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
@@ -50,8 +50,8 @@ fun NotesStaggeredGrid(
     checkNote: (id: String) -> Unit = {},
     swipeNotes: (oldIndex: Int, newIndex: Int) -> Unit = { _, _ -> },
     navigate: (String) -> Unit = {},
+    isDarkTheme: Boolean = false,
 ) {
-
     var list = notes
     val lazyStaggeredGridState = rememberLazyStaggeredGridState()
     val reorderableLazyStaggeredGridState =
@@ -74,12 +74,12 @@ fun NotesStaggeredGrid(
                 val interactionSource = remember { MutableInteractionSource() }
 
                 val route = AppScreens.NoteDetailScreen.route.plus("/${item.id}/0")
-                val color = getColor(if (isSystemInDarkTheme()) item.darkColor else item.lightColor)
+                val color = getColor(if (isDarkTheme) item.darkColor else item.lightColor)
 
                 with(sharedTransitionScope) {
                     Card(
                         modifier = Modifier
-                            .clickable { if(notes.none { it.isChecked }) navigate(route) }
+                            .clickable { if(notes.none { it.isChecked }) navigate(route) else checkNote(item.id) }
                             .sharedElement(
                                 sharedTransitionScope.rememberSharedContentState(key = item.id),
                                 animatedVisibilityScope = animatedContentScope
@@ -124,6 +124,7 @@ fun NotesStaggeredGrid(
                             2.dp,
                             if (item.isChecked) MaterialTheme.colorScheme.secondary else Color.Transparent
                         ),
+                        elevation = CardDefaults.cardElevation(defaultElevation = 4.dp),
                     ) {
                         Column(
                             modifier = Modifier
@@ -162,7 +163,7 @@ fun NotesStaggeredGrid(
                                 text = item.content,
                                 fontSize = 12.sp,
                                 textAlign = TextAlign.Start,
-                                color = MaterialTheme.colorScheme.tertiary,
+                                color = MaterialTheme.colorScheme.secondary,
                                 maxLines = 8
                             )
                         }

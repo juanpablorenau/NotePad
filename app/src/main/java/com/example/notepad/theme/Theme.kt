@@ -18,12 +18,14 @@ import androidx.core.view.WindowCompat
 private val LightColorScheme = lightColorScheme(
     primary =   YellowDark,
     background = White,
+    onBackground = DarkGray,
     secondary = Black,
-    tertiary = DarkWhite,
+    tertiary = LightGray,
 )
 private val DarkColorScheme = darkColorScheme(
     primary =   YellowDark,
     background = Black,
+    onBackground = DarkWhite,
     secondary = White,
     tertiary = DarkGray
 )
@@ -48,7 +50,7 @@ fun NotePadTheme(
         SideEffect {
             val window = (view.context as Activity).window
             window.statusBarColor = colorScheme.background.toArgb()
-            WindowCompat.getInsetsController(window, view).isAppearanceLightStatusBars = darkTheme
+            WindowCompat.getInsetsController(window, view).isAppearanceLightStatusBars = !darkTheme
         }
     }
 
