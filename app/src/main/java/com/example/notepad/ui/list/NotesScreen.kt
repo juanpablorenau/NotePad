@@ -48,7 +48,7 @@ fun NotesScreen(
     sharedTransitionScope: SharedTransitionScope,
     animatedContentScope: AnimatedContentScope,
     openDrawer: () -> Unit = {},
-    isDarkTheme: Boolean = false
+    isDarkTheme: Boolean = false,
 ) {
     val viewModel = LocalContext.current.getViewModel<NotesViewModel>()
     val uiState: NotesUiState by viewModel.uiState.collectAsStateWithLifecycle()
@@ -99,7 +99,7 @@ fun SuccessScreen(
     selectAllNotes: (Boolean) -> Unit = {},
     navigate: (String) -> Unit = {},
     openDrawer: () -> Unit = {},
-    isDarkTheme: Boolean = false
+    isDarkTheme: Boolean = false,
 ) {
     var isSearchBarVisible by remember { mutableStateOf(false) }
     Scaffold(
@@ -173,23 +173,23 @@ fun NotesTopBar(
             )
         },
         actions = {
-            IconButton(onClick = { changeItemsView() }) {
-                Icon(
-                    painter = painterResource(id = if (itemsView == 1) R.drawable.ic_grid_view else R.drawable.ic_list),
-                    contentDescription = "Grid icon",
-                    tint = MaterialTheme.colorScheme.primary
-                )
-            }
+            if (notes.none { it.isChecked }) {
+                IconButton(onClick = { changeItemsView() }) {
+                    Icon(
+                        painter = painterResource(id = if (itemsView == 1) R.drawable.ic_grid_view else R.drawable.ic_list),
+                        contentDescription = "Grid icon",
+                        tint = MaterialTheme.colorScheme.primary
+                    )
+                }
 
-            IconButton(onClick = { setSearchBarVisible() }) {
-                Icon(
-                    painter = painterResource(id = R.drawable.ic_search),
-                    contentDescription = "Search icon",
-                    tint = MaterialTheme.colorScheme.primary
-                )
-            }
-
-            if (notes.any { it.isChecked }) {
+                IconButton(onClick = { setSearchBarVisible() }) {
+                    Icon(
+                        painter = painterResource(id = R.drawable.ic_search),
+                        contentDescription = "Search icon",
+                        tint = MaterialTheme.colorScheme.primary
+                    )
+                }
+            } else {
                 Text(
                     text = notes.count { it.isChecked }.toString(),
                     color = MaterialTheme.colorScheme.primary
@@ -291,7 +291,7 @@ fun NotesContent(
     swipeNotes: (oldIndex: Int, newIndex: Int) -> Unit = { _, _ -> },
     navigate: (String) -> Unit = {},
     getSearchBarVisible: () -> Boolean = { false },
-    isDarkTheme: Boolean = false
+    isDarkTheme: Boolean = false,
 ) {
     Column(
         modifier = Modifier.padding(

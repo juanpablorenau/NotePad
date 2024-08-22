@@ -3,10 +3,10 @@ package com.example.notepad.ui.drawer
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.material3.*
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.RectangleShape
 import androidx.compose.ui.graphics.painter.Painter
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
@@ -73,7 +73,9 @@ fun DrawerContent(
         modifier = Modifier
             .fillMaxHeight()
             .fillMaxWidth(0.8f),
-        drawerContainerColor = MaterialTheme.colorScheme.tertiary,
+        drawerContainerColor = MaterialTheme.colorScheme.background,
+        windowInsets = WindowInsets.statusBars,
+        drawerShape = RectangleShape,
         content = {
             DrawerSheetContent(
                 navigateToNotes = navigateToNotes,
@@ -125,15 +127,15 @@ fun DrawerHeader() {
         Spacer(
             modifier = Modifier
                 .fillMaxWidth()
-                .height(1.dp)
-                .padding(horizontal = 24.dp)
-                .background(MaterialTheme.colorScheme.onBackground)
+                .height(0.5.dp)
+                .background(MaterialTheme.colorScheme.tertiary)
         )
     }
 
 }
 
 data class DrawerItem(
+    val id: Int = 0,
     val icon: Painter,
     val text: String = "",
     val selected: Boolean = false,
@@ -146,7 +148,6 @@ fun DrawerBody(
     navigateToNotes: () -> Unit = {},
     navigateToSettings: () -> Unit = {},
 ) {
-
     Column(
         modifier = Modifier
             .fillMaxWidth()
@@ -155,23 +156,30 @@ fun DrawerBody(
 
         val drawerItems = listOf(
             DrawerItem(
+                id = 0,
                 icon = painterResource(id = R.drawable.ic_sticky_note),
                 text = stringResource(id = R.string.notes_title),
                 onClick = navigateToNotes
             ),
             DrawerItem(
+                id = 1,
                 icon = painterResource(id = R.drawable.ic_settings),
                 text = stringResource(id = R.string.settings),
                 onClick = navigateToSettings
             ),
         )
 
+        var selectedItemId by remember { mutableIntStateOf(drawerItems.first().id) }
+
         drawerItems.forEach{ item ->
             DrawerItemComponent(
                 icon = item.icon,
                 text = item.text,
-                selected = item.selected,
-                onClick = item.onClick
+                selected = item.id == selectedItemId,
+                onClick = {
+                    item.onClick()
+                    selectedItemId = item.id
+                }
             )
 
         }
@@ -186,8 +194,9 @@ fun DrawerItemComponent(
     onClick: () -> Unit = {},
 ) {
     NavigationDrawerItem(
+        modifier = Modifier.padding(horizontal = 8.dp),
         colors = NavigationDrawerItemDefaults.colors(
-            unselectedContainerColor = MaterialTheme.colorScheme.tertiary,
+            unselectedContainerColor = MaterialTheme.colorScheme.background,
         ),
         icon = {
             Icon(

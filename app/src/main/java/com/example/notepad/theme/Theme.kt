@@ -20,7 +20,7 @@ private val LightColorScheme = lightColorScheme(
     background = White,
     onBackground = DarkGray,
     secondary = Black,
-    tertiary = DarkWhite,
+    tertiary = LightGray,
 )
 private val DarkColorScheme = darkColorScheme(
     primary =   YellowDark,
@@ -50,7 +50,7 @@ fun NotePadTheme(
         SideEffect {
             val window = (view.context as Activity).window
             window.statusBarColor = colorScheme.background.toArgb()
-            WindowCompat.getInsetsController(window, view).isAppearanceLightStatusBars = darkTheme
+            WindowCompat.getInsetsController(window, view).isAppearanceLightStatusBars = !darkTheme
         }
     }
 

@@ -13,6 +13,7 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.Color.Companion.Red
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
@@ -313,7 +314,8 @@ fun NoteContent(
                 )
                 .fillMaxSize()
                 .padding(top = padding.calculateTopPadding())
-                .padding(12.dp)
+                .padding(12.dp),
+            elevation = CardDefaults.cardElevation(defaultElevation = 4.dp),
         ) {
             Column(
                 modifier = Modifier
@@ -335,10 +337,10 @@ fun NoteContent(
                             saveText(titleTextField.text, contentTextField.text)
                         },
                         colors = TextFieldDefaults.colors(
-                            focusedIndicatorColor = color,
-                            unfocusedIndicatorColor = color,
-                            focusedContainerColor = color,
-                            unfocusedContainerColor = color
+                            focusedIndicatorColor = Color.Transparent,
+                            unfocusedIndicatorColor = Color.Transparent,
+                            focusedContainerColor = Color.Transparent,
+                            unfocusedContainerColor = Color.Transparent,
                         ),
                         textStyle = TextStyle(
                             fontWeight = FontWeight.Bold,
@@ -366,10 +368,10 @@ fun NoteContent(
                     },
                     modifier = Modifier.fillMaxWidth(),
                     colors = TextFieldDefaults.colors(
-                        focusedIndicatorColor = color,
-                        unfocusedIndicatorColor = color,
-                        focusedContainerColor = color,
-                        unfocusedContainerColor = color
+                        focusedIndicatorColor = Color.Transparent,
+                        unfocusedIndicatorColor = Color.Transparent,
+                        focusedContainerColor = Color.Transparent,
+                        unfocusedContainerColor = Color.Transparent,
                     ),
                     textStyle = MaterialTheme.typography.bodyMedium,
                 )
