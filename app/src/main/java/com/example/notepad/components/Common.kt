@@ -3,22 +3,24 @@ package com.example.notepad.components
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material3.AlertDialog
-import androidx.compose.material3.Card
-import androidx.compose.material3.CardDefaults
-import androidx.compose.material3.Icon
-import androidx.compose.material3.Text
-import androidx.compose.runtime.Composable
+import androidx.compose.foundation.text.BasicTextField
+import androidx.compose.material3.*
+import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.shadow
+import androidx.compose.ui.focus.FocusRequester
+import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.input.TextFieldValue
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.example.model.entities.NoteCheckBox
+import com.example.model.entities.NoteTextField
 import com.example.notepad.R
 import com.example.notepad.theme.DarkGray
 
@@ -85,9 +87,90 @@ fun Dialog(text: String = "Question?", yesAction: () -> Unit = {}, noAction: () 
         },
         dismissButton = {
             Text(
-                modifier = Modifier.padding(end = 16.dp).clickable { noAction() },
+                modifier = Modifier
+                    .padding(end = 16.dp)
+                    .clickable { noAction() },
                 text = stringResource(R.string.cancel),
             )
         }
     )
+}
+
+@Preview(showBackground = true)
+@Composable
+fun CheckBoxItem(
+    checkBox: NoteCheckBox = NoteCheckBox(text = "Sample Text"),
+    iconAction: (String) -> Unit = {},
+) {
+    var isChecked by remember { mutableStateOf(checkBox.isChecked) }
+    var checkboxText by remember { mutableStateOf(TextFieldValue(checkBox.text)) }
+    val focusRequester = remember { FocusRequester() }
+
+    LaunchedEffect(Unit) {
+        focusRequester.requestFocus()
+    }
+
+    Row(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(start = 12.dp, end = 24.dp)
+            .focusRequester(focusRequester),
+        horizontalArrangement = Arrangement.SpaceBetween,
+        verticalAlignment = Alignment.CenterVertically
+    ) {
+        Row(
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.Absolute.Left
+        ) {
+            Checkbox(
+                checked = isChecked,
+                onCheckedChange = { newChecked ->
+                    isChecked = newChecked
+                },
+                colors = CheckboxDefaults.colors(
+                    checkedColor = MaterialTheme.colorScheme.primary,
+                    checkmarkColor = Color.White
+                )
+            )
+
+            BasicTextField(
+                value = checkboxText,
+                singleLine = true,
+                onValueChange = { newText -> checkboxText = newText },
+            )
+        }
+
+        Icon(
+            modifier = Modifier.clickable { iconAction(checkBox.id) },
+            painter = painterResource(id = R.drawable.ic_close),
+            contentDescription = "Close icon",
+            tint = MaterialTheme.colorScheme.onBackground
+        )
+    }
+}
+
+@Preview(showBackground = true)
+@Composable
+fun TextFieldItem(noteItem: NoteTextField = NoteTextField(text = "Sample Text")) {
+    var text by remember { mutableStateOf(noteItem.text) }
+    val focusRequester = remember { FocusRequester() }
+
+    LaunchedEffect(Unit) {
+        focusRequester.requestFocus()
+    }
+
+    Box(
+        modifier = Modifier.padding(vertical = 8.dp)
+    ) {
+        BasicTextField(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(horizontal = 24.dp)
+                .focusRequester(focusRequester),
+            value = text,
+            onValueChange = { newText ->
+                text = newText
+            },
+        )
+    }
 }

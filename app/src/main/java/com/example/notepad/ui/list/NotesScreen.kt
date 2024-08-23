@@ -5,6 +5,7 @@ import androidx.compose.animation.ExperimentalSharedTransitionApi
 import androidx.compose.animation.SharedTransitionScope
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
@@ -400,11 +401,13 @@ fun AddNoteButton(onClick: (String) -> Unit = {}, size: Int) {
     val route = AppScreens.NoteDetailScreen.route.plus("/new_element/$size")
 
     FloatingActionButton(
+        modifier = Modifier.padding(16.dp),
+        shape = CircleShape,
         containerColor = MaterialTheme.colorScheme.tertiary,
         onClick = { onClick(route) }
     ) {
         Icon(
-            modifier = Modifier.size(36.dp),
+            modifier = Modifier.size(28.dp),
             painter = painterResource(id = R.drawable.ic_add),
             contentDescription = "Add_icon",
             tint = MaterialTheme.colorScheme.primary

@@ -7,8 +7,9 @@ import com.example.domain.usecase.detail.DeleteNoteUseCase
 import com.example.domain.usecase.detail.GetNoteDetailUseCase
 import com.example.domain.usecase.detail.InsertNoteUseCase
 import com.example.domain.usecase.detail.UpdateNoteUseCase
-import com.example.model.entities.Color
 import com.example.model.entities.Note
+import com.example.model.entities.NoteCheckBox
+import com.example.model.entities.NoteTextField
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.Dispatchers
@@ -55,7 +56,8 @@ class NoteDetailViewModel @Inject constructor(
             val note = Note(
                 index = index,
                 lightColor = AppColor.PALE_YELLOW.lightColor,
-                darkColor = AppColor.PALE_YELLOW.darkColor
+                darkColor = AppColor.PALE_YELLOW.darkColor,
+                items = listOf(NoteTextField(""))
             )
             tryOrError {
                 insertNoteUseCase(note)
@@ -109,10 +111,34 @@ class NoteDetailViewModel @Inject constructor(
         }
     }
 
-    fun saveText(title: String, content: String) {
+    fun saveText(title: String) {
         _uiState.getAndUpdate {
             with((it as NoteDetailUiState.Success)) {
-                copy(note = note.copy(title = title, content = content))
+                copy(note = note.copy(title = title))
+            }
+        }
+    }
+
+    fun addNoteItem(isCheckBox: Boolean) {
+        _uiState.getAndUpdate {
+            with((it as NoteDetailUiState.Success)) {
+                copy(
+                    note = note.copy(items =
+                    note.items.toMutableList().apply {
+                        add(if (isCheckBox) NoteCheckBox("") else NoteTextField(""))
+                    })
+                )
+            }
+        }
+    }
+
+    fun deleteCheckBox(id: String) {
+        _uiState.getAndUpdate {
+            with((it as NoteDetailUiState.Success)) {
+                copy(
+                    note = note.copy(items =
+                    note.items.toMutableList().apply { removeIf { noteItem -> noteItem.id == id } })
+                )
             }
         }
     }
