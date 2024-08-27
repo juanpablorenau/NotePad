@@ -1,7 +1,5 @@
 package com.example.notepad.navigation
 
-import androidx.compose.animation.ExperimentalSharedTransitionApi
-import androidx.compose.animation.SharedTransitionLayout
 import androidx.compose.material3.Surface
 import androidx.compose.runtime.Composable
 import androidx.navigation.NavHostController
@@ -13,7 +11,6 @@ import com.example.notepad.ui.detail.NoteDetailScreen
 import com.example.notepad.ui.list.NotesScreen
 import com.example.notepad.ui.settings.SettingsScreen
 
-@OptIn(ExperimentalSharedTransitionApi::class)
 @Composable
 fun AppNavigation(
     navController: NavHostController,
@@ -21,57 +18,52 @@ fun AppNavigation(
     isDarkTheme: Boolean = false,
     changeDarkTheme: () -> Unit,
 ) {
-    SharedTransitionLayout {
-        Surface {
-            NavHost(
-                navController = navController,
-                startDestination = AppScreens.NotesScreen.route
+    Surface {
+        NavHost(
+            navController = navController,
+            startDestination = AppScreens.NotesScreen.route
+        ) {
+            composable(route = AppScreens.NotesScreen.route) {
+                NotesScreen(
+                    navController = navController,
+                    openDrawer = { openDrawer() },
+                    isDarkTheme = isDarkTheme,
+                )
+            }
+
+            composable(
+                route = AppScreens.NoteDetailScreen.route + "/{noteId}" + "/{index}",
+                arguments = listOf(
+                    navArgument(name = "noteId") {
+                        type = NavType.StringType
+                        defaultValue = ""
+                        nullable = false
+                    },
+                    navArgument(name = "index") {
+                        type = NavType.IntType
+                        defaultValue = 0
+                        nullable = false
+                    }
+                )
             ) {
-                composable(route = AppScreens.NotesScreen.route) {
-                    NotesScreen(
-                        navController = navController,
-                        sharedTransitionScope = this@SharedTransitionLayout,
-                        animatedContentScope = this,
-                        openDrawer = { openDrawer() },
-                        isDarkTheme = isDarkTheme,
-                    )
-                }
+                val noteId = it.arguments?.getString("noteId").orEmpty()
+                val index = it.arguments?.getInt("index") ?: 0
+                NoteDetailScreen(
+                    navController = navController,
+                    noteId = noteId,
+                    index = index,
+                    isDarkTheme = isDarkTheme
+                )
+            }
 
-                composable(
-                    route = AppScreens.NoteDetailScreen.route + "/{noteId}" + "/{index}",
-                    arguments = listOf(
-                        navArgument(name = "noteId") {
-                            type = NavType.StringType
-                            defaultValue = ""
-                            nullable = false
-                        },
-                        navArgument(name = "index") {
-                            type = NavType.IntType
-                            defaultValue = 0
-                            nullable = false
-                        }
-                    )
-                ) {
-                    val noteId = it.arguments?.getString("noteId").orEmpty()
-                    val index = it.arguments?.getInt("index") ?: 0
-                    NoteDetailScreen(
-                        navController = navController,
-                        noteId = noteId,
-                        index = index,
-                        sharedTransitionScope = this@SharedTransitionLayout,
-                        animatedContentScope = this,
-                        isDarkTheme = isDarkTheme
-                    )
-                }
-
-                composable(route = AppScreens.SettingsScreen.route) {
-                    SettingsScreen(
-                        openDrawer = { openDrawer() },
-                        isDarkTheme = isDarkTheme,
-                        changeDarkTheme = { changeDarkTheme() }
-                    )
-                }
+            composable(route = AppScreens.SettingsScreen.route) {
+                SettingsScreen(
+                    openDrawer = { openDrawer() },
+                    isDarkTheme = isDarkTheme,
+                    changeDarkTheme = { changeDarkTheme() }
+                )
             }
         }
     }
 }
+

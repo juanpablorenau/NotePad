@@ -7,7 +7,6 @@ import com.example.domain.usecase.detail.DeleteNoteUseCase
 import com.example.domain.usecase.detail.GetNoteDetailUseCase
 import com.example.domain.usecase.detail.InsertNoteUseCase
 import com.example.domain.usecase.detail.UpdateNoteUseCase
-import com.example.model.entities.Color
 import com.example.model.entities.Note
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.CoroutineDispatcher
