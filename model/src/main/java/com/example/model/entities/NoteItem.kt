@@ -1,16 +1,18 @@
 package com.example.model.entities
 
-import java.util.UUID
-
-open class NoteItem(
-    val id: String = UUID.randomUUID().toString(),
-)
+open class NoteItem(open val id: String = "")
 
 data class NoteCheckBox(
-    val text: String,
+    override val id: String = "",
+    val text: String = "",
     val isChecked: Boolean = false,
-) : NoteItem()
+) : NoteItem(id)
 
 data class NoteTextField(
-    val text: String,
-) : NoteItem()
+    override val id: String = "",
+    val text: String = "",
+) : NoteItem(id)
+
+data class NoteSpace(
+    override val id: String = "",
+) : NoteItem(id)

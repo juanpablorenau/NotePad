@@ -10,7 +10,9 @@ import androidx.compose.foundation.combinedClickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -32,11 +34,13 @@ import androidx.navigation.NavHostController
 import com.example.model.entities.Note
 import com.example.model.entities.NoteCheckBox
 import com.example.model.entities.NoteItem
+import com.example.model.entities.NoteSpace
 import com.example.model.entities.NoteTextField
 import com.example.notepad.R
 import com.example.notepad.components.CheckBoxItem
 import com.example.notepad.components.Dialog
 import com.example.notepad.components.MenuItem
+import com.example.notepad.components.SpaceItem
 import com.example.notepad.components.TextFieldItem
 import com.example.notepad.components.screens.ErrorScreen
 import com.example.notepad.components.screens.LoadingScreen
@@ -85,7 +89,10 @@ fun NoteDetailScreen(
                 },
                 changeColor = { color -> viewModel.changeColor(color) },
                 isDarkTheme = isDarkTheme,
-                addNoteItem = { isCheckBox -> viewModel.addNoteItem(isCheckBox) },
+                addTextField = { viewModel.addTextField() },
+                addCheckBox = { viewModel.addCheckBox() },
+                updateTextField = { textField -> viewModel.updateTextField(textField) },
+                updateCheckBox = { checkBox -> viewModel.updateCheckBox(checkBox) },
                 deleteCheckBox = { id -> viewModel.deleteCheckBox(id) },
             )
         }
@@ -105,7 +112,10 @@ fun SuccessScreen(
     changeColor: (AppColor) -> Unit = {},
     saveText: (String) -> Unit = { },
     isDarkTheme: Boolean = false,
-    addNoteItem: (Boolean) -> Unit = {},
+    addTextField: () -> Unit = {},
+    addCheckBox: () -> Unit = {},
+    updateTextField: (NoteTextField) -> Unit = {},
+    updateCheckBox: (NoteCheckBox) -> Unit = {},
     deleteCheckBox: (String) -> Unit = {},
 ) {
     Scaffold(
@@ -128,12 +138,16 @@ fun SuccessScreen(
                 animatedContentScope = animatedContentScope,
                 saveText = saveText,
                 isDarkTheme = isDarkTheme,
+                addCheckBox = addCheckBox,
+                updateTextField = updateTextField,
+                updateCheckBox = updateCheckBox,
                 deleteCheckBox = deleteCheckBox
             )
         },
         floatingActionButton = {
             NoteDetailFab(
-                addNoteItem = addNoteItem,
+                addTextField = addTextField,
+                addCheckBox = addCheckBox
             )
         }
     )
@@ -316,6 +330,9 @@ fun NoteContent(
     animatedContentScope: AnimatedContentScope,
     saveText: (String) -> Unit = { },
     isDarkTheme: Boolean = false,
+    addCheckBox: () -> Unit = {},
+    updateTextField: (NoteTextField) -> Unit = {},
+    updateCheckBox: (NoteCheckBox) -> Unit = {},
     deleteCheckBox: (String) -> Unit = {},
 ) {
     with(sharedTransitionScope) {
@@ -324,15 +341,14 @@ fun NoteContent(
         var titleTextField by remember(note.id) { mutableStateOf(TextFieldValue(note.title)) }
 
         Card(
-            shape = Shapes().medium,
             modifier = Modifier
+                .fillMaxSize()
+                .padding(top = padding.calculateTopPadding(), start = 12.dp, end = 12.dp)
                 .sharedElement(
                     sharedTransitionScope.rememberSharedContentState(key = note.id),
                     animatedVisibilityScope = animatedContentScope
-                )
-                .fillMaxSize()
-                .padding(top = padding.calculateTopPadding())
-                .padding(12.dp),
+                ),
+            shape = RoundedCornerShape(topStart = 16.dp, topEnd = 16.dp),
             elevation = CardDefaults.cardElevation(defaultElevation = 4.dp),
         ) {
             Column(
@@ -350,6 +366,9 @@ fun NoteContent(
 
                 NoteBody(
                     notesItems = note.items,
+                    addCheckBox = addCheckBox,
+                    updateTextField = updateTextField,
+                    updateCheckBox = updateCheckBox,
                     deleteCheckBox = deleteCheckBox
                 )
             }
@@ -405,15 +424,26 @@ fun NoteHeader(
 @Composable
 fun NoteBody(
     notesItems: List<NoteItem> = mockNoteItems,
+    addCheckBox: () -> Unit = {},
+    updateTextField: (NoteTextField) -> Unit = {},
+    updateCheckBox: (NoteCheckBox) -> Unit = {},
     deleteCheckBox: (String) -> Unit = {},
 ) {
+    val listState = rememberLazyListState()
+
+    LaunchedEffect(notesItems.size) {
+        if(notesItems.isNotEmpty()) listState.animateScrollToItem(notesItems.size - 1)
+    }
+
     LazyColumn(
+        state = listState,
         modifier = Modifier.fillMaxWidth()
     ) {
         items(notesItems) { item ->
             when (item) {
-                is NoteCheckBox -> CheckBoxItem(item, deleteCheckBox)
-                is NoteTextField -> TextFieldItem(item)
+                is NoteTextField -> TextFieldItem(item, updateTextField)
+                is NoteCheckBox -> CheckBoxItem(item, addCheckBox, updateCheckBox, deleteCheckBox)
+                is NoteSpace -> SpaceItem()
             }
         }
     }
@@ -422,14 +452,13 @@ fun NoteBody(
 @Preview(showBackground = true)
 @Composable
 fun NoteDetailFab(
-    addNoteItem: (Boolean) -> Unit = { },
+    addTextField: () -> Unit = {},
+    addCheckBox: () -> Unit = {},
 ) {
     var expanded by remember { mutableStateOf(false) }
 
     Box(
-        modifier = Modifier
-            .fillMaxSize()
-            .padding(16.dp)
+        modifier = Modifier.wrapContentSize().padding(bottom = 8.dp, end = 16.dp)
     ) {
         Column(
             horizontalAlignment = Alignment.CenterHorizontally,
@@ -440,7 +469,7 @@ fun NoteDetailFab(
                 FloatingActionButton(
                     modifier = Modifier.size(46.dp),
                     shape = CircleShape,
-                    onClick = {  },
+                    onClick = { },
                     containerColor = MaterialTheme.colorScheme.tertiary,
                 ) {
                     Icon(
@@ -454,7 +483,7 @@ fun NoteDetailFab(
                 FloatingActionButton(
                     modifier = Modifier.size(46.dp),
                     shape = CircleShape,
-                    onClick = { addNoteItem(false) },
+                    onClick = { addTextField() },
                     containerColor = MaterialTheme.colorScheme.tertiary,
                 ) {
                     Icon(
@@ -468,7 +497,7 @@ fun NoteDetailFab(
                 FloatingActionButton(
                     modifier = Modifier.size(46.dp),
                     shape = CircleShape,
-                    onClick = { addNoteItem(true) },
+                    onClick = { addCheckBox() },
                     containerColor = MaterialTheme.colorScheme.tertiary,
                 ) {
                     Icon(

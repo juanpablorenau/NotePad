@@ -401,7 +401,7 @@ fun AddNoteButton(onClick: (String) -> Unit = {}, size: Int) {
     val route = AppScreens.NoteDetailScreen.route.plus("/new_element/$size")
 
     FloatingActionButton(
-        modifier = Modifier.padding(16.dp),
+        modifier = Modifier.padding(bottom = 8.dp, end = 8.dp),
         shape = CircleShape,
         containerColor = MaterialTheme.colorScheme.tertiary,
         onClick = { onClick(route) }

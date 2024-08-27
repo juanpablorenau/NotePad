@@ -9,6 +9,7 @@ import com.example.domain.usecase.detail.InsertNoteUseCase
 import com.example.domain.usecase.detail.UpdateNoteUseCase
 import com.example.model.entities.Note
 import com.example.model.entities.NoteCheckBox
+import com.example.model.entities.NoteSpace
 import com.example.model.entities.NoteTextField
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.CoroutineDispatcher
@@ -18,6 +19,7 @@ import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.catch
 import kotlinx.coroutines.flow.getAndUpdate
 import kotlinx.coroutines.launch
+import java.util.UUID
 import javax.inject.Inject
 import com.example.model.entities.Color as AppColor
 
@@ -57,7 +59,10 @@ class NoteDetailViewModel @Inject constructor(
                 index = index,
                 lightColor = AppColor.PALE_YELLOW.lightColor,
                 darkColor = AppColor.PALE_YELLOW.darkColor,
-                items = listOf(NoteTextField(""))
+                items = listOf(
+                    NoteTextField(id = UUID.randomUUID().toString()),
+                    NoteSpace(id = UUID.randomUUID().toString())
+                )
             )
             tryOrError {
                 insertNoteUseCase(note)
@@ -68,8 +73,7 @@ class NoteDetailViewModel @Inject constructor(
 
     private fun getNoteById(id: String) {
         viewModelScope.launch(dispatcher) {
-            getNoteDetailUseCase(id)
-                .catch { setErrorState() }
+            getNoteDetailUseCase(id).catch { setErrorState() }
                 .collect { note -> setSuccessState(note) }
         }
     }
@@ -103,8 +107,7 @@ class NoteDetailViewModel @Inject constructor(
             with((it as NoteDetailUiState.Success)) {
                 copy(
                     note = note.copy(
-                        lightColor = newColor.lightColor,
-                        darkColor = newColor.darkColor
+                        lightColor = newColor.lightColor, darkColor = newColor.darkColor
                     )
                 )
             }
@@ -119,15 +122,63 @@ class NoteDetailViewModel @Inject constructor(
         }
     }
 
-    fun addNoteItem(isCheckBox: Boolean) {
+    fun addTextField() {
+        _uiState.getAndUpdate {
+            with((it as NoteDetailUiState.Success)) {
+                if (note.items.isNotEmpty() && note.items.last() is NoteTextField) return
+                copy(
+                    note = note.copy(
+                        items = note.items.toMutableList()
+                            .apply {
+                                add(
+                                    size - 1,
+                                    NoteTextField(id = UUID.randomUUID().toString())
+                                )
+                            })
+                )
+            }
+        }
+    }
+
+    fun addCheckBox() {
         _uiState.getAndUpdate {
             with((it as NoteDetailUiState.Success)) {
                 copy(
-                    note = note.copy(items =
-                    note.items.toMutableList().apply {
-                        add(if (isCheckBox) NoteCheckBox("") else NoteTextField(""))
-                    })
+                    note = note.copy(
+                        items = note.items.toMutableList()
+                            .apply {
+                                add(
+                                    size - 1,
+                                    NoteCheckBox(id = UUID.randomUUID().toString())
+                                )
+                            })
                 )
+            }
+        }
+    }
+
+    fun updateTextField(textField: NoteTextField) {
+        _uiState.getAndUpdate {
+            with((it as NoteDetailUiState.Success)) {
+                copy(note = note.copy(items = note.items.map { noteItem ->
+                    if (noteItem.id == textField.id) {
+                        (noteItem as NoteTextField).copy(text = textField.text)
+                    } else noteItem
+                }))
+            }
+        }
+    }
+
+    fun updateCheckBox(checkBox: NoteCheckBox) {
+        _uiState.getAndUpdate {
+            with((it as NoteDetailUiState.Success)) {
+                copy(note = note.copy(items = note.items.map { noteItem ->
+                    if (noteItem.id == checkBox.id) {
+                        (noteItem as NoteCheckBox).copy(
+                            text = checkBox.text, isChecked = checkBox.isChecked
+                        )
+                    } else noteItem
+                }))
             }
         }
     }
@@ -137,7 +188,27 @@ class NoteDetailViewModel @Inject constructor(
             with((it as NoteDetailUiState.Success)) {
                 copy(
                     note = note.copy(items =
-                    note.items.toMutableList().apply { removeIf { noteItem -> noteItem.id == id } })
+                    note.items.toMutableList().apply {
+                        val index = indexOfFirst { noteItem -> noteItem.id == id }
+                        when (index) {
+                            -1 -> return@apply
+                            size - 1 -> removeLast()
+                            else -> {
+                                val prevItem = getOrNull(index - 1)
+                                val nextItem = getOrNull(index + 1)
+                                removeAt(index)
+                                if (prevItem is NoteTextField && nextItem is NoteTextField) {
+                                    removeAt(index)
+                                    removeAt(index - 1)
+                                    add(
+                                        index - 1, prevItem.copy(
+                                            text = "${prevItem.text}\n${nextItem.text}"
+                                        )
+                                    )
+                                }
+                            }
+                        }
+                    })
                 )
             }
         }

@@ -1,9 +1,12 @@
 package com.example.notepad.components
 
+import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.BasicTextField
+import androidx.compose.foundation.text.KeyboardActions
+import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -14,6 +17,7 @@ import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.TextFieldValue
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
@@ -43,7 +47,6 @@ fun Chip(text: String = "Chip", chipColor: Color = Color.White, textColor: Color
         }
     }
 }
-
 
 @Composable
 fun MenuItem(
@@ -100,11 +103,13 @@ fun Dialog(text: String = "Question?", yesAction: () -> Unit = {}, noAction: () 
 @Composable
 fun CheckBoxItem(
     checkBox: NoteCheckBox = NoteCheckBox(text = "Sample Text"),
+    keyboardAction: () -> Unit = {},
+    updateCheckBox: (NoteCheckBox) -> Unit = {},
     iconAction: (String) -> Unit = {},
 ) {
-    var isChecked by remember { mutableStateOf(checkBox.isChecked) }
-    var checkboxText by remember { mutableStateOf(TextFieldValue(checkBox.text)) }
-    val focusRequester = remember { FocusRequester() }
+    var isChecked by remember(checkBox.id) { mutableStateOf(checkBox.isChecked) }
+    var checkboxText by remember(checkBox.id) { mutableStateOf(TextFieldValue(checkBox.text)) }
+    val focusRequester = remember(checkBox.id) { FocusRequester() }
 
     LaunchedEffect(Unit) {
         focusRequester.requestFocus()
@@ -126,6 +131,7 @@ fun CheckBoxItem(
                 checked = isChecked,
                 onCheckedChange = { newChecked ->
                     isChecked = newChecked
+                    updateCheckBox(checkBox.copy(text = checkboxText.text, isChecked = isChecked))
                 },
                 colors = CheckboxDefaults.colors(
                     checkedColor = MaterialTheme.colorScheme.primary,
@@ -136,7 +142,12 @@ fun CheckBoxItem(
             BasicTextField(
                 value = checkboxText,
                 singleLine = true,
-                onValueChange = { newText -> checkboxText = newText },
+                onValueChange = { newText ->
+                    checkboxText = newText
+                    updateCheckBox(checkBox.copy(text = checkboxText.text, isChecked = isChecked))
+                },
+                keyboardOptions = KeyboardOptions.Default.copy(imeAction = ImeAction.Done),
+                keyboardActions = KeyboardActions(onDone = { keyboardAction() }),
             )
         }
 
@@ -151,9 +162,12 @@ fun CheckBoxItem(
 
 @Preview(showBackground = true)
 @Composable
-fun TextFieldItem(noteItem: NoteTextField = NoteTextField(text = "Sample Text")) {
-    var text by remember { mutableStateOf(noteItem.text) }
-    val focusRequester = remember { FocusRequester() }
+fun TextFieldItem(
+    noteItem: NoteTextField = NoteTextField(text = "Sample Text"),
+    updateTextField: (NoteTextField) -> Unit = {},
+) {
+    var text by remember(noteItem.id) { mutableStateOf(TextFieldValue(noteItem.text)) }
+    val focusRequester = remember(noteItem.id) { FocusRequester() }
 
     LaunchedEffect(Unit) {
         focusRequester.requestFocus()
@@ -164,13 +178,22 @@ fun TextFieldItem(noteItem: NoteTextField = NoteTextField(text = "Sample Text"))
     ) {
         BasicTextField(
             modifier = Modifier
-                .fillMaxWidth()
                 .padding(horizontal = 24.dp)
                 .focusRequester(focusRequester),
             value = text,
             onValueChange = { newText ->
                 text = newText
+                updateTextField(noteItem.copy(text = text.text))
             },
         )
     }
+}
+
+@Preview(showBackground = true)
+@Composable
+fun SpaceItem() {
+    Spacer(modifier = Modifier
+        .fillMaxWidth()
+        .height(56.dp)
+        .background(Color.Red))
 }
