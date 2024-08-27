@@ -1,8 +1,6 @@
 package com.example.notepad.ui.detail
 
-import androidx.compose.animation.AnimatedContentScope
 import androidx.compose.animation.ExperimentalSharedTransitionApi
-import androidx.compose.animation.SharedTransitionScope
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
@@ -50,14 +48,11 @@ import com.example.notepad.utils.mockNote
 import com.example.notepad.utils.mockNoteItems
 import com.example.model.entities.Color as AppColor
 
-@OptIn(ExperimentalSharedTransitionApi::class)
 @Composable
 fun NoteDetailScreen(
     navController: NavHostController,
     noteId: String,
     index: Int,
-    sharedTransitionScope: SharedTransitionScope,
-    animatedContentScope: AnimatedContentScope,
     isDarkTheme: Boolean = false,
 ) {
     val viewModel = LocalContext.current.getViewModel<NoteDetailViewModel>()
@@ -78,8 +73,6 @@ fun NoteDetailScreen(
             SuccessScreen(
                 note = state.note,
                 colors = state.colors,
-                sharedTransitionScope = sharedTransitionScope,
-                animatedContentScope = animatedContentScope,
                 onBackClick = { navController.popBackStack() },
                 saveText = { title -> viewModel.saveText(title) },
                 pinUpNote = { viewModel.pinUpNote() },
@@ -104,8 +97,6 @@ fun NoteDetailScreen(
 fun SuccessScreen(
     note: Note = mockNote,
     colors: List<AppColor> = AppColor.entries,
-    sharedTransitionScope: SharedTransitionScope,
-    animatedContentScope: AnimatedContentScope,
     onBackClick: () -> Unit = {},
     pinUpNote: () -> Unit = {},
     deleteNote: () -> Unit = {},
@@ -134,8 +125,6 @@ fun SuccessScreen(
             NoteContent(
                 padding = padding,
                 note = note,
-                sharedTransitionScope = sharedTransitionScope,
-                animatedContentScope = animatedContentScope,
                 saveText = saveText,
                 isDarkTheme = isDarkTheme,
                 addCheckBox = addCheckBox,
@@ -321,13 +310,10 @@ fun ColorItem(
     }
 }
 
-@OptIn(ExperimentalSharedTransitionApi::class)
 @Composable
 fun NoteContent(
     padding: PaddingValues = PaddingValues(),
     note: Note = mockNote,
-    sharedTransitionScope: SharedTransitionScope,
-    animatedContentScope: AnimatedContentScope,
     saveText: (String) -> Unit = { },
     isDarkTheme: Boolean = false,
     addCheckBox: () -> Unit = {},
@@ -335,43 +321,37 @@ fun NoteContent(
     updateCheckBox: (NoteCheckBox) -> Unit = {},
     deleteCheckBox: (String) -> Unit = {},
 ) {
-    with(sharedTransitionScope) {
-        val color = getColor(if (isDarkTheme) note.darkColor else note.lightColor)
+    val color = getColor(if (isDarkTheme) note.darkColor else note.lightColor)
 
-        var titleTextField by remember(note.id) { mutableStateOf(TextFieldValue(note.title)) }
+    var titleTextField by remember(note.id) { mutableStateOf(TextFieldValue(note.title)) }
 
-        Card(
+    Card(
+        modifier = Modifier
+            .fillMaxSize()
+            .padding(top = padding.calculateTopPadding(), start = 12.dp, end = 12.dp),
+        shape = RoundedCornerShape(topStart = 16.dp, topEnd = 16.dp),
+        elevation = CardDefaults.cardElevation(defaultElevation = 4.dp),
+    ) {
+        Column(
             modifier = Modifier
                 .fillMaxSize()
-                .padding(top = padding.calculateTopPadding(), start = 12.dp, end = 12.dp)
-                .sharedElement(
-                    sharedTransitionScope.rememberSharedContentState(key = note.id),
-                    animatedVisibilityScope = animatedContentScope
-                ),
-            shape = RoundedCornerShape(topStart = 16.dp, topEnd = 16.dp),
-            elevation = CardDefaults.cardElevation(defaultElevation = 4.dp),
+                .background(color)
+                .padding(top = 16.dp)
         ) {
-            Column(
-                modifier = Modifier
-                    .fillMaxSize()
-                    .background(color)
-                    .padding(top = 16.dp)
-            ) {
-                NoteHeader(
-                    titleTextField = titleTextField,
-                    onTitleChange = { newText -> titleTextField = newText },
-                    isPinned = note.isPinned,
-                    saveText = saveText
-                )
+            NoteHeader(
+                titleTextField = titleTextField,
+                onTitleChange = { newText -> titleTextField = newText },
+                isPinned = note.isPinned,
+                saveText = saveText
+            )
 
-                NoteBody(
-                    notesItems = note.items,
-                    addCheckBox = addCheckBox,
-                    updateTextField = updateTextField,
-                    updateCheckBox = updateCheckBox,
-                    deleteCheckBox = deleteCheckBox
-                )
-            }
+            NoteBody(
+                notesItems = note.items,
+                addCheckBox = addCheckBox,
+                updateTextField = updateTextField,
+                updateCheckBox = updateCheckBox,
+                deleteCheckBox = deleteCheckBox
+            )
         }
     }
 }
@@ -432,7 +412,7 @@ fun NoteBody(
     val listState = rememberLazyListState()
 
     LaunchedEffect(notesItems.size) {
-        if(notesItems.isNotEmpty()) listState.animateScrollToItem(notesItems.size - 1)
+        if (notesItems.isNotEmpty()) listState.animateScrollToItem(notesItems.size - 1)
     }
 
     LazyColumn(
@@ -458,7 +438,9 @@ fun NoteDetailFab(
     var expanded by remember { mutableStateOf(false) }
 
     Box(
-        modifier = Modifier.wrapContentSize().padding(bottom = 8.dp, end = 16.dp)
+        modifier = Modifier
+            .wrapContentSize()
+            .padding(bottom = 8.dp, end = 16.dp)
     ) {
         Column(
             horizontalAlignment = Alignment.CenterHorizontally,
