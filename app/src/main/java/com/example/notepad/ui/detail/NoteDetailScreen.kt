@@ -1,14 +1,15 @@
 package com.example.notepad.ui.detail
 
-import androidx.compose.animation.AnimatedContentScope
-import androidx.compose.animation.ExperimentalSharedTransitionApi
-import androidx.compose.animation.SharedTransitionScope
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.combinedClickable
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -28,6 +29,9 @@ import androidx.lifecycle.compose.LifecycleResumeEffect
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.NavHostController
 import com.example.model.entities.Note
+import com.example.model.entities.NoteCheckBox
+import com.example.model.entities.NoteItem
+import com.example.model.entities.NoteTextField
 import com.example.notepad.R
 import com.example.notepad.components.Dialog
 import com.example.notepad.components.MenuItem
@@ -36,17 +40,15 @@ import com.example.notepad.components.screens.LoadingScreen
 import com.example.notepad.utils.getColor
 import com.example.notepad.utils.getViewModel
 import com.example.notepad.utils.mockNote
+import com.example.notepad.utils.mockNoteItems
 import com.example.model.entities.Color as AppColor
 
-@OptIn(ExperimentalSharedTransitionApi::class)
 @Composable
 fun NoteDetailScreen(
     navController: NavHostController,
     noteId: String,
     index: Int,
-    sharedTransitionScope: SharedTransitionScope,
-    animatedContentScope: AnimatedContentScope,
-    isDarkTheme: Boolean = false
+    isDarkTheme: Boolean = false,
 ) {
     val viewModel = LocalContext.current.getViewModel<NoteDetailViewModel>()
     val uiState: NoteDetailUiState by viewModel.uiState.collectAsStateWithLifecycle()
@@ -66,35 +68,40 @@ fun NoteDetailScreen(
             SuccessScreen(
                 note = state.note,
                 colors = state.colors,
-                sharedTransitionScope = sharedTransitionScope,
-                animatedContentScope = animatedContentScope,
                 onBackClick = { navController.popBackStack() },
-                saveText = { title, content -> viewModel.saveText(title, content) },
+                saveText = { title -> viewModel.saveText(title) },
                 pinUpNote = { viewModel.pinUpNote() },
                 deleteNote = {
                     viewModel.deleteNote()
                     navController.popBackStack()
                 },
                 changeColor = { color -> viewModel.changeColor(color) },
-                isDarkTheme = isDarkTheme
+                isDarkTheme = isDarkTheme,
+                addTextField = { viewModel.addTextField() },
+                addCheckBox = { viewModel.addCheckBox() },
+                updateTextField = { textField -> viewModel.updateTextField(textField) },
+                updateCheckBox = { checkBox -> viewModel.updateCheckBox(checkBox) },
+                deleteCheckBox = { id -> viewModel.deleteCheckBox(id) },
             )
         }
     }
 }
 
-@OptIn(ExperimentalSharedTransitionApi::class)
 @Composable
 fun SuccessScreen(
     note: Note = mockNote,
     colors: List<AppColor> = AppColor.entries,
-    sharedTransitionScope: SharedTransitionScope,
-    animatedContentScope: AnimatedContentScope,
     onBackClick: () -> Unit = {},
     pinUpNote: () -> Unit = {},
     deleteNote: () -> Unit = {},
     changeColor: (AppColor) -> Unit = {},
-    saveText: (String, String) -> Unit = { _, _ -> },
-    isDarkTheme: Boolean = false
+    saveText: (String) -> Unit = { },
+    isDarkTheme: Boolean = false,
+    addTextField: () -> Unit = {},
+    addCheckBox: () -> Unit = {},
+    updateTextField: (NoteTextField) -> Unit = {},
+    updateCheckBox: (NoteCheckBox) -> Unit = {},
+    deleteCheckBox: (String) -> Unit = {},
 ) {
     Scaffold(
         topBar = {
@@ -112,12 +119,20 @@ fun SuccessScreen(
             NoteContent(
                 padding = padding,
                 note = note,
-                sharedTransitionScope = sharedTransitionScope,
-                animatedContentScope = animatedContentScope,
                 saveText = saveText,
-                isDarkTheme = isDarkTheme
+                isDarkTheme = isDarkTheme,
+                addCheckBox = addCheckBox,
+                updateTextField = updateTextField,
+                updateCheckBox = updateCheckBox,
+                deleteCheckBox = deleteCheckBox
             )
         },
+        floatingActionButton = {
+            NoteDetailFab(
+                addTextField = addTextField,
+                addCheckBox = addCheckBox
+            )
+        }
     )
 }
 
@@ -131,7 +146,7 @@ fun NoteDetailTopBar(
     pinUpNote: () -> Unit = {},
     deleteNote: () -> Unit = {},
     changeColor: (AppColor) -> Unit = {},
-    isDarkTheme: Boolean = false
+    isDarkTheme: Boolean = false,
 ) {
     var showMenu by remember { mutableStateOf(false) }
     var showColor by remember { mutableStateOf(false) }
@@ -249,7 +264,7 @@ fun DeleteNoteDialog(deleteNote: () -> Unit = {}, action: () -> Unit = {}) {
 fun ChangeColorMenu(
     colors: List<AppColor> = AppColor.entries,
     changeColor: (AppColor) -> Unit = {},
-    isDarkTheme: Boolean = false
+    isDarkTheme: Boolean = false,
 ) {
     for (i in 0 until colors.size.div(4)) {
         Row(
@@ -268,7 +283,7 @@ fun ChangeColorMenu(
 fun ColorItem(
     item: AppColor = AppColor.PALE_YELLOW,
     changeColor: (AppColor) -> Unit = {},
-    isDarkTheme: Boolean = false
+    isDarkTheme: Boolean = false,
 ) {
     val color = getColor(if (isDarkTheme) item.darkColor else item.lightColor)
 
@@ -289,91 +304,198 @@ fun ColorItem(
     }
 }
 
-@OptIn(ExperimentalSharedTransitionApi::class)
 @Composable
 fun NoteContent(
     padding: PaddingValues = PaddingValues(),
     note: Note = mockNote,
-    sharedTransitionScope: SharedTransitionScope,
-    animatedContentScope: AnimatedContentScope,
-    saveText: (String, String) -> Unit = { _, _ -> },
-    isDarkTheme: Boolean = false
+    saveText: (String) -> Unit = { },
+    isDarkTheme: Boolean = false,
+    addCheckBox: () -> Unit = {},
+    updateTextField: (NoteTextField) -> Unit = {},
+    updateCheckBox: (NoteCheckBox) -> Unit = {},
+    deleteCheckBox: (String) -> Unit = {},
 ) {
-    with(sharedTransitionScope) {
-        val color = getColor(if (isDarkTheme) note.darkColor else note.lightColor)
+    val color = getColor(if (isDarkTheme) note.darkColor else note.lightColor)
 
-        var titleTextField by remember(note.id) { mutableStateOf(TextFieldValue(note.title)) }
-        var contentTextField by remember(note.id) { mutableStateOf(TextFieldValue(note.content)) }
+    var titleTextField by remember(note.id) { mutableStateOf(TextFieldValue(note.title)) }
 
-        Card(
-            shape = Shapes().medium,
-            modifier = Modifier.Companion
-                .sharedElement(
-                    sharedTransitionScope.rememberSharedContentState(key = note.id),
-                    animatedVisibilityScope = animatedContentScope
-                )
+    Card(
+        modifier = Modifier
+            .fillMaxSize()
+            .padding(top = padding.calculateTopPadding(), start = 12.dp, end = 12.dp),
+        shape = RoundedCornerShape(topStart = 16.dp, topEnd = 16.dp),
+        elevation = CardDefaults.cardElevation(defaultElevation = 4.dp),
+    ) {
+        Column(
+            modifier = Modifier
                 .fillMaxSize()
-                .padding(top = padding.calculateTopPadding())
-                .padding(12.dp),
-            elevation = CardDefaults.cardElevation(defaultElevation = 4.dp),
+                .background(color)
+                .padding(top = 16.dp)
         ) {
-            Column(
-                modifier = Modifier
-                    .fillMaxSize()
-                    .background(color)
-                    .padding(top = 16.dp, start = 8.dp, end = 8.dp)
-            ) {
-                Row(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(end = 16.dp),
-                    horizontalArrangement = Arrangement.SpaceBetween
-                ) {
-                    TextField(
-                        modifier = Modifier.fillMaxWidth(0.75f),
-                        value = titleTextField,
-                        onValueChange = { newText ->
-                            titleTextField = newText
-                            saveText(titleTextField.text, contentTextField.text)
-                        },
-                        colors = TextFieldDefaults.colors(
-                            focusedIndicatorColor = Color.Transparent,
-                            unfocusedIndicatorColor = Color.Transparent,
-                            focusedContainerColor = Color.Transparent,
-                            unfocusedContainerColor = Color.Transparent,
-                        ),
-                        textStyle = TextStyle(
-                            fontWeight = FontWeight.Bold,
-                            fontSize = 24.sp,
-                        )
-                    )
+            NoteHeader(
+                titleTextField = titleTextField,
+                onTitleChange = { newText -> titleTextField = newText },
+                isPinned = note.isPinned,
+                saveText = saveText
+            )
 
-                    if (note.isPinned) {
-                        Icon(
-                            modifier = Modifier
-                                .size(24.dp)
-                                .align(Alignment.CenterVertically),
-                            painter = painterResource(id = R.drawable.ic_pin),
-                            contentDescription = "Pinned icon",
-                            tint = MaterialTheme.colorScheme.secondary,
-                        )
-                    }
+            NoteBody(
+                notesItems = note.items,
+                addCheckBox = addCheckBox,
+                updateTextField = updateTextField,
+                updateCheckBox = updateCheckBox,
+                deleteCheckBox = deleteCheckBox
+            )
+        }
+    }
+}
+
+@Composable
+fun NoteHeader(
+    titleTextField: TextFieldValue,
+    onTitleChange: (TextFieldValue) -> Unit,
+    isPinned: Boolean,
+    saveText: (String) -> Unit = { },
+) {
+    Row(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(end = 16.dp),
+        horizontalArrangement = Arrangement.SpaceBetween
+    ) {
+        TextField(
+            modifier = Modifier.fillMaxWidth(0.75f),
+            value = titleTextField,
+            onValueChange = { newText ->
+                onTitleChange(newText)
+                saveText(newText.text)
+            },
+            colors = TextFieldDefaults.colors(
+                focusedIndicatorColor = Color.Transparent,
+                unfocusedIndicatorColor = Color.Transparent,
+                focusedContainerColor = Color.Transparent,
+                unfocusedContainerColor = Color.Transparent,
+            ),
+            textStyle = TextStyle(
+                fontWeight = FontWeight.Bold,
+                fontSize = 24.sp,
+            )
+        )
+
+        if (isPinned) {
+            Icon(
+                modifier = Modifier
+                    .size(24.dp)
+                    .align(Alignment.CenterVertically),
+                painter = painterResource(id = R.drawable.ic_pin),
+                contentDescription = "Pinned icon",
+                tint = MaterialTheme.colorScheme.secondary,
+            )
+        }
+    }
+}
+
+@Composable
+fun NoteBody(
+    notesItems: List<NoteItem> = mockNoteItems,
+    addCheckBox: () -> Unit = {},
+    updateTextField: (NoteTextField) -> Unit = {},
+    updateCheckBox: (NoteCheckBox) -> Unit = {},
+    deleteCheckBox: (String) -> Unit = {},
+) {
+    val listState = rememberLazyListState()
+
+    LaunchedEffect(notesItems.size) {
+        if (notesItems.isNotEmpty()) listState.scrollToItem(notesItems.size - 1)
+    }
+
+    LazyColumn(
+        modifier = Modifier
+            .fillMaxWidth()
+            .fillMaxHeight(0.95f),
+        state = listState,
+    ) {
+        items(notesItems, key = { item -> item.id }) { item ->
+            when (item) {
+                is NoteTextField -> TextFieldItem(item, updateTextField)
+                is NoteCheckBox -> CheckBoxItem(item, addCheckBox, updateCheckBox, deleteCheckBox)
+            }
+        }
+    }
+}
+
+@Preview(showBackground = true)
+@Composable
+fun NoteDetailFab(
+    addTextField: () -> Unit = {},
+    addCheckBox: () -> Unit = {},
+) {
+    var expanded by remember { mutableStateOf(false) }
+
+    Box(
+        modifier = Modifier
+            .wrapContentSize()
+            .padding(bottom = 8.dp, end = 16.dp)
+    ) {
+        Column(
+            horizontalAlignment = Alignment.CenterHorizontally,
+            verticalArrangement = Arrangement.spacedBy(16.dp),
+            modifier = Modifier.align(Alignment.BottomEnd)
+        ) {
+            if (expanded) {
+                FloatingActionButton(
+                    modifier = Modifier.size(46.dp),
+                    shape = CircleShape,
+                    onClick = { },
+                    containerColor = MaterialTheme.colorScheme.tertiary,
+                ) {
+                    Icon(
+                        modifier = Modifier.size(24.dp),
+                        painter = painterResource(id = R.drawable.ic_image),
+                        contentDescription = "Add check box icon",
+                        tint = MaterialTheme.colorScheme.primary
+                    )
                 }
 
-                TextField(
-                    value = contentTextField,
-                    onValueChange = { newText ->
-                        contentTextField = newText
-                        saveText(titleTextField.text, contentTextField.text)
-                    },
-                    modifier = Modifier.fillMaxWidth(),
-                    colors = TextFieldDefaults.colors(
-                        focusedIndicatorColor = Color.Transparent,
-                        unfocusedIndicatorColor = Color.Transparent,
-                        focusedContainerColor = Color.Transparent,
-                        unfocusedContainerColor = Color.Transparent,
-                    ),
-                    textStyle = MaterialTheme.typography.bodyMedium,
+                FloatingActionButton(
+                    modifier = Modifier.size(46.dp),
+                    shape = CircleShape,
+                    onClick = { addTextField() },
+                    containerColor = MaterialTheme.colorScheme.tertiary,
+                ) {
+                    Icon(
+                        modifier = Modifier.size(24.dp),
+                        painter = painterResource(id = R.drawable.ic_text_fields),
+                        contentDescription = "Add check box icon",
+                        tint = MaterialTheme.colorScheme.primary
+                    )
+                }
+
+                FloatingActionButton(
+                    modifier = Modifier.size(46.dp),
+                    shape = CircleShape,
+                    onClick = { addCheckBox() },
+                    containerColor = MaterialTheme.colorScheme.tertiary,
+                ) {
+                    Icon(
+                        modifier = Modifier.size(24.dp),
+                        painter = painterResource(id = R.drawable.ic_check_box),
+                        contentDescription = "Add check box icon",
+                        tint = MaterialTheme.colorScheme.primary
+                    )
+                }
+            }
+
+            FloatingActionButton(
+                shape = CircleShape,
+                containerColor = MaterialTheme.colorScheme.primary,
+                onClick = { expanded = !expanded }
+            ) {
+                Icon(
+                    modifier = Modifier.size(28.dp),
+                    painter = painterResource(id = if (expanded) R.drawable.ic_arrow_downward else R.drawable.ic_arrow_upward),
+                    contentDescription = "Add icon",
+                    tint = MaterialTheme.colorScheme.tertiary
                 )
             }
         }

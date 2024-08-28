@@ -1,10 +1,8 @@
 package com.example.notepad.ui.list
 
-import androidx.compose.animation.AnimatedContentScope
-import androidx.compose.animation.ExperimentalSharedTransitionApi
-import androidx.compose.animation.SharedTransitionScope
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
@@ -41,12 +39,9 @@ import com.example.notepad.navigation.AppScreens
 import com.example.notepad.utils.getViewModel
 import com.example.notepad.utils.mockNoteList
 
-@OptIn(ExperimentalSharedTransitionApi::class)
 @Composable
 fun NotesScreen(
     navController: NavHostController,
-    sharedTransitionScope: SharedTransitionScope,
-    animatedContentScope: AnimatedContentScope,
     openDrawer: () -> Unit = {},
     isDarkTheme: Boolean = false,
 ) {
@@ -65,8 +60,6 @@ fun NotesScreen(
             SuccessScreen(
                 notes = state.notes,
                 itemsView = state.itemsView,
-                sharedTransitionScope = sharedTransitionScope,
-                animatedContentScope = animatedContentScope,
                 onSearch = { searchText -> viewModel.searchNotes(searchText) },
                 restoreNotes = { notes -> viewModel.restoreNotes(notes) },
                 checkNote = { id -> viewModel.checkNote(id) },
@@ -82,13 +75,10 @@ fun NotesScreen(
     }
 }
 
-@OptIn(ExperimentalSharedTransitionApi::class)
 @Composable
 fun SuccessScreen(
     notes: List<Note> = mockNoteList,
     itemsView: Int = 2,
-    sharedTransitionScope: SharedTransitionScope,
-    animatedContentScope: AnimatedContentScope,
     onSearch: (String) -> Unit = {},
     restoreNotes: (List<Note>) -> Unit = {},
     checkNote: (id: String) -> Unit = {},
@@ -120,8 +110,6 @@ fun SuccessScreen(
                 padding = padding,
                 notes = notes,
                 itemsView = itemsView,
-                sharedTransitionScope = sharedTransitionScope,
-                animatedContentScope = animatedContentScope,
                 onSearch = onSearch,
                 restoreNotes = restoreNotes,
                 checkNote = checkNote,
@@ -277,14 +265,11 @@ fun NotesTopBar(
     }
 }
 
-@OptIn(ExperimentalSharedTransitionApi::class)
 @Composable
 fun NotesContent(
     padding: PaddingValues = PaddingValues(),
     notes: List<Note> = mockNoteList,
     itemsView: Int = 2,
-    sharedTransitionScope: SharedTransitionScope,
-    animatedContentScope: AnimatedContentScope,
     onSearch: (String) -> Unit = {},
     restoreNotes: (List<Note>) -> Unit = {},
     checkNote: (id: String) -> Unit = {},
@@ -310,8 +295,6 @@ fun NotesContent(
         NotesStaggeredGrid(
             notes = notes,
             itemsView = itemsView,
-            sharedTransitionScope = sharedTransitionScope,
-            animatedContentScope = animatedContentScope,
             checkNote = checkNote,
             swipeNotes = swipeNotes,
             navigate = navigate,
@@ -400,11 +383,13 @@ fun AddNoteButton(onClick: (String) -> Unit = {}, size: Int) {
     val route = AppScreens.NoteDetailScreen.route.plus("/new_element/$size")
 
     FloatingActionButton(
+        modifier = Modifier.padding(bottom = 8.dp, end = 8.dp),
+        shape = CircleShape,
         containerColor = MaterialTheme.colorScheme.tertiary,
         onClick = { onClick(route) }
     ) {
         Icon(
-            modifier = Modifier.size(36.dp),
+            modifier = Modifier.size(28.dp),
             painter = painterResource(id = R.drawable.ic_add),
             contentDescription = "Add_icon",
             tint = MaterialTheme.colorScheme.primary

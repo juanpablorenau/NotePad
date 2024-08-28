@@ -42,7 +42,6 @@ fun Chip(text: String = "Chip", chipColor: Color = Color.White, textColor: Color
     }
 }
 
-
 @Composable
 fun MenuItem(
     icon: Int = R.drawable.ic_delete_outline,
@@ -85,7 +84,9 @@ fun Dialog(text: String = "Question?", yesAction: () -> Unit = {}, noAction: () 
         },
         dismissButton = {
             Text(
-                modifier = Modifier.padding(end = 16.dp).clickable { noAction() },
+                modifier = Modifier
+                    .padding(end = 16.dp)
+                    .clickable { noAction() },
                 text = stringResource(R.string.cancel),
             )
         }

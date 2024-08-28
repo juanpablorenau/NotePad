@@ -1,8 +1,8 @@
 package com.example.notepad.utils
 
-import com.example.model.entities.Author
 import com.example.model.entities.Note
-import java.util.Date
+import com.example.model.entities.NoteCheckBox
+import com.example.model.entities.NoteTextField
 import com.example.model.entities.Color as AppColor
 
 val mockNoteList by lazy {
@@ -89,15 +89,25 @@ val mockNote =
     Note(
         title = "Meeting Notes",
         content = "Here are the notes from the meeting.",
-        author = Author(),
-        createdDate = Date(),
-        lastModifiedDate = Date(),
-        category = "Personal",
         lightColor = AppColor.PALE_YELLOW.lightColor,
         darkColor = AppColor.PALE_YELLOW.darkColor,
         isPinned = false,
-        isFavorite = true,
-        isArchived = true,
-        isLocked = true,
     )
+
+val mockNoteItems = listOf(
+    NoteTextField(
+        text = "Note 1",
+    ),
+    NoteCheckBox(
+        text = "Note 3",
+        isChecked = true,
+    ),
+    NoteCheckBox(
+        text = "Note 3",
+        isChecked = true,
+    ),
+    NoteTextField(
+        text = "Note 2",
+    ),
+)
 
