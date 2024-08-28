@@ -9,7 +9,6 @@ import com.example.domain.usecase.detail.InsertNoteUseCase
 import com.example.domain.usecase.detail.UpdateNoteUseCase
 import com.example.model.entities.Note
 import com.example.model.entities.NoteCheckBox
-import com.example.model.entities.NoteSpace
 import com.example.model.entities.NoteTextField
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.CoroutineDispatcher
@@ -59,10 +58,7 @@ class NoteDetailViewModel @Inject constructor(
                 index = index,
                 lightColor = AppColor.PALE_YELLOW.lightColor,
                 darkColor = AppColor.PALE_YELLOW.darkColor,
-                items = listOf(
-                    NoteTextField(id = UUID.randomUUID().toString()),
-                    NoteSpace(id = UUID.randomUUID().toString())
-                )
+                items = listOf(NoteTextField(id = UUID.randomUUID().toString()))
             )
             tryOrError {
                 insertNoteUseCase(note)
@@ -129,12 +125,7 @@ class NoteDetailViewModel @Inject constructor(
                 copy(
                     note = note.copy(
                         items = note.items.toMutableList()
-                            .apply {
-                                add(
-                                    size - 1,
-                                    NoteTextField(id = UUID.randomUUID().toString())
-                                )
-                            })
+                            .apply { add(NoteTextField(id = UUID.randomUUID().toString())) })
                 )
             }
         }
@@ -146,12 +137,7 @@ class NoteDetailViewModel @Inject constructor(
                 copy(
                     note = note.copy(
                         items = note.items.toMutableList()
-                            .apply {
-                                add(
-                                    size - 1,
-                                    NoteCheckBox(id = UUID.randomUUID().toString())
-                                )
-                            })
+                            .apply { add(NoteCheckBox(id = UUID.randomUUID().toString())) })
                 )
             }
         }
@@ -190,20 +176,19 @@ class NoteDetailViewModel @Inject constructor(
                     note = note.copy(items =
                     note.items.toMutableList().apply {
                         val index = indexOfFirst { noteItem -> noteItem.id == id }
+                        val prev = getOrNull(index - 1)
+                        val next = getOrNull(index + 1)
                         when (index) {
                             -1 -> return@apply
                             size - 1 -> removeLast()
                             else -> {
-                                val prevItem = getOrNull(index - 1)
-                                val nextItem = getOrNull(index + 1)
                                 removeAt(index)
-                                if (prevItem is NoteTextField && nextItem is NoteTextField) {
+                                if (prev is NoteTextField && next is NoteTextField) {
                                     removeAt(index)
                                     removeAt(index - 1)
                                     add(
-                                        index - 1, prevItem.copy(
-                                            text = "${prevItem.text}\n${nextItem.text}"
-                                        )
+                                        index - 1,
+                                        prev.copy(text = "${prev.text}\n${next.text}")
                                     )
                                 }
                             }

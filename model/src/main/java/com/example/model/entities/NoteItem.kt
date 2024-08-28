@@ -12,7 +12,3 @@ data class NoteTextField(
     override val id: String = "",
     val text: String = "",
 ) : NoteItem(id)
-
-data class NoteSpace(
-    override val id: String = "",
-) : NoteItem(id)

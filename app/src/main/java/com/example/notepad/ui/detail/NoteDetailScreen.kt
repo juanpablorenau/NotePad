@@ -1,6 +1,5 @@
 package com.example.notepad.ui.detail
 
-import androidx.compose.animation.ExperimentalSharedTransitionApi
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
@@ -32,14 +31,10 @@ import androidx.navigation.NavHostController
 import com.example.model.entities.Note
 import com.example.model.entities.NoteCheckBox
 import com.example.model.entities.NoteItem
-import com.example.model.entities.NoteSpace
 import com.example.model.entities.NoteTextField
 import com.example.notepad.R
-import com.example.notepad.components.CheckBoxItem
 import com.example.notepad.components.Dialog
 import com.example.notepad.components.MenuItem
-import com.example.notepad.components.SpaceItem
-import com.example.notepad.components.TextFieldItem
 import com.example.notepad.components.screens.ErrorScreen
 import com.example.notepad.components.screens.LoadingScreen
 import com.example.notepad.utils.getColor
@@ -92,7 +87,6 @@ fun NoteDetailScreen(
     }
 }
 
-@OptIn(ExperimentalSharedTransitionApi::class)
 @Composable
 fun SuccessScreen(
     note: Note = mockNote,
@@ -412,18 +406,19 @@ fun NoteBody(
     val listState = rememberLazyListState()
 
     LaunchedEffect(notesItems.size) {
-        if (notesItems.isNotEmpty()) listState.animateScrollToItem(notesItems.size - 1)
+        if (notesItems.isNotEmpty()) listState.scrollToItem(notesItems.size - 1)
     }
 
     LazyColumn(
+        modifier = Modifier
+            .fillMaxWidth()
+            .fillMaxHeight(0.95f),
         state = listState,
-        modifier = Modifier.fillMaxWidth()
     ) {
-        items(notesItems) { item ->
+        items(notesItems, key = { item -> item.id }) { item ->
             when (item) {
                 is NoteTextField -> TextFieldItem(item, updateTextField)
                 is NoteCheckBox -> CheckBoxItem(item, addCheckBox, updateCheckBox, deleteCheckBox)
-                is NoteSpace -> SpaceItem()
             }
         }
     }
