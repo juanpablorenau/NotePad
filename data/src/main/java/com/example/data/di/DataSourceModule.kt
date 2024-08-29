@@ -1,7 +1,7 @@
 package com.example.data.di
 
 import com.example.data.source.local.LocalDataSource
-import com.example.data.source.local.dao.NotePadDao
+import com.example.data.source.local.dao.NoteDao
 import com.example.data.source.local.impl.LocalDataSourceImpl
 import dagger.Module
 import dagger.Provides
@@ -15,7 +15,7 @@ class DataSourceModule {
 
     @Provides
     fun providesLocalDataSource(
-        notePadDao: NotePadDao,
+        noteDao: NoteDao,
         dispatcher: CoroutineDispatcher,
-    ): LocalDataSource = LocalDataSourceImpl(notePadDao, dispatcher)
+    ): LocalDataSource = LocalDataSourceImpl(noteDao, dispatcher)
 }

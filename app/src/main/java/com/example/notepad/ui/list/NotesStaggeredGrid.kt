@@ -31,11 +31,14 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.model.entities.Note
+import com.example.model.entities.NoteItem
+import com.example.model.entities.NoteItemType
 import com.example.notepad.R
 import com.example.notepad.components.staggeredgrid.ReorderableItem
 import com.example.notepad.components.staggeredgrid.rememberReorderableLazyStaggeredGridState
 import com.example.notepad.navigation.AppScreens
 import com.example.notepad.utils.getColor
+import com.example.notepad.utils.mockNoteItems
 import com.example.notepad.utils.mockNoteList
 
 @OptIn(ExperimentalFoundationApi::class, ExperimentalSharedTransitionApi::class)
@@ -118,43 +121,52 @@ fun NotesStaggeredGrid(
                             .background(color)
                             .padding(16.dp)
                     ) {
-                        Box(
-                            modifier = Modifier.fillMaxWidth()
-                        ) {
-                            Text(
-                                modifier = Modifier.padding(end = 12.dp),
-                                text = item.title,
-                                fontWeight = FontWeight.Bold,
-                                textAlign = TextAlign.Start,
-                                overflow = TextOverflow.Ellipsis,
-                                maxLines = 2,
-                                fontSize = 16.sp,
-                                color = MaterialTheme.colorScheme.secondary,
-                            )
-                            if (item.isPinned) {
-                                Icon(
-                                    modifier = Modifier
-                                        .size(12.dp)
-                                        .align(Alignment.TopEnd),
-                                    painter = painterResource(id = R.drawable.ic_pin),
-                                    contentDescription = "Pinned icon",
-                                    tint = MaterialTheme.colorScheme.secondary,
-                                )
-                            }
-                        }
-
+                        NoteHeader(item)
                         Spacer(modifier = Modifier.height(16.dp))
-
-                        Text(
-                            text = item.content,
-                            fontSize = 12.sp,
-                            textAlign = TextAlign.Start,
-                            color = MaterialTheme.colorScheme.secondary,
-                            maxLines = 8
-                        )
+                        NoteBody(item.items.take(2))
                     }
                 }
             }
         }
     }
+}
+
+@Composable
+fun NoteHeader(item: Note){
+    Box(
+        modifier = Modifier.fillMaxWidth()
+    ) {
+        Text(
+            modifier = Modifier.padding(end = 12.dp),
+            text = item.title,
+            fontWeight = FontWeight.Bold,
+            textAlign = TextAlign.Start,
+            overflow = TextOverflow.Ellipsis,
+            maxLines = 2,
+            fontSize = 16.sp,
+            color = MaterialTheme.colorScheme.secondary,
+        )
+        if (item.isPinned) {
+            Icon(
+                modifier = Modifier
+                    .size(12.dp)
+                    .align(Alignment.TopEnd),
+                painter = painterResource(id = R.drawable.ic_pin),
+                contentDescription = "Pinned icon",
+                tint = MaterialTheme.colorScheme.secondary,
+            )
+        }
+    }
+}
+
+@Composable
+fun NoteBody(
+    notesItems: List<NoteItem> = mockNoteItems,
+) {
+    notesItems.forEach { item ->
+            when (item.type) {
+                NoteItemType.TEXT -> TextFieldItem(item)
+                NoteItemType.CHECK_BOX -> CheckBoxItem(item)
+            }
+        }
 }

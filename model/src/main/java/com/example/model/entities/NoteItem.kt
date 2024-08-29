@@ -1,14 +1,16 @@
 package com.example.model.entities
 
-open class NoteItem(open val id: String = "")
-
-data class NoteCheckBox(
-    override val id: String = "",
+data class NoteItem(
+    val id: String = "",
+    val noteId: String = "",
     val text: String = "",
     val isChecked: Boolean = false,
-) : NoteItem(id)
+    val type: NoteItemType = NoteItemType.TEXT
+){
+    fun isText() = type == NoteItemType.TEXT
+}
 
-data class NoteTextField(
-    override val id: String = "",
-    val text: String = "",
-) : NoteItem(id)
+enum class NoteItemType {
+    TEXT,
+    CHECK_BOX,
+}

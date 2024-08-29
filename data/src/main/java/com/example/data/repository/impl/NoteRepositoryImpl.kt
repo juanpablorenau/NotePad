@@ -19,13 +19,13 @@ class NoteRepositoryImpl @Inject constructor(
     private val noteDto: NoteDto,
 ) : NoteRepository {
 
+    override fun getNotes(): Flow<List<Note>> = flow {
+        localDataSource.getNotes().map { noteDto.toDomain(it) }.also { emit(it) }
+    }.flowOn(dispatcher)
+
     override fun getNoteById(id: String): Flow<Note> = flow {
         localDataSource.getNoteById(id)?.also { emit(noteDto.toDomain(it)) }
             ?: throw Exception("Note $id not found")
-    }.flowOn(dispatcher)
-
-    override fun getNotes(): Flow<List<Note>> = flow {
-        localDataSource.getNotes().map { noteDto.toDomain(it) }.also { emit(it) }
     }.flowOn(dispatcher)
 
     override suspend fun insertNote(note: Note) {
