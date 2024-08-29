@@ -1,34 +1,37 @@
 package com.example.data.repository.dto
 
-import com.example.data.model.db.NoteDbModel
+import com.example.data.model.db.NoteDb
+import com.example.data.model.db.NoteEmbeddedDb
 import com.example.model.entities.Note
 import javax.inject.Inject
 
-class NoteDto @Inject constructor() {
-
+class NoteDto @Inject constructor(
+    private val noteItemDto: NoteItemDto
+) {
     fun toDb(note: Note) =
         with(note) {
-            NoteDbModel(
-                id = id,
-                title = title,
-                content = content,
-                lightColor = lightColor,
-                darkColor = darkColor,
-                isPinned = isPinned,
-                index = index
+            NoteDb(
+                note = NoteEmbeddedDb(
+                    id = id,
+                    title = title,
+                    lightColor = lightColor,
+                    darkColor = darkColor,
+                    isPinned = isPinned,
+                ),
+                items = items.map { noteItemDto.toDb(it) }
             )
         }
 
-    fun toDomain(noteDbModel: NoteDbModel) =
-        with(noteDbModel) {
+    fun toDomain(noteDb: NoteDb) =
+        with(noteDb) {
             Note(
-                id = id,
-                title = title,
-                content = content,
-                lightColor = lightColor,
-                darkColor = darkColor,
-                isPinned = isPinned,
-                index = index
+                id = note.id,
+                title = note.title,
+                lightColor = note.lightColor,
+                darkColor = note.darkColor,
+                isPinned = note.isPinned,
+                index = note.index,
+                items = items.map { noteItemDto.toDomain(it) }
             )
         }
 }

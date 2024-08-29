@@ -9,7 +9,7 @@ enum class Color(
     BLUSH("#FFD9E1", "#B38F99"),
     ORANGE("#FFBF80", "#B36A4D"),
     YELLOW("#FFD580", "#B38F4D"),
-    PALE_YELLOW("#FFF999", "#CAAD19"),
+    PALE_YELLOW("#FFF999", "#D4A200"),
     GREEN("#BFFF80", "#8FB35A"),
     PALE_GREEN("#B3FF99", "#8FB36A"),
     MINT_GREEN("#80FFBF", "#4DB38F"),

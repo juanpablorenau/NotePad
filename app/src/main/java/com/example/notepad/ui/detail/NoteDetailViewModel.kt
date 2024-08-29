@@ -8,8 +8,8 @@ import com.example.domain.usecase.detail.GetNoteDetailUseCase
 import com.example.domain.usecase.detail.InsertNoteUseCase
 import com.example.domain.usecase.detail.UpdateNoteUseCase
 import com.example.model.entities.Note
-import com.example.model.entities.NoteCheckBox
-import com.example.model.entities.NoteTextField
+import com.example.model.entities.NoteItem
+import com.example.model.entities.NoteItemType
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.Dispatchers
@@ -54,11 +54,14 @@ class NoteDetailViewModel @Inject constructor(
 
     private fun createNewNote(index: Int) {
         viewModelScope.launch(dispatcher) {
+            val noteId = UUID.randomUUID().toString()
+            val noteItemId = UUID.randomUUID().toString()
             val note = Note(
+                id = noteId,
                 index = index,
                 lightColor = AppColor.PALE_YELLOW.lightColor,
                 darkColor = AppColor.PALE_YELLOW.darkColor,
-                items = listOf(NoteTextField(id = UUID.randomUUID().toString()))
+                items = listOf(NoteItem(id = noteItemId, noteId = noteId))
             )
             tryOrError {
                 insertNoteUseCase(note)
@@ -121,11 +124,11 @@ class NoteDetailViewModel @Inject constructor(
     fun addTextField() {
         _uiState.getAndUpdate {
             with((it as NoteDetailUiState.Success)) {
-                if (note.items.isNotEmpty() && note.items.last() is NoteTextField) return
+                if (note.items.isNotEmpty() && note.items.last().isText()) return
                 copy(
                     note = note.copy(
                         items = note.items.toMutableList()
-                            .apply { add(NoteTextField(id = UUID.randomUUID().toString())) })
+                            .apply { add(NoteItem(id = UUID.randomUUID().toString(), noteId = note.id)) })
                 )
             }
         }
@@ -136,35 +139,53 @@ class NoteDetailViewModel @Inject constructor(
             with((it as NoteDetailUiState.Success)) {
                 copy(
                     note = note.copy(
-                        items = note.items.toMutableList()
-                            .apply { add(NoteCheckBox(id = UUID.randomUUID().toString())) })
+                        items = note.items.toMutableList().apply {
+                            add(
+                                NoteItem(
+                                    id = UUID.randomUUID().toString(),
+                                    noteId = note.id,
+                                    type = NoteItemType.CHECK_BOX
+                                )
+                            )
+                        })
                 )
             }
         }
     }
 
-    fun updateTextField(textField: NoteTextField) {
+    fun updateTextField(textField: NoteItem) {
         _uiState.getAndUpdate {
             with((it as NoteDetailUiState.Success)) {
                 copy(note = note.copy(items = note.items.map { noteItem ->
-                    if (noteItem.id == textField.id) {
-                        (noteItem as NoteTextField).copy(text = textField.text)
+                    if (noteItem.id == textField.id) noteItem.copy(text = textField.text)
+                    else noteItem
+                }))
+            }
+        }
+    }
+
+    fun updateCheckBox(checkBox: NoteItem) {
+        _uiState.getAndUpdate {
+            with((it as NoteDetailUiState.Success)) {
+                copy(note = note.copy(items = note.items.map { noteItem ->
+                    if (noteItem.id == checkBox.id) {
+                        noteItem.copy(text = checkBox.text, isChecked = checkBox.isChecked)
                     } else noteItem
                 }))
             }
         }
     }
 
-    fun updateCheckBox(checkBox: NoteCheckBox) {
+    fun deleteTextField(id: String) {
         _uiState.getAndUpdate {
             with((it as NoteDetailUiState.Success)) {
-                copy(note = note.copy(items = note.items.map { noteItem ->
-                    if (noteItem.id == checkBox.id) {
-                        (noteItem as NoteCheckBox).copy(
-                            text = checkBox.text, isChecked = checkBox.isChecked
-                        )
-                    } else noteItem
-                }))
+                copy(
+                    note = note.copy(items =
+                    note.items.toMutableList().apply {
+                        val index = indexOfFirst { noteItem -> noteItem.id == id }
+                        if (index != -1) removeAt(index)
+                    })
+                )
             }
         }
     }
@@ -183,7 +204,7 @@ class NoteDetailViewModel @Inject constructor(
                             size - 1 -> removeLast()
                             else -> {
                                 removeAt(index)
-                                if (prev is NoteTextField && next is NoteTextField) {
+                                if (prev?.isText() == true && next?.isText() == true) {
                                     removeAt(index)
                                     removeAt(index - 1)
                                     add(

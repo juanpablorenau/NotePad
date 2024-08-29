@@ -21,7 +21,6 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.text.input.TextFieldValue
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -29,9 +28,8 @@ import androidx.lifecycle.compose.LifecycleResumeEffect
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.NavHostController
 import com.example.model.entities.Note
-import com.example.model.entities.NoteCheckBox
 import com.example.model.entities.NoteItem
-import com.example.model.entities.NoteTextField
+import com.example.model.entities.NoteItemType
 import com.example.notepad.R
 import com.example.notepad.components.Dialog
 import com.example.notepad.components.MenuItem
@@ -81,6 +79,7 @@ fun NoteDetailScreen(
                 addCheckBox = { viewModel.addCheckBox() },
                 updateTextField = { textField -> viewModel.updateTextField(textField) },
                 updateCheckBox = { checkBox -> viewModel.updateCheckBox(checkBox) },
+                deleteTextField = { id -> viewModel.deleteTextField(id) },
                 deleteCheckBox = { id -> viewModel.deleteCheckBox(id) },
             )
         }
@@ -99,8 +98,9 @@ fun SuccessScreen(
     isDarkTheme: Boolean = false,
     addTextField: () -> Unit = {},
     addCheckBox: () -> Unit = {},
-    updateTextField: (NoteTextField) -> Unit = {},
-    updateCheckBox: (NoteCheckBox) -> Unit = {},
+    updateTextField: (NoteItem) -> Unit = {},
+    updateCheckBox: (NoteItem) -> Unit = {},
+    deleteTextField: (String) -> Unit = {},
     deleteCheckBox: (String) -> Unit = {},
 ) {
     Scaffold(
@@ -124,6 +124,7 @@ fun SuccessScreen(
                 addCheckBox = addCheckBox,
                 updateTextField = updateTextField,
                 updateCheckBox = updateCheckBox,
+                deleteTextField = deleteTextField,
                 deleteCheckBox = deleteCheckBox
             )
         },
@@ -311,13 +312,12 @@ fun NoteContent(
     saveText: (String) -> Unit = { },
     isDarkTheme: Boolean = false,
     addCheckBox: () -> Unit = {},
-    updateTextField: (NoteTextField) -> Unit = {},
-    updateCheckBox: (NoteCheckBox) -> Unit = {},
+    updateTextField: (NoteItem) -> Unit = {},
+    updateCheckBox: (NoteItem) -> Unit = {},
+    deleteTextField: (String) -> Unit = {},
     deleteCheckBox: (String) -> Unit = {},
 ) {
     val color = getColor(if (isDarkTheme) note.darkColor else note.lightColor)
-
-    var titleTextField by remember(note.id) { mutableStateOf(TextFieldValue(note.title)) }
 
     Card(
         modifier = Modifier
@@ -333,8 +333,7 @@ fun NoteContent(
                 .padding(top = 16.dp)
         ) {
             NoteHeader(
-                titleTextField = titleTextField,
-                onTitleChange = { newText -> titleTextField = newText },
+                title = note.title,
                 isPinned = note.isPinned,
                 saveText = saveText
             )
@@ -344,17 +343,18 @@ fun NoteContent(
                 addCheckBox = addCheckBox,
                 updateTextField = updateTextField,
                 updateCheckBox = updateCheckBox,
+                deleteTextField = deleteTextField,
                 deleteCheckBox = deleteCheckBox
             )
         }
     }
 }
 
+@Preview(showBackground = true)
 @Composable
 fun NoteHeader(
-    titleTextField: TextFieldValue,
-    onTitleChange: (TextFieldValue) -> Unit,
-    isPinned: Boolean,
+    title: String = "Title",
+    isPinned: Boolean = true,
     saveText: (String) -> Unit = { },
 ) {
     Row(
@@ -365,11 +365,8 @@ fun NoteHeader(
     ) {
         TextField(
             modifier = Modifier.fillMaxWidth(0.75f),
-            value = titleTextField,
-            onValueChange = { newText ->
-                onTitleChange(newText)
-                saveText(newText.text)
-            },
+            value = title,
+            onValueChange = { newText -> saveText(newText) },
             colors = TextFieldDefaults.colors(
                 focusedIndicatorColor = Color.Transparent,
                 unfocusedIndicatorColor = Color.Transparent,
@@ -379,6 +376,7 @@ fun NoteHeader(
             textStyle = TextStyle(
                 fontWeight = FontWeight.Bold,
                 fontSize = 24.sp,
+                color = MaterialTheme.colorScheme.secondary
             )
         )
 
@@ -399,8 +397,9 @@ fun NoteHeader(
 fun NoteBody(
     notesItems: List<NoteItem> = mockNoteItems,
     addCheckBox: () -> Unit = {},
-    updateTextField: (NoteTextField) -> Unit = {},
-    updateCheckBox: (NoteCheckBox) -> Unit = {},
+    updateTextField: (NoteItem) -> Unit = {},
+    updateCheckBox: (NoteItem) -> Unit = {},
+    deleteTextField: (String) -> Unit = {},
     deleteCheckBox: (String) -> Unit = {},
 ) {
     val listState = rememberLazyListState()
@@ -416,9 +415,9 @@ fun NoteBody(
         state = listState,
     ) {
         items(notesItems, key = { item -> item.id }) { item ->
-            when (item) {
-                is NoteTextField -> TextFieldItem(item, updateTextField)
-                is NoteCheckBox -> CheckBoxItem(item, addCheckBox, updateCheckBox, deleteCheckBox)
+            when (item.type) {
+                NoteItemType.TEXT -> TextFieldItem(item, updateTextField, deleteTextField)
+                NoteItemType.CHECK_BOX -> CheckBoxItem(item, addCheckBox, updateCheckBox, deleteCheckBox)
             }
         }
     }

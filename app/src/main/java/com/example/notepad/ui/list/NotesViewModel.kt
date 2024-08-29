@@ -82,8 +82,8 @@ class NotesViewModel @Inject constructor(
             with((it as NotesUiState.Success)) {
                 val normalizedQuery = query.normalize()
                 copy(notes = notes.filter { note ->
-                    note.title.normalize().contains(normalizedQuery, ignoreCase = true) ||
-                            note.content.normalize().contains(normalizedQuery, ignoreCase = true)
+                    //TODO
+                    note.title.normalize().contains(normalizedQuery, ignoreCase = true)
                 })
             }
         }
