@@ -3,6 +3,7 @@ package com.example.notepad.ui.detail
 import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.example.domain.usecase.detail.DeleteNoteItemUseCase
 import com.example.domain.usecase.detail.DeleteNoteUseCase
 import com.example.domain.usecase.detail.GetNoteDetailUseCase
 import com.example.domain.usecase.detail.InsertNoteUseCase
@@ -35,6 +36,7 @@ class NoteDetailViewModel @Inject constructor(
     private val getNoteDetailUseCase: GetNoteDetailUseCase,
     private val updateNoteUseCase: UpdateNoteUseCase,
     private val deleteNoteUseCase: DeleteNoteUseCase,
+    private val deleteNoteItemUseCase: DeleteNoteItemUseCase,
 ) : ViewModel() {
 
     private val _uiState = MutableStateFlow<NoteDetailUiState>(NoteDetailUiState.Loading)
@@ -125,29 +127,30 @@ class NoteDetailViewModel @Inject constructor(
         _uiState.getAndUpdate {
             with((it as NoteDetailUiState.Success)) {
                 if (note.items.isNotEmpty() && note.items.last().isText()) return
+                val newNoteItemId = UUID.randomUUID().toString()
                 copy(
-                    note = note.copy(
-                        items = note.items.toMutableList()
-                            .apply { add(NoteItem(id = UUID.randomUUID().toString(), noteId = note.id)) })
+                    note = note.copy(items = note.items.toMutableList()
+                        .apply { add(NoteItem(id = newNoteItemId, noteId = note.id)) })
                 )
             }
         }
     }
 
-    fun addCheckBox() {
+    fun addCheckBox(noteItemId: String?) {
         _uiState.getAndUpdate {
             with((it as NoteDetailUiState.Success)) {
+                val newNoteItemId = UUID.randomUUID().toString()
                 copy(
-                    note = note.copy(
-                        items = note.items.toMutableList().apply {
-                            add(
-                                NoteItem(
-                                    id = UUID.randomUUID().toString(),
-                                    noteId = note.id,
-                                    type = NoteItemType.CHECK_BOX
-                                )
+                    note = note.copy(items = note.items.toMutableList().apply {
+                        val index =
+                            if (noteItemId != null) indexOfFirst { item -> item.id == noteItemId } + 1
+                            else size
+                        add(
+                            index, NoteItem(
+                                id = newNoteItemId, noteId = note.id, type = NoteItemType.CHECK_BOX
                             )
-                        })
+                        )
+                    })
                 )
             }
         }
@@ -180,10 +183,12 @@ class NoteDetailViewModel @Inject constructor(
         _uiState.getAndUpdate {
             with((it as NoteDetailUiState.Success)) {
                 copy(
-                    note = note.copy(items =
-                    note.items.toMutableList().apply {
+                    note = note.copy(items = note.items.toMutableList().apply {
                         val index = indexOfFirst { noteItem -> noteItem.id == id }
-                        if (index != -1) removeAt(index)
+                        if (index != -1) {
+                            removeAt(index)
+                            viewModelScope.launch(dispatcher) { deleteNoteItemUseCase(id) }
+                        }
                     })
                 )
             }
@@ -194,8 +199,7 @@ class NoteDetailViewModel @Inject constructor(
         _uiState.getAndUpdate {
             with((it as NoteDetailUiState.Success)) {
                 copy(
-                    note = note.copy(items =
-                    note.items.toMutableList().apply {
+                    note = note.copy(items = note.items.toMutableList().apply {
                         val index = indexOfFirst { noteItem -> noteItem.id == id }
                         val prev = getOrNull(index - 1)
                         val next = getOrNull(index + 1)
@@ -204,6 +208,7 @@ class NoteDetailViewModel @Inject constructor(
                             size - 1 -> removeLast()
                             else -> {
                                 removeAt(index)
+                                viewModelScope.launch(dispatcher) { deleteNoteItemUseCase(id) }
                                 if (prev?.isText() == true && next?.isText() == true) {
                                     removeAt(index)
                                     removeAt(index - 1)

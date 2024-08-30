@@ -1,5 +1,6 @@
 package com.example.notepad.ui.detail
 
+import androidx.compose.foundation.focusable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Row
@@ -34,19 +35,21 @@ import com.example.model.entities.NoteItemType
 @Preview(showBackground = true)
 @Composable
 fun CheckBoxItem(
-    checkBox: NoteItem = NoteItem(type = NoteItemType.CHECK_BOX),
-    addNewCheckBox: () -> Unit = {},
+    noteItem: NoteItem = NoteItem(type = NoteItemType.CHECK_BOX),
+    addCheckBox: (String) -> Unit = {},
     updateCheckBox: (NoteItem) -> Unit = {},
     deleteCheckBox: (String) -> Unit = {},
 ) {
-    val focusRequester = remember(checkBox.id) { FocusRequester() }
-
-    LaunchedEffect(checkBox.id) { focusRequester.requestFocus() }
-
     Row(
         modifier = Modifier
             .fillMaxWidth()
-            .padding(start = 12.dp, end = 24.dp),
+            .padding(start = 12.dp, end = 24.dp)
+            .onKeyEvent {
+                if (it.key == Key.Backspace && noteItem.text.isEmpty()) {
+                    deleteCheckBox(noteItem.id)
+                    true
+                } else false
+            },
         horizontalArrangement = Arrangement.SpaceBetween,
         verticalAlignment = Alignment.CenterVertically
     ) {
@@ -55,9 +58,9 @@ fun CheckBoxItem(
             horizontalArrangement = Arrangement.Absolute.Left
         ) {
             Checkbox(
-                checked = checkBox.isChecked,
+                checked = noteItem.isChecked,
                 onCheckedChange = { newChecked ->
-                    updateCheckBox(checkBox.copy(text = checkBox.text, isChecked = newChecked))
+                    updateCheckBox(noteItem.copy(text = noteItem.text, isChecked = newChecked))
                 },
                 colors = CheckboxDefaults.colors(
                     checkedColor = MaterialTheme.colorScheme.primary,
@@ -67,22 +70,29 @@ fun CheckBoxItem(
 
             SelectionContainer {
                 BasicTextField(
-                    modifier = Modifier.focusRequester(focusRequester),
-                    value = checkBox.text,
+                    modifier = Modifier
+                        .onKeyEvent {
+                            if (it.key == Key.Backspace && noteItem.text.isEmpty()) {
+                                deleteCheckBox(noteItem.id)
+                                true
+                            } else false
+                        },
+
+                    value = noteItem.text,
                     singleLine = true,
                     onValueChange = { newText ->
                         updateCheckBox(
-                            checkBox.copy(
+                            noteItem.copy(
                                 text = newText,
-                                isChecked = checkBox.isChecked
+                                isChecked = noteItem.isChecked
                             )
                         )
                     },
                     keyboardOptions = KeyboardOptions.Default.copy(imeAction = ImeAction.Done),
                     keyboardActions = KeyboardActions(
                         onDone = {
-                            if (checkBox.text.isNotEmpty()) addNewCheckBox()
-                            else deleteCheckBox(checkBox.id)
+                            if (noteItem.text.isNotEmpty()) addCheckBox(noteItem.id)
+                            else deleteCheckBox(noteItem.id)
                         },
 
                         ),
@@ -102,31 +112,29 @@ fun TextFieldItem(
 ) {
     val focusRequester = remember(noteItem.id) { FocusRequester() }
 
-    LaunchedEffect(noteItem.id) {
-        focusRequester.requestFocus()
-    }
-
     Box(
         modifier = Modifier
-            .padding(vertical = 8.dp)
-            .focusRequester(focusRequester)
-            .onKeyEvent { event ->
-                if (event.key == Key.Delete && noteItem.text.isEmpty()) {
+            .onKeyEvent {
+                if (it.key == Key.Backspace && noteItem.text.isEmpty()) {
                     deleteTextField(noteItem.id)
                     true
                 } else false
             }
     ) {
-        SelectionContainer{
-            BasicTextField(
-                modifier = Modifier
-                    .padding(horizontal = 24.dp),
-                value = noteItem.text,
-                onValueChange = { newText ->
-                    updateTextField(noteItem.copy(text = newText))
-                },
-                textStyle = TextStyle(color = MaterialTheme.colorScheme.secondary)
-            )
-        }
+        BasicTextField(
+            modifier = Modifier
+                .padding(horizontal = 24.dp)
+                .focusRequester(focusRequester)
+                .focusable(),
+            value = noteItem.text,
+            onValueChange = { newText ->
+                updateTextField(noteItem.copy(text = newText))
+            },
+            textStyle = TextStyle(color = MaterialTheme.colorScheme.secondary)
+        )
+    }
+
+    LaunchedEffect(noteItem.id) {
+        focusRequester.requestFocus()
     }
 }

@@ -76,7 +76,7 @@ fun NoteDetailScreen(
                 changeColor = { color -> viewModel.changeColor(color) },
                 isDarkTheme = isDarkTheme,
                 addTextField = { viewModel.addTextField() },
-                addCheckBox = { viewModel.addCheckBox() },
+                addCheckBox = { id -> viewModel.addCheckBox(id) },
                 updateTextField = { textField -> viewModel.updateTextField(textField) },
                 updateCheckBox = { checkBox -> viewModel.updateCheckBox(checkBox) },
                 deleteTextField = { id -> viewModel.deleteTextField(id) },
@@ -97,7 +97,7 @@ fun SuccessScreen(
     saveText: (String) -> Unit = { },
     isDarkTheme: Boolean = false,
     addTextField: () -> Unit = {},
-    addCheckBox: () -> Unit = {},
+    addCheckBox: (String?) -> Unit = {},
     updateTextField: (NoteItem) -> Unit = {},
     updateCheckBox: (NoteItem) -> Unit = {},
     deleteTextField: (String) -> Unit = {},
@@ -311,7 +311,7 @@ fun NoteContent(
     note: Note = mockNote,
     saveText: (String) -> Unit = { },
     isDarkTheme: Boolean = false,
-    addCheckBox: () -> Unit = {},
+    addCheckBox: (String?) -> Unit = {},
     updateTextField: (NoteItem) -> Unit = {},
     updateCheckBox: (NoteItem) -> Unit = {},
     deleteTextField: (String) -> Unit = {},
@@ -330,7 +330,7 @@ fun NoteContent(
             modifier = Modifier
                 .fillMaxSize()
                 .background(color)
-                .padding(top = 16.dp)
+                .padding(8.dp)
         ) {
             NoteHeader(
                 title = note.title,
@@ -396,7 +396,7 @@ fun NoteHeader(
 @Composable
 fun NoteBody(
     notesItems: List<NoteItem> = mockNoteItems,
-    addCheckBox: () -> Unit = {},
+    addCheckBox: (String?) -> Unit = {},
     updateTextField: (NoteItem) -> Unit = {},
     updateCheckBox: (NoteItem) -> Unit = {},
     deleteTextField: (String) -> Unit = {},
@@ -427,7 +427,7 @@ fun NoteBody(
 @Composable
 fun NoteDetailFab(
     addTextField: () -> Unit = {},
-    addCheckBox: () -> Unit = {},
+    addCheckBox: (String?) -> Unit = {},
 ) {
     var expanded by remember { mutableStateOf(false) }
 
@@ -473,7 +473,7 @@ fun NoteDetailFab(
                 FloatingActionButton(
                     modifier = Modifier.size(46.dp),
                     shape = CircleShape,
-                    onClick = { addCheckBox() },
+                    onClick = { addCheckBox(null) },
                     containerColor = MaterialTheme.colorScheme.tertiary,
                 ) {
                     Icon(

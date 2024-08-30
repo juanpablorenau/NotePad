@@ -51,8 +51,9 @@ class NotesViewModel @Inject constructor(
             getNotesUseCase()
                 .catch { setErrorState() }
                 .collect { notes ->
-                    val pinNotes = notes.filter { it.isPinned }.sortedBy { it.index }
-                    val unPinNotes = notes.filter { !it.isPinned }.sortedBy { it.index }
+                    val (pinNotes, unPinNotes) = notes.partition { it.isPinned }
+                    pinNotes.sortedBy { it.index }
+                    unPinNotes.sortedBy { it.index }
                     setSuccessState(pinNotes + unPinNotes)
                 }
         }

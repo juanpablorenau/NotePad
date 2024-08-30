@@ -9,4 +9,5 @@ interface LocalDataSource {
     suspend fun insertNote(note: NoteDb)
     suspend fun updateNote(note: NoteDb)
     suspend fun deleteNote(id: String)
+    suspend fun deleteNoteItem(id: String)
 }
