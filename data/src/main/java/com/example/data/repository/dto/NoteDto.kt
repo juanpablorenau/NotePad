@@ -17,6 +17,7 @@ class NoteDto @Inject constructor(
                     lightColor = lightColor,
                     darkColor = darkColor,
                     isPinned = isPinned,
+                    index = index
                 ),
                 items = items.map { noteItemDto.toDb(it) }
             )

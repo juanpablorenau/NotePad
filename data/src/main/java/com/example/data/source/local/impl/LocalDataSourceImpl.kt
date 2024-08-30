@@ -29,4 +29,8 @@ class LocalDataSourceImpl @Inject constructor(
     override suspend fun deleteNote(id: String) {
         dispatcher { noteDao.deleteNote(id) }
     }
+
+    override suspend fun deleteNoteItem(id: String) {
+        dispatcher { noteDao.deleteNoteItem(id) }
+    }
 }

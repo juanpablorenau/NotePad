@@ -1,6 +1,5 @@
 package com.example.notepad.ui.list
 
-import androidx.compose.animation.ExperimentalSharedTransitionApi
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.background
@@ -41,7 +40,7 @@ import com.example.notepad.utils.getColor
 import com.example.notepad.utils.mockNoteItems
 import com.example.notepad.utils.mockNoteList
 
-@OptIn(ExperimentalFoundationApi::class, ExperimentalSharedTransitionApi::class)
+@OptIn(ExperimentalFoundationApi::class)
 @Composable
 fun NotesStaggeredGrid(
     notes: List<Note> = mockNoteList,
@@ -51,21 +50,20 @@ fun NotesStaggeredGrid(
     navigate: (String) -> Unit = {},
     isDarkTheme: Boolean = false,
 ) {
-    val lazyStaggeredGridState = rememberLazyStaggeredGridState()
-    val reorderableLazyStaggeredGridState =
-        rememberReorderableLazyStaggeredGridState(lazyStaggeredGridState) { from, to ->
-            swipeNotes(from.index, to.index)
-        }
+    val gridState = rememberLazyStaggeredGridState()
+    val reorderGridState = rememberReorderableLazyStaggeredGridState(gridState) { from, to ->
+        swipeNotes(from.index, to.index)
+    }
 
     LazyVerticalStaggeredGrid(
         columns = StaggeredGridCells.Fixed(itemsView),
         modifier = Modifier.fillMaxSize(),
-        state = lazyStaggeredGridState,
+        state = gridState,
         verticalItemSpacing = 8.dp,
         horizontalArrangement = Arrangement.spacedBy(8.dp),
     ) {
         itemsIndexed(notes, key = { _, item -> item.id }) { index, item ->
-            ReorderableItem(reorderableLazyStaggeredGridState, item.id) {
+            ReorderableItem(reorderGridState, item.id) {
                 val interactionSource = remember { MutableInteractionSource() }
 
                 val route = AppScreens.NoteDetailScreen.route.plus("/${item.id}/0")
@@ -74,21 +72,16 @@ fun NotesStaggeredGrid(
                 Card(
                     modifier = Modifier
                         .clickable {
-                            if (notes.none { it.isChecked }) navigate(route) else checkNote(
-                                item.id
-                            )
+                            if (notes.none { it.isChecked }) navigate(route)
+                            else checkNote(item.id)
                         }
                         .semantics {
                             customActions = listOf(
                                 CustomAccessibilityAction(
                                     label = "Move Before",
                                     action = {
-                                        if (index > 0) {
-                                            swipeNotes(index - 1, index)
-                                            true
-                                        } else {
-                                            false
-                                        }
+                                        if (index > 0) swipeNotes(index - 1, index)
+                                        index > 0
                                     }
                                 ),
                                 CustomAccessibilityAction(
@@ -111,7 +104,8 @@ fun NotesStaggeredGrid(
                         ),
                     border = BorderStroke(
                         2.dp,
-                        if (item.isChecked) MaterialTheme.colorScheme.secondary else Color.Transparent
+                        if (item.isChecked) MaterialTheme.colorScheme.secondary
+                        else Color.Transparent
                     ),
                     elevation = CardDefaults.cardElevation(defaultElevation = 4.dp),
                 ) {
@@ -123,7 +117,7 @@ fun NotesStaggeredGrid(
                     ) {
                         NoteHeader(item)
                         Spacer(modifier = Modifier.height(16.dp))
-                        NoteBody(item.items.take(2))
+                        NoteBody(item.items.take(3))
                     }
                 }
             }
@@ -132,10 +126,8 @@ fun NotesStaggeredGrid(
 }
 
 @Composable
-fun NoteHeader(item: Note){
-    Box(
-        modifier = Modifier.fillMaxWidth()
-    ) {
+fun NoteHeader(item: Note) {
+    Box(modifier = Modifier.fillMaxWidth()) {
         Text(
             modifier = Modifier.padding(end = 12.dp),
             text = item.title,
@@ -143,7 +135,7 @@ fun NoteHeader(item: Note){
             textAlign = TextAlign.Start,
             overflow = TextOverflow.Ellipsis,
             maxLines = 2,
-            fontSize = 16.sp,
+            fontSize = 18.sp,
             color = MaterialTheme.colorScheme.secondary,
         )
         if (item.isPinned) {
@@ -160,13 +152,11 @@ fun NoteHeader(item: Note){
 }
 
 @Composable
-fun NoteBody(
-    notesItems: List<NoteItem> = mockNoteItems,
-) {
+fun NoteBody(notesItems: List<NoteItem> = mockNoteItems) {
     notesItems.forEach { item ->
-            when (item.type) {
-                NoteItemType.TEXT -> TextFieldItem(item)
-                NoteItemType.CHECK_BOX -> CheckBoxItem(item)
-            }
+        when (item.type) {
+            NoteItemType.TEXT -> TextFieldItem(item)
+            NoteItemType.CHECK_BOX -> CheckBoxItem(item)
         }
+    }
 }

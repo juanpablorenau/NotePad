@@ -51,4 +51,8 @@ class NoteRepositoryImpl @Inject constructor(
             ids.map { async { localDataSource.deleteNote(it) } }.awaitAll()
         }
     }
+
+    override suspend fun deleteNoteItem(id: String) {
+        withContext(dispatcher) { localDataSource.deleteNoteItem(id) }
+    }
 }
