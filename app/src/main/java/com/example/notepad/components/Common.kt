@@ -3,11 +3,7 @@ package com.example.notepad.components
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material3.AlertDialog
-import androidx.compose.material3.Card
-import androidx.compose.material3.CardDefaults
-import androidx.compose.material3.Icon
-import androidx.compose.material3.Text
+import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -20,7 +16,6 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.notepad.R
-import com.example.notepad.theme.DarkGray
 
 @Composable
 fun Chip(text: String = "Chip", chipColor: Color = Color.White, textColor: Color = Color.Black) {
@@ -46,8 +41,8 @@ fun Chip(text: String = "Chip", chipColor: Color = Color.White, textColor: Color
 fun MenuItem(
     icon: Int = R.drawable.ic_delete_outline,
     text: String = "Delete",
-    iconColor: Color = DarkGray,
-    textColor: Color = DarkGray,
+    iconColor: Color = MaterialTheme.colorScheme.secondary,
+    textColor: Color = MaterialTheme.colorScheme.secondary,
 ) {
     Row(
         modifier = Modifier.fillMaxWidth(),

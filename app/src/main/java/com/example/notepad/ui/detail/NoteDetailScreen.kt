@@ -199,25 +199,23 @@ fun NoteDetailTopBar(
             ) {
                 DropdownMenuItem(
                     text = {
-                        if (note.isPinned) {
-                            MenuItem(
-                                R.drawable.ic_unpin, stringResource(R.string.unpin),
-                                iconColor = MaterialTheme.colorScheme.secondary,
-                                textColor = MaterialTheme.colorScheme.secondary
-                            )
-                        } else {
-                            MenuItem(
-                                R.drawable.ic_pin,
-                                stringResource(R.string.pin),
-                                iconColor = MaterialTheme.colorScheme.secondary,
-                                textColor = MaterialTheme.colorScheme.secondary
-                            )
-                        }
+                        if (note.isPinned) MenuItem(R.drawable.ic_unpin, stringResource(R.string.unpin))
+                        else MenuItem(R.drawable.ic_pin, stringResource(R.string.pin))
                     },
                     onClick = {
                         showMenu = false
                         pinUpNote()
                     },
+                )
+
+                DropdownMenuItem(
+                    text = { MenuItem(R.drawable.ic_copy, stringResource(R.string.copy)) },
+                    onClick = { showMenu = false },
+                )
+
+                DropdownMenuItem(
+                    text = { MenuItem(R.drawable.ic_share, stringResource(R.string.share)) },
+                    onClick = { showMenu = false },
                 )
 
                 DropdownMenuItem(
@@ -322,8 +320,8 @@ fun NoteContent(
     Card(
         modifier = Modifier
             .fillMaxSize()
-            .padding(top = padding.calculateTopPadding(), start = 12.dp, end = 12.dp),
-        shape = RoundedCornerShape(topStart = 16.dp, topEnd = 16.dp),
+            .padding(top = padding.calculateTopPadding(), bottom = 12.dp, start = 12.dp, end = 12.dp),
+        shape = RoundedCornerShape(16.dp),
         elevation = CardDefaults.cardElevation(defaultElevation = 4.dp),
     ) {
         Column(
@@ -434,7 +432,7 @@ fun NoteDetailFab(
     Box(
         modifier = Modifier
             .wrapContentSize()
-            .padding(bottom = 8.dp, end = 16.dp)
+            .padding(bottom = 12.dp, end = 12.dp)
     ) {
         Column(
             horizontalAlignment = Alignment.CenterHorizontally,
