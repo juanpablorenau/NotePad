@@ -7,7 +7,6 @@ import com.example.domain.usecase.list.DeleteNotesUseCase
 import com.example.domain.usecase.list.GetNotesUseCase
 import com.example.domain.usecase.list.UpdateNotesUseCase
 import com.example.model.entities.Note
-import com.example.model.utils.normalize
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.Dispatchers
@@ -50,13 +49,15 @@ class NotesViewModel @Inject constructor(
         viewModelScope.launch(dispatcher) {
             getNotesUseCase()
                 .catch { setErrorState() }
-                .collect { notes ->
-                    val (pinNotes, unPinNotes) = notes.partition { it.isPinned }
-                    pinNotes.sortedBy { it.index }
-                    unPinNotes.sortedBy { it.index }
-                    setSuccessState(pinNotes + unPinNotes)
-                }
+                .collect { notes -> setSuccessState(getSortedNotes(notes)) }
         }
+    }
+
+    private fun getSortedNotes(notes: List<Note>): List<Note> {
+        val (pinNotes, unPinNotes) = notes.partition { it.isPinned }
+        pinNotes.sortedBy { it.index }
+        unPinNotes.sortedBy { it.index }
+        return pinNotes + unPinNotes
     }
 
     fun updateNotes() {
@@ -72,20 +73,21 @@ class NotesViewModel @Inject constructor(
     fun deleteNotes() {
         viewModelScope.launch(dispatcher) {
             with(_uiState.value as NotesUiState.Success) {
-                tryOrError { deleteNotesUseCase(notes.filter { it.isChecked }.map { it.id }) }
-                getNotes()
+                tryOrError {
+                    deleteNotesUseCase(getCheckedIds(notes))
+                    getNotes()
+                }
             }
         }
     }
 
+    private fun getCheckedIds(notes: List<Note>) =
+        notes.filter { it.isChecked }.map { it.id }
+
     fun searchNotes(query: String) {
         _uiState.getAndUpdate {
             with((it as NotesUiState.Success)) {
-                val normalizedQuery = query.normalize()
-                copy(notes = notes.filter { note ->
-                    //TODO
-                    note.title.normalize().contains(normalizedQuery, ignoreCase = true)
-                })
+                copy(notes = notes.filter { note -> note.contains(query) })
             }
         }
     }
@@ -119,15 +121,17 @@ class NotesViewModel @Inject constructor(
     fun pinUpCheckedNotes() {
         _uiState.getAndUpdate {
             with((it as NotesUiState.Success)) {
-                val allCheckedArePinned = notes.filter { it.isChecked }.all { it.isPinned }
+                val arePinned = allCheckedArePinned(notes)
                 copy(notes = notes.map { note ->
-                    if (note.isChecked) {
-                        note.copy(isPinned = !allCheckedArePinned, isChecked = false)
-                    } else note
+                    if (note.isChecked) note.copy(isPinned = !arePinned, isChecked = false)
+                    else note
                 }.sortedBy { !it.isPinned })
             }
         }
     }
+
+    private fun allCheckedArePinned(notes: List<Note>) =
+        notes.filter { it.isChecked }.all { it.isPinned }
 
     fun changeItemsView() {
         _uiState.getAndUpdate {

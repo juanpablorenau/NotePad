@@ -51,7 +51,8 @@ class NoteDetailViewModel @Inject constructor(
     }
 
     fun manageNote(id: String, index: Int) {
-        if (id.contains("new_element")) createNewNote(index) else getNoteById(id)
+        if (id.contains("new_element")) createNewNote(index)
+        else getNoteById(id)
     }
 
     private fun createNewNote(index: Int) {
@@ -61,8 +62,6 @@ class NoteDetailViewModel @Inject constructor(
             val note = Note(
                 id = noteId,
                 index = index,
-                lightColor = AppColor.PALE_YELLOW.lightColor,
-                darkColor = AppColor.PALE_YELLOW.darkColor,
                 items = listOf(NoteItem(id = noteItemId, noteId = noteId))
             )
             tryOrError {
