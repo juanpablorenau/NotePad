@@ -55,9 +55,7 @@ class NotesViewModel @Inject constructor(
 
     private fun getSortedNotes(notes: List<Note>): List<Note> {
         val (pinNotes, unPinNotes) = notes.partition { it.isPinned }
-        pinNotes.sortedBy { it.index }
-        unPinNotes.sortedBy { it.index }
-        return pinNotes + unPinNotes
+        return pinNotes.sortedBy { it.index } + unPinNotes.sortedBy { it.index }
     }
 
     fun updateNotes() {

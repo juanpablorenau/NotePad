@@ -10,7 +10,7 @@ import com.example.domain.usecase.detail.InsertNoteUseCase
 import com.example.domain.usecase.detail.UpdateNoteUseCase
 import com.example.model.entities.Note
 import com.example.model.entities.NoteItem
-import com.example.model.entities.NoteItemType
+import com.example.model.utils.getUUID
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.Dispatchers
@@ -19,7 +19,6 @@ import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.catch
 import kotlinx.coroutines.flow.getAndUpdate
 import kotlinx.coroutines.launch
-import java.util.UUID
 import javax.inject.Inject
 import com.example.model.entities.Color as AppColor
 
@@ -57,16 +56,11 @@ class NoteDetailViewModel @Inject constructor(
 
     private fun createNewNote(index: Int) {
         viewModelScope.launch(dispatcher) {
-            val noteId = UUID.randomUUID().toString()
-            val noteItemId = UUID.randomUUID().toString()
-            val note = Note(
-                id = noteId,
-                index = index,
-                items = listOf(NoteItem(id = noteItemId, noteId = noteId))
-            )
-            tryOrError {
-                insertNoteUseCase(note)
-                setSuccessState(note)
+            with(Note(getUUID(), index)) {
+                tryOrError {
+                    insertNoteUseCase(this)
+                    setSuccessState(this)
+                }
             }
         }
     }
@@ -102,14 +96,10 @@ class NoteDetailViewModel @Inject constructor(
         }
     }
 
-    fun changeColor(newColor: AppColor) {
+    fun changeColor(color: AppColor) {
         _uiState.getAndUpdate {
             with((it as NoteDetailUiState.Success)) {
-                copy(
-                    note = note.copy(
-                        lightColor = newColor.lightColor, darkColor = newColor.darkColor
-                    )
-                )
+                copy(note = note.copy(lightColor = color.lightColor, darkColor = color.darkColor))
             }
         }
     }
@@ -125,12 +115,8 @@ class NoteDetailViewModel @Inject constructor(
     fun addTextField() {
         _uiState.getAndUpdate {
             with((it as NoteDetailUiState.Success)) {
-                if (note.items.isNotEmpty() && note.items.last().isText()) return
-                val newNoteItemId = UUID.randomUUID().toString()
-                copy(
-                    note = note.copy(items = note.items.toMutableList()
-                        .apply { add(NoteItem(id = newNoteItemId, noteId = note.id)) })
-                )
+                if (note.isLastText()) return
+                copy(note = note.addTextField())
             }
         }
     }
@@ -138,19 +124,7 @@ class NoteDetailViewModel @Inject constructor(
     fun addCheckBox(noteItemId: String?) {
         _uiState.getAndUpdate {
             with((it as NoteDetailUiState.Success)) {
-                val newNoteItemId = UUID.randomUUID().toString()
-                copy(
-                    note = note.copy(items = note.items.toMutableList().apply {
-                        val index =
-                            if (noteItemId != null) indexOfFirst { item -> item.id == noteItemId } + 1
-                            else size
-                        add(
-                            index, NoteItem(
-                                id = newNoteItemId, noteId = note.id, type = NoteItemType.CHECK_BOX
-                            )
-                        )
-                    })
-                )
+                copy(note = note.addCheckbox(noteItemId))
             }
         }
     }
@@ -158,10 +132,7 @@ class NoteDetailViewModel @Inject constructor(
     fun updateTextField(textField: NoteItem) {
         _uiState.getAndUpdate {
             with((it as NoteDetailUiState.Success)) {
-                copy(note = note.copy(items = note.items.map { noteItem ->
-                    if (noteItem.id == textField.id) noteItem.copy(text = textField.text)
-                    else noteItem
-                }))
+                copy(note = note.updateTextField(textField))
             }
         }
     }
@@ -169,11 +140,7 @@ class NoteDetailViewModel @Inject constructor(
     fun updateCheckBox(checkBox: NoteItem) {
         _uiState.getAndUpdate {
             with((it as NoteDetailUiState.Success)) {
-                copy(note = note.copy(items = note.items.map { noteItem ->
-                    if (noteItem.id == checkBox.id) {
-                        noteItem.copy(text = checkBox.text, isChecked = checkBox.isChecked)
-                    } else noteItem
-                }))
+                copy(note = note.updateCheckbox(checkBox))
             }
         }
     }
@@ -181,45 +148,23 @@ class NoteDetailViewModel @Inject constructor(
     fun deleteTextField(id: String) {
         _uiState.getAndUpdate {
             with((it as NoteDetailUiState.Success)) {
-                copy(
-                    note = note.copy(items = note.items.toMutableList().apply {
-                        val index = indexOfFirst { noteItem -> noteItem.id == id }
-                        if (index != -1) {
-                            removeAt(index)
-                            viewModelScope.launch(dispatcher) { deleteNoteItemUseCase(id) }
-                        }
-                    })
-                )
+                deleteNoteItem(id)
+                copy(note = note.deleteTextField(id))
             }
+        }
+    }
+
+    private fun deleteNoteItem(id: String) {
+        viewModelScope.launch(dispatcher) {
+            tryOrError { viewModelScope.launch(dispatcher) { deleteNoteItemUseCase(id) } }
         }
     }
 
     fun deleteCheckBox(id: String) {
         _uiState.getAndUpdate {
             with((it as NoteDetailUiState.Success)) {
-                copy(
-                    note = note.copy(items = note.items.toMutableList().apply {
-                        val index = indexOfFirst { noteItem -> noteItem.id == id }
-                        val prev = getOrNull(index - 1)
-                        val next = getOrNull(index + 1)
-                        when (index) {
-                            -1 -> return@apply
-                            size - 1 -> removeLast()
-                            else -> {
-                                removeAt(index)
-                                viewModelScope.launch(dispatcher) { deleteNoteItemUseCase(id) }
-                                if (prev?.isText() == true && next?.isText() == true) {
-                                    removeAt(index)
-                                    removeAt(index - 1)
-                                    add(
-                                        index - 1,
-                                        prev.copy(text = "${prev.text}\n${next.text}")
-                                    )
-                                }
-                            }
-                        }
-                    })
-                )
+                deleteNoteItem(id)
+                copy(note = note.deleteCheckbox(id))
             }
         }
     }

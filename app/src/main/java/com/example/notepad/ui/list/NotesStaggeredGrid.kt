@@ -117,7 +117,7 @@ fun NotesStaggeredGrid(
                     ) {
                         NoteHeader(item)
                         Spacer(modifier = Modifier.height(16.dp))
-                        NoteBody(item.items.take(2))
+                        NoteBody(item.items.take(3))
                     }
                 }
             }
