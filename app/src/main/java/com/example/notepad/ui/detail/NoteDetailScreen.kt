@@ -6,7 +6,7 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.combinedClickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -14,6 +14,7 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.Color.Companion.Red
 import androidx.compose.ui.platform.LocalContext
@@ -199,7 +200,10 @@ fun NoteDetailTopBar(
             ) {
                 DropdownMenuItem(
                     text = {
-                        if (note.isPinned) MenuItem(R.drawable.ic_unpin, stringResource(R.string.unpin))
+                        if (note.isPinned) MenuItem(
+                            R.drawable.ic_unpin,
+                            stringResource(R.string.unpin)
+                        )
                         else MenuItem(R.drawable.ic_pin, stringResource(R.string.pin))
                     },
                     onClick = {
@@ -320,7 +324,12 @@ fun NoteContent(
     Card(
         modifier = Modifier
             .fillMaxSize()
-            .padding(top = padding.calculateTopPadding(), bottom = 12.dp, start = 12.dp, end = 12.dp),
+            .padding(
+                top = padding.calculateTopPadding(),
+                bottom = 12.dp,
+                start = 12.dp,
+                end = 12.dp
+            ),
         shape = RoundedCornerShape(16.dp),
         elevation = CardDefaults.cardElevation(defaultElevation = 4.dp),
     ) {
@@ -401,6 +410,7 @@ fun NoteBody(
     deleteCheckBox: (String) -> Unit = {},
 ) {
     val listState = rememberLazyListState()
+    val focusRequesters = remember(notesItems) { notesItems.map { FocusRequester() } }
 
     LaunchedEffect(notesItems.size) {
         if (notesItems.isNotEmpty()) listState.scrollToItem(notesItems.size - 1)
@@ -412,10 +422,27 @@ fun NoteBody(
             .fillMaxHeight(0.95f),
         state = listState,
     ) {
-        items(notesItems, key = { item -> item.id }) { item ->
+        itemsIndexed(notesItems, key = { _, item -> item.id }) { index, item ->
+            val currentFocusRequester = focusRequesters[index]
+            val previousFocusRequester = focusRequesters.getOrNull(index - 1)
+
             when (item.type) {
-                NoteItemType.TEXT -> TextFieldItem(item, updateTextField, deleteTextField)
-                NoteItemType.CHECK_BOX -> CheckBoxItem(item, addCheckBox, updateCheckBox, deleteCheckBox)
+                NoteItemType.TEXT -> TextFieldItem(
+                    item,
+                    currentFocusRequester,
+                    previousFocusRequester,
+                    updateTextField,
+                    deleteTextField
+                )
+
+                NoteItemType.CHECK_BOX -> CheckBoxItem(
+                    item,
+                    currentFocusRequester,
+                    previousFocusRequester,
+                    addCheckBox,
+                    updateCheckBox,
+                    deleteCheckBox
+                )
             }
         }
     }
