@@ -69,7 +69,7 @@ fun CheckBoxItem(
                     modifier = Modifier
                         .focusRequester(currentFocusRequester)
                         .onKeyEvent {
-                            if (it.key == Key.Backspace && noteItem.text.isEmpty()) {
+                            if (it.key == Key.Backspace && textFieldValue.text.isEmpty()) {
                                 previousFocusRequester?.requestFocus()
                                 deleteCheckBox(noteItem.id)
                                 true
@@ -107,7 +107,7 @@ fun CheckBoxItem(
 
     LaunchedEffect(noteItem.id) {
         currentFocusRequester.requestFocus()
-        textFieldValue = textFieldValue.copy(selection = TextRange(noteItem.text.length))
+        textFieldValue = textFieldValue.copy(selection = TextRange(textFieldValue.text.length))
     }
 }
 
@@ -128,7 +128,7 @@ fun TextFieldItem(
             .padding(horizontal = 24.dp)
             .focusRequester(currentFocusRequester)
             .onKeyEvent {
-                if (it.key == Key.Backspace && noteItem.text.isEmpty()) {
+                if (it.key == Key.Backspace && textFieldValue.text.isEmpty()) {
                     previousFocusRequester?.requestFocus()
                     deleteTextField(noteItem.id)
                     true
@@ -144,12 +144,12 @@ fun TextFieldItem(
         textStyle = TextStyle(color = MaterialTheme.colorScheme.secondary)
     )
 
-    LifecycleResumeEffect(noteItem.id) {
-        onPauseOrDispose { updateTextField(noteItem.copy(text = textFieldValue.text)) }
-    }
-
     LaunchedEffect(noteItem.id) {
         currentFocusRequester.requestFocus()
-        textFieldValue = textFieldValue.copy(selection = TextRange(noteItem.text.length))
+        textFieldValue = textFieldValue.copy(selection = TextRange(textFieldValue.text.length))
+    }
+
+    LifecycleResumeEffect(noteItem.id) {
+        onPauseOrDispose { updateTextField(noteItem.copy(text = textFieldValue.text)) }
     }
 }
