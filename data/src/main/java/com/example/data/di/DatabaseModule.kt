@@ -22,7 +22,7 @@ object DatabaseModule {
             context.applicationContext,
             AppDatabase::class.java,
             "NotePad.db"
-        ).build()
+        ).fallbackToDestructiveMigration().build()
     }
 
     @Singleton

@@ -22,6 +22,7 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.input.TextFieldValue
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -363,7 +364,9 @@ fun NoteHeader(
     title: String = "Title",
     isPinned: Boolean = true,
     saveText: (String) -> Unit = { },
-) {
+){
+    var titleFieldValue by remember { mutableStateOf(TextFieldValue(title)) }
+
     Row(
         modifier = Modifier
             .fillMaxWidth()
@@ -372,8 +375,8 @@ fun NoteHeader(
     ) {
         TextField(
             modifier = Modifier.fillMaxWidth(0.75f),
-            value = title,
-            onValueChange = { newText -> saveText(newText) },
+            value = titleFieldValue,
+            onValueChange = { newText -> titleFieldValue = newText },
             colors = TextFieldDefaults.colors(
                 focusedIndicatorColor = Color.Transparent,
                 unfocusedIndicatorColor = Color.Transparent,
@@ -397,6 +400,10 @@ fun NoteHeader(
                 tint = MaterialTheme.colorScheme.secondary,
             )
         }
+    }
+
+    LifecycleResumeEffect(title) {
+        onPauseOrDispose { saveText(titleFieldValue.text) }
     }
 }
 

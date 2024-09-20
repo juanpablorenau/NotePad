@@ -7,7 +7,6 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.text.BasicTextField
 import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
-import androidx.compose.foundation.text.selection.SelectionContainer
 import androidx.compose.material3.Checkbox
 import androidx.compose.material3.CheckboxDefaults
 import androidx.compose.material3.MaterialTheme
@@ -64,38 +63,33 @@ fun CheckBoxItem(
                 )
             )
 
-            SelectionContainer {
-                BasicTextField(
-                    modifier = Modifier
-                        .focusRequester(currentFocusRequester)
-                        .onKeyEvent {
-                            if (it.key == Key.Backspace && textFieldValue.text.isEmpty()) {
-                                previousFocusRequester?.requestFocus()
-                                deleteCheckBox(noteItem.id)
-                                true
-                            } else false
-                        },
-                    value = textFieldValue,
-                    singleLine = true,
-                    onValueChange = { newTextFieldValue ->
-                        textFieldValue = newTextFieldValue.copy(
-                            text = newTextFieldValue.text,
-                            selection = TextRange(newTextFieldValue.text.length)
-                        )
+            BasicTextField(
+                modifier = Modifier
+                    .focusRequester(currentFocusRequester)
+                    .onKeyEvent {
+                        if (it.key == Key.Backspace && textFieldValue.text.isEmpty()) {
+                            previousFocusRequester?.requestFocus()
+                            deleteCheckBox(noteItem.id)
+                            true
+                        } else false
                     },
-                    keyboardOptions = KeyboardOptions.Default.copy(imeAction = ImeAction.Done),
-                    keyboardActions = KeyboardActions(
-                        onDone = {
-                            if (textFieldValue.text.isNotEmpty()) addCheckBox(noteItem.id)
-                            else {
-                                previousFocusRequester?.requestFocus()
-                                deleteCheckBox(noteItem.id)
-                            }
-                        },
-                    ),
-                    textStyle = TextStyle(color = MaterialTheme.colorScheme.secondary)
-                )
-            }
+                value = textFieldValue,
+                singleLine = true,
+                onValueChange = { newTextFieldValue ->
+                    textFieldValue = newTextFieldValue.copy(text = newTextFieldValue.text)
+                },
+                keyboardOptions = KeyboardOptions.Default.copy(imeAction = ImeAction.Done),
+                keyboardActions = KeyboardActions(
+                    onDone = {
+                        if (textFieldValue.text.isNotEmpty()) addCheckBox(noteItem.id)
+                        else {
+                            previousFocusRequester?.requestFocus()
+                            deleteCheckBox(noteItem.id)
+                        }
+                    },
+                ),
+                textStyle = TextStyle(color = MaterialTheme.colorScheme.secondary)
+            )
         }
     }
 
@@ -138,7 +132,6 @@ fun TextFieldItem(
         onValueChange = { newTextFieldValue ->
             textFieldValue = newTextFieldValue.copy(
                 text = newTextFieldValue.text,
-                selection = TextRange(newTextFieldValue.text.length)
             )
         },
         textStyle = TextStyle(color = MaterialTheme.colorScheme.secondary)
