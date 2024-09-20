@@ -1,7 +1,6 @@
 package com.example.notepad.ui.detail
 
 import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
@@ -12,8 +11,7 @@ import androidx.compose.foundation.text.selection.SelectionContainer
 import androidx.compose.material3.Checkbox
 import androidx.compose.material3.CheckboxDefaults
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.focus.FocusRequester
@@ -22,9 +20,12 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.input.key.Key
 import androidx.compose.ui.input.key.key
 import androidx.compose.ui.input.key.onKeyEvent
+import androidx.compose.ui.text.TextRange
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.input.ImeAction
+import androidx.compose.ui.text.input.TextFieldValue
 import androidx.compose.ui.unit.dp
+import androidx.lifecycle.compose.LifecycleResumeEffect
 import com.example.model.entities.NoteItem
 import com.example.model.entities.NoteItemType
 
@@ -38,17 +39,15 @@ fun CheckBoxItem(
     updateCheckBox: (NoteItem) -> Unit = {},
     deleteCheckBox: (String) -> Unit = {},
 ) {
+    var isChecked by remember { mutableStateOf(noteItem.isChecked) }
+    var textFieldValue by remember {
+        mutableStateOf(TextFieldValue(noteItem.text, TextRange(noteItem.text.length)))
+    }
+
     Row(
         modifier = Modifier
             .fillMaxWidth()
-            .padding(start = 12.dp, end = 24.dp)
-            .onKeyEvent {
-                if (it.key == Key.Backspace && noteItem.text.isEmpty()) {
-                    previousFocusRequester?.requestFocus()
-                    deleteCheckBox(noteItem.id)
-                    true
-                } else false
-            },
+            .padding(start = 12.dp, end = 24.dp),
         horizontalArrangement = Arrangement.SpaceBetween,
         verticalAlignment = Alignment.CenterVertically
     ) {
@@ -57,10 +56,8 @@ fun CheckBoxItem(
             horizontalArrangement = Arrangement.Absolute.Left
         ) {
             Checkbox(
-                checked = noteItem.isChecked,
-                onCheckedChange = { newChecked ->
-                    updateCheckBox(noteItem.copy(text = noteItem.text, isChecked = newChecked))
-                },
+                checked = isChecked,
+                onCheckedChange = { newChecked -> isChecked = newChecked },
                 colors = CheckboxDefaults.colors(
                     checkedColor = MaterialTheme.colorScheme.primary,
                     checkmarkColor = Color.White
@@ -69,18 +66,27 @@ fun CheckBoxItem(
 
             SelectionContainer {
                 BasicTextField(
-                    modifier = Modifier.focusRequester(currentFocusRequester),
-                    value = noteItem.text,
+                    modifier = Modifier
+                        .focusRequester(currentFocusRequester)
+                        .onKeyEvent {
+                            if (it.key == Key.Backspace && noteItem.text.isEmpty()) {
+                                previousFocusRequester?.requestFocus()
+                                deleteCheckBox(noteItem.id)
+                                true
+                            } else false
+                        },
+                    value = textFieldValue,
                     singleLine = true,
-                    onValueChange = { newText ->
-                        updateCheckBox(
-                            noteItem.copy(text = newText, isChecked = noteItem.isChecked)
+                    onValueChange = { newTextFieldValue ->
+                        textFieldValue = newTextFieldValue.copy(
+                            text = newTextFieldValue.text,
+                            selection = TextRange(newTextFieldValue.text.length)
                         )
                     },
                     keyboardOptions = KeyboardOptions.Default.copy(imeAction = ImeAction.Done),
                     keyboardActions = KeyboardActions(
                         onDone = {
-                            if (noteItem.text.isNotEmpty()) addCheckBox(noteItem.id)
+                            if (textFieldValue.text.isNotEmpty()) addCheckBox(noteItem.id)
                             else {
                                 previousFocusRequester?.requestFocus()
                                 deleteCheckBox(noteItem.id)
@@ -93,8 +99,15 @@ fun CheckBoxItem(
         }
     }
 
+    LifecycleResumeEffect(noteItem.id) {
+        onPauseOrDispose {
+            updateCheckBox(noteItem.copy(text = textFieldValue.text, isChecked = isChecked))
+        }
+    }
+
     LaunchedEffect(noteItem.id) {
         currentFocusRequester.requestFocus()
+        textFieldValue = textFieldValue.copy(selection = TextRange(noteItem.text.length))
     }
 }
 
@@ -106,30 +119,37 @@ fun TextFieldItem(
     updateTextField: (NoteItem) -> Unit = {},
     deleteTextField: (String) -> Unit = {},
 ) {
+    var textFieldValue by remember {
+        mutableStateOf(TextFieldValue(noteItem.text, TextRange(noteItem.text.length)))
+    }
 
-    Box(
+    BasicTextField(
         modifier = Modifier
+            .padding(horizontal = 24.dp)
+            .focusRequester(currentFocusRequester)
             .onKeyEvent {
                 if (it.key == Key.Backspace && noteItem.text.isEmpty()) {
                     previousFocusRequester?.requestFocus()
                     deleteTextField(noteItem.id)
                     true
                 } else false
-            }
-    ) {
-        BasicTextField(
-            modifier = Modifier
-                .padding(horizontal = 24.dp)
-                .focusRequester(currentFocusRequester),
-            value = noteItem.text,
-            onValueChange = { newText ->
-                updateTextField(noteItem.copy(text = newText))
             },
-            textStyle = TextStyle(color = MaterialTheme.colorScheme.secondary)
-        )
+        value = textFieldValue,
+        onValueChange = { newTextFieldValue ->
+            textFieldValue = newTextFieldValue.copy(
+                text = newTextFieldValue.text,
+                selection = TextRange(newTextFieldValue.text.length)
+            )
+        },
+        textStyle = TextStyle(color = MaterialTheme.colorScheme.secondary)
+    )
+
+    LifecycleResumeEffect(noteItem.id) {
+        onPauseOrDispose { updateTextField(noteItem.copy(text = textFieldValue.text)) }
     }
 
     LaunchedEffect(noteItem.id) {
         currentFocusRequester.requestFocus()
+        textFieldValue = textFieldValue.copy(selection = TextRange(noteItem.text.length))
     }
 }
