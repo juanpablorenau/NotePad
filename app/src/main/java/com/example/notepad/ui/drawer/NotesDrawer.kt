@@ -10,6 +10,7 @@ import androidx.compose.ui.graphics.RectangleShape
 import androidx.compose.ui.graphics.painter.Painter
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -120,7 +121,8 @@ fun DrawerHeader() {
             Text(
                 text = stringResource(id = R.string.app_name),
                 color = MaterialTheme.colorScheme.primary,
-                fontSize = 24.sp
+                fontSize = 24.sp,
+                fontWeight = FontWeight.Bold
             )
         }
 

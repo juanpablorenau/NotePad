@@ -88,6 +88,7 @@ fun NoteDetailScreen(
                 updateCheckBox = { checkBox -> viewModel.updateCheckBox(checkBox) },
                 deleteTextField = { id -> viewModel.deleteTextField(id) },
                 deleteCheckBox = { id -> viewModel.deleteCheckBox(id) },
+                copyNote = { viewModel.copyNote() }
             )
         }
     }
@@ -109,6 +110,7 @@ fun SuccessScreen(
     updateCheckBox: (NoteItem) -> Unit = {},
     deleteTextField: (String) -> Unit = {},
     deleteCheckBox: (String) -> Unit = {},
+    copyNote: () -> Unit = {},
 ) {
     Scaffold(
         topBar = {
@@ -119,6 +121,7 @@ fun SuccessScreen(
                 changeColor = changeColor,
                 pinUpNote = pinUpNote,
                 deleteNote = deleteNote,
+                copyNote = copyNote,
                 isDarkTheme = isDarkTheme
             )
         },
@@ -154,6 +157,7 @@ fun NoteDetailTopBar(
     pinUpNote: () -> Unit = {},
     deleteNote: () -> Unit = {},
     changeColor: (AppColor) -> Unit = {},
+    copyNote: () -> Unit = {},
     isDarkTheme: Boolean = false,
 ) {
     var showMenu by remember { mutableStateOf(false) }
@@ -220,7 +224,10 @@ fun NoteDetailTopBar(
 
                 DropdownMenuItem(
                     text = { MenuItem(R.drawable.ic_copy, stringResource(R.string.copy)) },
-                    onClick = { showMenu = false },
+                    onClick = {
+                        showMenu = false
+                        copyNote()
+                    },
                 )
 
                 DropdownMenuItem(
@@ -364,7 +371,7 @@ fun NoteContent(
 fun NoteHeader(
     note: Note = mockNote,
     saveText: (String) -> Unit = { },
-){
+) {
     val focusManager = LocalFocusManager.current
     var titleFieldValue by remember(note.id) { mutableStateOf(TextFieldValue(note.title)) }
 
@@ -377,7 +384,10 @@ fun NoteHeader(
         TextField(
             modifier = Modifier.fillMaxWidth(0.75f),
             value = titleFieldValue,
-            onValueChange = { newText -> titleFieldValue = newText },
+            onValueChange = { newText ->
+                titleFieldValue = newText
+                saveText(titleFieldValue.text)
+            },
             colors = TextFieldDefaults.colors(
                 focusedIndicatorColor = Color.Transparent,
                 unfocusedIndicatorColor = Color.Transparent,
@@ -480,19 +490,19 @@ fun NoteDetailFab(
             modifier = Modifier.align(Alignment.BottomEnd)
         ) {
             if (expanded) {
-/*                FloatingActionButton(
-                    modifier = Modifier.size(46.dp),
-                    shape = CircleShape,
-                    onClick = { },
-                    containerColor = MaterialTheme.colorScheme.tertiary,
-                ) {
-                    Icon(
-                        modifier = Modifier.size(24.dp),
-                        painter = painterResource(id = R.drawable.ic_image),
-                        contentDescription = "Add check box icon",
-                        tint = MaterialTheme.colorScheme.primary
-                    )
-                }*/
+                /*                FloatingActionButton(
+                                    modifier = Modifier.size(46.dp),
+                                    shape = CircleShape,
+                                    onClick = { },
+                                    containerColor = MaterialTheme.colorScheme.tertiary,
+                                ) {
+                                    Icon(
+                                        modifier = Modifier.size(24.dp),
+                                        painter = painterResource(id = R.drawable.ic_image),
+                                        contentDescription = "Add check box icon",
+                                        tint = MaterialTheme.colorScheme.primary
+                                    )
+                                }*/
 
                 FloatingActionButton(
                     modifier = Modifier.size(46.dp),

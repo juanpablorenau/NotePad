@@ -77,4 +77,24 @@ data class Note(
                 }
             }
         })
+
+    fun copy(newNoteId: String) =
+        Note(
+            id = newNoteId,
+            title = title,
+            lightColor = lightColor,
+            darkColor = darkColor,
+            isPinned = isPinned,
+            isChecked = isChecked,
+            index = index,
+            items = items.map {
+                NoteItem(
+                    id = getUUID(),
+                    noteId = newNoteId,
+                    text = it.text,
+                    type = it.type,
+                    isChecked = it.isChecked,
+                )
+            }
+        )
 }

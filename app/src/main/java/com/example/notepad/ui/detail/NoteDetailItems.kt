@@ -23,17 +23,18 @@ import androidx.compose.ui.text.TextRange
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.TextFieldValue
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.LifecycleResumeEffect
 import com.example.model.entities.NoteItem
 import com.example.model.entities.NoteItemType
 
-
+@Preview(showBackground = true)
 @Composable
 fun CheckBoxItem(
     noteItem: NoteItem = NoteItem(type = NoteItemType.CHECK_BOX),
-    currentFocusRequester: FocusRequester,
-    previousFocusRequester: FocusRequester?,
+    currentFocusRequester: FocusRequester = FocusRequester(),
+    previousFocusRequester: FocusRequester? = null,
     addCheckBox: (String) -> Unit = {},
     updateCheckBox: (NoteItem) -> Unit = {},
     deleteCheckBox: (String) -> Unit = {},
@@ -56,7 +57,10 @@ fun CheckBoxItem(
         ) {
             Checkbox(
                 checked = isChecked,
-                onCheckedChange = { newChecked -> isChecked = newChecked },
+                onCheckedChange = { newChecked ->
+                    isChecked = newChecked
+                    updateCheckBox(noteItem.copy(text = textFieldValue.text, isChecked = isChecked))
+                },
                 colors = CheckboxDefaults.colors(
                     checkedColor = MaterialTheme.colorScheme.primary,
                     checkmarkColor = Color.White
@@ -65,6 +69,7 @@ fun CheckBoxItem(
 
             BasicTextField(
                 modifier = Modifier
+                    .fillMaxWidth()
                     .focusRequester(currentFocusRequester)
                     .onKeyEvent {
                         if (it.key == Key.Backspace && textFieldValue.text.isEmpty()) {
@@ -77,6 +82,7 @@ fun CheckBoxItem(
                 singleLine = true,
                 onValueChange = { newTextFieldValue ->
                     textFieldValue = newTextFieldValue.copy(text = newTextFieldValue.text)
+                    updateCheckBox(noteItem.copy(text = textFieldValue.text, isChecked = isChecked))
                 },
                 keyboardOptions = KeyboardOptions.Default.copy(imeAction = ImeAction.Done),
                 keyboardActions = KeyboardActions(
@@ -105,11 +111,12 @@ fun CheckBoxItem(
     }
 }
 
+@Preview(showBackground = true)
 @Composable
 fun TextFieldItem(
     noteItem: NoteItem = NoteItem(text = "Sample Text", type = NoteItemType.TEXT),
-    currentFocusRequester: FocusRequester,
-    previousFocusRequester: FocusRequester?,
+    currentFocusRequester: FocusRequester = FocusRequester(),
+    previousFocusRequester: FocusRequester? = null,
     updateTextField: (NoteItem) -> Unit = {},
     deleteTextField: (String) -> Unit = {},
 ) {
@@ -119,6 +126,7 @@ fun TextFieldItem(
 
     BasicTextField(
         modifier = Modifier
+            .fillMaxWidth()
             .padding(horizontal = 24.dp)
             .focusRequester(currentFocusRequester)
             .onKeyEvent {
@@ -133,6 +141,7 @@ fun TextFieldItem(
             textFieldValue = newTextFieldValue.copy(
                 text = newTextFieldValue.text,
             )
+            updateTextField(noteItem.copy(text = textFieldValue.text))
         },
         textStyle = TextStyle(color = MaterialTheme.colorScheme.secondary)
     )
