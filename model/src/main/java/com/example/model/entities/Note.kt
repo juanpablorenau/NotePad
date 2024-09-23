@@ -28,30 +28,42 @@ data class Note(
     private fun containsInItems(query: String) =
         items.any { it.text.normalize().contains(query.normalize(), ignoreCase = true) }
 
-    fun isLastText() = this.items.isNotEmpty() && this.items.last().isText()
-
     fun addTextField() = this.copy(
-        items = items.toMutableList().apply { add(NoteItem(id = getUUID(), noteId = id)) }
+        items = items.toMutableList().apply {
+            if (isEmpty()) add(NoteItem(id = getUUID(), noteId = id))
+            else {
+                val index = indexOf(items.maxBy { it.lastFocused })
+                if (!get(index).isText()) add(index + 1, NoteItem(id = getUUID(), noteId = id))
+            }
+        }
     )
 
     fun addCheckbox(noteItemId: String?) =
         this.copy(items = this.items.toMutableList().apply {
-            val index =
-                if (noteItemId != null) indexOfFirst { item -> item.id == noteItemId } + 1
-                else size
-            add(index, NoteItem(id = getUUID(), noteId = id, type = NoteItemType.CHECK_BOX))
+            if (isEmpty()) add(NoteItem(id = getUUID(), noteId = id, type = NoteItemType.CHECK_BOX))
+            else {
+                val index =
+                    if (noteItemId != null) indexOfFirst { item -> item.id == noteItemId } + 1
+                    else indexOf(items.maxBy { it.lastFocused }) + 1
+                add(index, NoteItem(id = getUUID(), noteId = id, type = NoteItemType.CHECK_BOX))
+            }
         })
 
     fun updateTextField(textField: NoteItem) = copy(
         items = items.map { current ->
-            if (current.id == textField.id) current.copy(text = textField.text)
-            else current
+            if (current.id == textField.id) {
+                current.copy(text = textField.text, lastFocused = textField.lastFocused)
+            } else current
         })
 
     fun updateCheckbox(checkBox: NoteItem) = copy(
         items = items.map { current ->
             if (current.id == checkBox.id) {
-                current.copy(text = checkBox.text, isChecked = checkBox.isChecked)
+                current.copy(
+                    text = checkBox.text,
+                    isChecked = checkBox.isChecked,
+                    lastFocused = checkBox.lastFocused
+                )
             } else current
         })
 

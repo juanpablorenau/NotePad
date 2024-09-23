@@ -311,7 +311,7 @@ private fun SearchNote(
     getSearchBarVisible: () -> Boolean = { false },
 ) {
     val focusRequester = remember { FocusRequester() }
-    val originalNotes by remember(Unit) { mutableStateOf(notes) }
+    val originalNotes by remember { mutableStateOf(notes) }
     var searchText by remember { mutableStateOf("") }
     val keyboardController = LocalSoftwareKeyboardController.current
 
