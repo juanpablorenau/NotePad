@@ -6,21 +6,28 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.combinedClickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.text.KeyboardActions
+import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.focus.FocusDirection
+import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.Color.Companion.Red
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.input.ImeAction
+import androidx.compose.ui.text.input.TextFieldValue
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -81,6 +88,7 @@ fun NoteDetailScreen(
                 updateCheckBox = { checkBox -> viewModel.updateCheckBox(checkBox) },
                 deleteTextField = { id -> viewModel.deleteTextField(id) },
                 deleteCheckBox = { id -> viewModel.deleteCheckBox(id) },
+                copyNote = { viewModel.copyNote() }
             )
         }
     }
@@ -102,6 +110,7 @@ fun SuccessScreen(
     updateCheckBox: (NoteItem) -> Unit = {},
     deleteTextField: (String) -> Unit = {},
     deleteCheckBox: (String) -> Unit = {},
+    copyNote: () -> Unit = {},
 ) {
     Scaffold(
         topBar = {
@@ -112,6 +121,7 @@ fun SuccessScreen(
                 changeColor = changeColor,
                 pinUpNote = pinUpNote,
                 deleteNote = deleteNote,
+                copyNote = copyNote,
                 isDarkTheme = isDarkTheme
             )
         },
@@ -147,6 +157,7 @@ fun NoteDetailTopBar(
     pinUpNote: () -> Unit = {},
     deleteNote: () -> Unit = {},
     changeColor: (AppColor) -> Unit = {},
+    copyNote: () -> Unit = {},
     isDarkTheme: Boolean = false,
 ) {
     var showMenu by remember { mutableStateOf(false) }
@@ -199,25 +210,29 @@ fun NoteDetailTopBar(
             ) {
                 DropdownMenuItem(
                     text = {
-                        if (note.isPinned) {
-                            MenuItem(
-                                R.drawable.ic_unpin, stringResource(R.string.unpin),
-                                iconColor = MaterialTheme.colorScheme.secondary,
-                                textColor = MaterialTheme.colorScheme.secondary
-                            )
-                        } else {
-                            MenuItem(
-                                R.drawable.ic_pin,
-                                stringResource(R.string.pin),
-                                iconColor = MaterialTheme.colorScheme.secondary,
-                                textColor = MaterialTheme.colorScheme.secondary
-                            )
-                        }
+                        if (note.isPinned) MenuItem(
+                            R.drawable.ic_unpin,
+                            stringResource(R.string.unpin)
+                        )
+                        else MenuItem(R.drawable.ic_pin, stringResource(R.string.pin))
                     },
                     onClick = {
                         showMenu = false
                         pinUpNote()
                     },
+                )
+
+                DropdownMenuItem(
+                    text = { MenuItem(R.drawable.ic_copy, stringResource(R.string.copy)) },
+                    onClick = {
+                        showMenu = false
+                        copyNote()
+                    },
+                )
+
+                DropdownMenuItem(
+                    text = { MenuItem(R.drawable.ic_share, stringResource(R.string.share)) },
+                    onClick = { showMenu = false },
                 )
 
                 DropdownMenuItem(
@@ -322,8 +337,13 @@ fun NoteContent(
     Card(
         modifier = Modifier
             .fillMaxSize()
-            .padding(top = padding.calculateTopPadding(), start = 12.dp, end = 12.dp),
-        shape = RoundedCornerShape(topStart = 16.dp, topEnd = 16.dp),
+            .padding(
+                top = padding.calculateTopPadding(),
+                bottom = 12.dp,
+                start = 12.dp,
+                end = 12.dp
+            ),
+        shape = RoundedCornerShape(16.dp),
         elevation = CardDefaults.cardElevation(defaultElevation = 4.dp),
     ) {
         Column(
@@ -332,11 +352,7 @@ fun NoteContent(
                 .background(color)
                 .padding(8.dp)
         ) {
-            NoteHeader(
-                title = note.title,
-                isPinned = note.isPinned,
-                saveText = saveText
-            )
+            NoteHeader(note, saveText)
 
             NoteBody(
                 notesItems = note.items,
@@ -353,10 +369,12 @@ fun NoteContent(
 @Preview(showBackground = true)
 @Composable
 fun NoteHeader(
-    title: String = "Title",
-    isPinned: Boolean = true,
+    note: Note = mockNote,
     saveText: (String) -> Unit = { },
 ) {
+    val focusManager = LocalFocusManager.current
+    var titleFieldValue by remember(note.id) { mutableStateOf(TextFieldValue(note.title)) }
+
     Row(
         modifier = Modifier
             .fillMaxWidth()
@@ -365,8 +383,11 @@ fun NoteHeader(
     ) {
         TextField(
             modifier = Modifier.fillMaxWidth(0.75f),
-            value = title,
-            onValueChange = { newText -> saveText(newText) },
+            value = titleFieldValue,
+            onValueChange = { newText ->
+                titleFieldValue = newText
+                saveText(titleFieldValue.text)
+            },
             colors = TextFieldDefaults.colors(
                 focusedIndicatorColor = Color.Transparent,
                 unfocusedIndicatorColor = Color.Transparent,
@@ -377,10 +398,15 @@ fun NoteHeader(
                 fontWeight = FontWeight.Bold,
                 fontSize = 24.sp,
                 color = MaterialTheme.colorScheme.secondary
-            )
+            ),
+            keyboardOptions = KeyboardOptions.Default.copy(imeAction = ImeAction.Done),
+            keyboardActions = KeyboardActions(
+                onDone = {
+                    focusManager.moveFocus(FocusDirection.Next)
+                })
         )
 
-        if (isPinned) {
+        if (note.isPinned) {
             Icon(
                 modifier = Modifier
                     .size(24.dp)
@@ -390,6 +416,10 @@ fun NoteHeader(
                 tint = MaterialTheme.colorScheme.secondary,
             )
         }
+    }
+
+    LifecycleResumeEffect(note.id) {
+        onPauseOrDispose { saveText(titleFieldValue.text) }
     }
 }
 
@@ -403,6 +433,7 @@ fun NoteBody(
     deleteCheckBox: (String) -> Unit = {},
 ) {
     val listState = rememberLazyListState()
+    val focusRequesters = remember(notesItems) { notesItems.map { FocusRequester() } }
 
     LaunchedEffect(notesItems.size) {
         if (notesItems.isNotEmpty()) listState.scrollToItem(notesItems.size - 1)
@@ -414,10 +445,27 @@ fun NoteBody(
             .fillMaxHeight(0.95f),
         state = listState,
     ) {
-        items(notesItems, key = { item -> item.id }) { item ->
+        itemsIndexed(notesItems, key = { _, item -> item.id }) { index, item ->
+            val currentFocusRequester = focusRequesters[index]
+            val previousFocusRequester = focusRequesters.getOrNull(index - 1)
+
             when (item.type) {
-                NoteItemType.TEXT -> TextFieldItem(item, updateTextField, deleteTextField)
-                NoteItemType.CHECK_BOX -> CheckBoxItem(item, addCheckBox, updateCheckBox, deleteCheckBox)
+                NoteItemType.TEXT -> TextFieldItem(
+                    noteItem = item,
+                    currentFocusRequester = currentFocusRequester,
+                    previousFocusRequester = previousFocusRequester,
+                    updateTextField = updateTextField,
+                    deleteTextField = deleteTextField
+                )
+
+                NoteItemType.CHECK_BOX -> CheckBoxItem(
+                    noteItem = item,
+                    currentFocusRequester = currentFocusRequester,
+                    previousFocusRequester = previousFocusRequester,
+                    addCheckBox = addCheckBox,
+                    updateCheckBox = updateCheckBox,
+                    deleteCheckBox = deleteCheckBox
+                )
             }
         }
     }
@@ -434,7 +482,7 @@ fun NoteDetailFab(
     Box(
         modifier = Modifier
             .wrapContentSize()
-            .padding(bottom = 8.dp, end = 16.dp)
+            .padding(bottom = 12.dp, end = 12.dp)
     ) {
         Column(
             horizontalAlignment = Alignment.CenterHorizontally,
@@ -442,19 +490,19 @@ fun NoteDetailFab(
             modifier = Modifier.align(Alignment.BottomEnd)
         ) {
             if (expanded) {
-                FloatingActionButton(
-                    modifier = Modifier.size(46.dp),
-                    shape = CircleShape,
-                    onClick = { },
-                    containerColor = MaterialTheme.colorScheme.tertiary,
-                ) {
-                    Icon(
-                        modifier = Modifier.size(24.dp),
-                        painter = painterResource(id = R.drawable.ic_image),
-                        contentDescription = "Add check box icon",
-                        tint = MaterialTheme.colorScheme.primary
-                    )
-                }
+                /*                FloatingActionButton(
+                                    modifier = Modifier.size(46.dp),
+                                    shape = CircleShape,
+                                    onClick = { },
+                                    containerColor = MaterialTheme.colorScheme.tertiary,
+                                ) {
+                                    Icon(
+                                        modifier = Modifier.size(24.dp),
+                                        painter = painterResource(id = R.drawable.ic_image),
+                                        contentDescription = "Add check box icon",
+                                        tint = MaterialTheme.colorScheme.primary
+                                    )
+                                }*/
 
                 FloatingActionButton(
                     modifier = Modifier.size(46.dp),

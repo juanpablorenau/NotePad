@@ -169,6 +169,22 @@ class NoteDetailViewModel @Inject constructor(
         }
     }
 
+    fun copyNote() {
+        viewModelScope.launch(dispatcher) {
+            tryOrError {
+                updateNote()
+                updateCopyNote()
+            }
+        }
+    }
+
+    private suspend fun updateCopyNote() {
+        with((_uiState.value as NoteDetailUiState.Success).note.copy(getUUID())) {
+            insertNoteUseCase(this)
+            setSuccessState(this)
+        }
+    }
+
     private suspend fun tryOrError(action: suspend () -> Unit) {
         try {
             action()

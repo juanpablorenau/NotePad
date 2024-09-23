@@ -13,6 +13,8 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.notepad.R
+import com.example.notepad.theme.DarkSkyBlue
+import com.example.notepad.theme.LightSkyBlue
 
 @Preview(showBackground = true)
 @Composable
@@ -80,7 +82,7 @@ fun SettingsContent(
 
 @Composable
 fun DarkModeSwitch(
-    isDarkTheme: Boolean = false,
+    isDarkTheme: Boolean = true,
     changeDarkTheme: () -> Unit = {},
 ) {
     Row(
@@ -97,7 +99,32 @@ fun DarkModeSwitch(
         )
         Switch(
             checked = isDarkTheme,
-            onCheckedChange = { changeDarkTheme() }
+            onCheckedChange = { changeDarkTheme() },
+            colors = SwitchDefaults.colors(
+                checkedBorderColor = MaterialTheme.colorScheme.onBackground,
+                uncheckedBorderColor = MaterialTheme.colorScheme.onBackground,
+                checkedThumbColor = DarkSkyBlue,
+                uncheckedThumbColor = LightSkyBlue,
+                checkedTrackColor = MaterialTheme.colorScheme.tertiary,
+                uncheckedTrackColor = MaterialTheme.colorScheme.tertiary,
+            ),
+            thumbContent = {
+                if (isDarkTheme) {
+                    Icon(
+                        modifier = Modifier.padding(4.dp),
+                        painter = painterResource(id = R.drawable.ic_moon),
+                        contentDescription = "Dark mode icon",
+                        tint = MaterialTheme.colorScheme.primary
+                    )
+                } else {
+                    Icon(
+                        modifier = Modifier.padding(2.dp),
+                        painter = painterResource(id = R.drawable.ic_sun),
+                        contentDescription = "Light mode icon",
+                        tint = MaterialTheme.colorScheme.primary
+                    )
+                }
+            }
         )
     }
 }

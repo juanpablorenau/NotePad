@@ -383,13 +383,13 @@ fun AddNoteButton(onClick: (String) -> Unit = {}, size: Int) {
     val route = AppScreens.NoteDetailScreen.route.plus("/new_element/$size")
 
     FloatingActionButton(
-        modifier = Modifier.padding(bottom = 8.dp, end = 8.dp),
+        modifier = Modifier.padding(bottom = 12.dp, end = 12.dp),
         shape = CircleShape,
         containerColor = MaterialTheme.colorScheme.tertiary,
         onClick = { onClick(route) }
     ) {
         Icon(
-            modifier = Modifier.size(28.dp),
+            modifier = Modifier.size(36.dp),
             painter = painterResource(id = R.drawable.ic_add),
             contentDescription = "Add_icon",
             tint = MaterialTheme.colorScheme.primary

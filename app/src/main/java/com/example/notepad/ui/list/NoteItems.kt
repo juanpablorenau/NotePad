@@ -9,10 +9,12 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.scale
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import com.example.model.entities.NoteItem
 import com.example.model.entities.NoteItemType
 
@@ -33,6 +35,7 @@ fun CheckBoxItem(
         ) {
             CompositionLocalProvider(LocalMinimumInteractiveComponentEnforcement provides false) {
                 Checkbox(
+                    modifier = Modifier.scale(0.75f),
                     enabled = false,
                     checked = noteItem.isChecked,
                     onCheckedChange = { _ -> },
@@ -48,7 +51,8 @@ fun CheckBoxItem(
                 text = noteItem.text,
                 maxLines = 1,
                 overflow = TextOverflow.Ellipsis,
-                color = MaterialTheme.colorScheme.secondary
+                color = MaterialTheme.colorScheme.secondary,
+                fontSize = 12.sp
             )
         }
     }
@@ -64,6 +68,7 @@ fun TextFieldItem(
         maxLines = 8,
         overflow = TextOverflow.Ellipsis,
         text = noteItem.text,
-        color = MaterialTheme.colorScheme.secondary
+        color = MaterialTheme.colorScheme.secondary,
+        fontSize = 12.sp
     )
 }
