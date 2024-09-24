@@ -6,7 +6,7 @@ data class NoteItem(
     val text: String = "",
     val isChecked: Boolean = false,
     val type: NoteItemType = NoteItemType.TEXT,
-    val lastFocused: Long = System.currentTimeMillis(),
+    val isFocused: Boolean = false,
 ){
     constructor(id: String, noteId: String): this(
         id = id,

@@ -148,10 +148,11 @@ fun NoteBody(
 ) {
     val listState = rememberLazyListState()
     val focusRequesters = remember(notesItems) { notesItems.map { FocusRequester() } }
-    val focusedItem = notesItems.maxBy { it.lastFocused }
+    val focusedItem = notesItems.find { it.isFocused }
+    val index = notesItems.indexOf(focusedItem).takeIf { it != -1 } ?: 0
 
     LaunchedEffect(notesItems.size) {
-        if (notesItems.isNotEmpty()) listState.scrollToItem(notesItems.size - 1)
+        if (notesItems.isNotEmpty()) listState.scrollToItem(index)
     }
 
     LazyColumn(
@@ -163,12 +164,10 @@ fun NoteBody(
         itemsIndexed(notesItems, key = { _, item -> item.id }) { index, item ->
             val currentFocusRequester = focusRequesters[index]
             val previousFocusRequester = focusRequesters.getOrNull(index - 1)
-            val isCurrentFocused = item.id == focusedItem.id
 
             when (item.type) {
                 NoteItemType.TEXT -> TextFieldItem(
                     noteItem = item,
-                    isCurrentFocused = isCurrentFocused,
                     currentFocusRequester = currentFocusRequester,
                     previousFocusRequester = previousFocusRequester,
                     updateTextField = updateTextField,
@@ -177,7 +176,6 @@ fun NoteBody(
 
                 NoteItemType.CHECK_BOX -> CheckBoxItem(
                     noteItem = item,
-                    isCurrentFocused = isCurrentFocused,
                     currentFocusRequester = currentFocusRequester,
                     previousFocusRequester = previousFocusRequester,
                     addCheckBox = addCheckBox,

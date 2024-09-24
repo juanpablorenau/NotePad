@@ -4,6 +4,9 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyRow
+import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material3.Card
+import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
@@ -99,42 +102,52 @@ fun TextFormatComponent(
 ) {
     val keyboardController = LocalSoftwareKeyboardController.current
 
-    Column(
-        modifier = Modifier
-            .fillMaxWidth()
-            .background(MaterialTheme.colorScheme.tertiary)
-            .padding(12.dp),
+    Card(
+        modifier = Modifier.fillMaxWidth(),
+        shape = RoundedCornerShape(
+            topStart = 16.dp,
+            topEnd = 16.dp,
+            bottomStart = 0.dp,
+            bottomEnd = 0.dp
+        ),
+        elevation = CardDefaults.cardElevation(defaultElevation = 4.dp),
     ) {
-        Row(
-            modifier = Modifier.fillMaxWidth(),
-            horizontalArrangement = Arrangement.SpaceBetween,
-            verticalAlignment = Alignment.CenterVertically,
+        Column(
+            modifier = Modifier
+                .background(MaterialTheme.colorScheme.tertiary)
+                .padding(12.dp),
         ) {
-            Text(
-                text = stringResource(R.string.text_format),
-                fontSize = 18.sp,
-                fontWeight = FontWeight.Bold
-            )
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.SpaceBetween,
+                verticalAlignment = Alignment.CenterVertically,
+            ) {
+                Text(
+                    text = stringResource(R.string.text_format),
+                    fontSize = 18.sp,
+                    fontWeight = FontWeight.Bold
+                )
 
-            Icon(
-                modifier = Modifier.clickable {
-                    showBottomSheet.value = false
-                    keyboardController?.show()
-                },
-                painter = painterResource(id = R.drawable.ic_close),
-                contentDescription = "close icon",
-                tint = MaterialTheme.colorScheme.primary
-            )
+                Icon(
+                    modifier = Modifier.clickable {
+                        showBottomSheet.value = false
+                        keyboardController?.show()
+                    },
+                    painter = painterResource(id = R.drawable.ic_close),
+                    contentDescription = "close icon",
+                    tint = MaterialTheme.colorScheme.primary
+                )
+            }
+
+            Spacer(modifier = Modifier.height(12.dp))
+
+            LazyRow(
+                modifier = Modifier.fillMaxWidth(),
+
+                ) {
+
+            }
+
         }
-
-        Spacer(modifier = Modifier.height(12.dp))
-
-        LazyRow(
-            modifier = Modifier.fillMaxWidth(),
-
-        ) {
-
-        }
-
     }
 }
