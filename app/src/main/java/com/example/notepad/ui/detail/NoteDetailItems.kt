@@ -33,6 +33,7 @@ import com.example.model.entities.NoteItemType
 @Composable
 fun CheckBoxItem(
     noteItem: NoteItem = NoteItem(type = NoteItemType.CHECK_BOX),
+    isCurrentFocused: Boolean = false,
     currentFocusRequester: FocusRequester = FocusRequester(),
     previousFocusRequester: FocusRequester? = null,
     addCheckBox: (String) -> Unit = {},
@@ -103,7 +104,8 @@ fun CheckBoxItem(
     }
 
     LaunchedEffect(noteItem.id) {
-        currentFocusRequester.requestFocus()
+        if (isCurrentFocused) currentFocusRequester.requestFocus()
+        else currentFocusRequester.freeFocus()
         textFieldValue = textFieldValue.copy(selection = TextRange(textFieldValue.text.length))
     }
 }
@@ -112,6 +114,7 @@ fun CheckBoxItem(
 @Composable
 fun TextFieldItem(
     noteItem: NoteItem = NoteItem(text = "Sample Text", type = NoteItemType.TEXT),
+    isCurrentFocused: Boolean = false,
     currentFocusRequester: FocusRequester = FocusRequester(),
     previousFocusRequester: FocusRequester? = null,
     updateTextField: (NoteItem) -> Unit = {},
@@ -132,7 +135,8 @@ fun TextFieldItem(
                     deleteTextField(noteItem.id)
                     true
                 } else false
-            }.onFocusChanged {
+            }
+            .onFocusChanged {
                 updateTextField(noteItem.copy(lastFocused = System.currentTimeMillis()))
             },
         value = textFieldValue,
@@ -144,7 +148,8 @@ fun TextFieldItem(
     )
 
     LaunchedEffect(noteItem.id) {
-        currentFocusRequester.requestFocus()
+        if (isCurrentFocused) currentFocusRequester.requestFocus()
+        else currentFocusRequester.freeFocus()
         textFieldValue = textFieldValue.copy(selection = TextRange(textFieldValue.text.length))
     }
 }
