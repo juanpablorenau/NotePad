@@ -6,15 +6,18 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.text.BasicTextField
 import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
-import androidx.compose.material3.*
+import androidx.compose.material3.Card
+import androidx.compose.material3.CardDefaults
+import androidx.compose.material3.Icon
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.focus.FocusDirection
 import androidx.compose.ui.focus.FocusRequester
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.TextStyle
@@ -34,6 +37,7 @@ import com.example.notepad.utils.mockNote
 import com.example.notepad.utils.mockNoteItems
 
 
+@Preview(showBackground = true)
 @Composable
 fun NoteDetailContent(
     padding: PaddingValues = PaddingValues(),
@@ -95,19 +99,13 @@ fun NoteHeader(
             .padding(end = 16.dp),
         horizontalArrangement = Arrangement.SpaceBetween
     ) {
-        TextField(
-            modifier = Modifier.fillMaxWidth(0.75f),
+        BasicTextField(
+            modifier = Modifier.padding(24.dp),
             value = titleFieldValue,
             onValueChange = { newText ->
                 titleFieldValue = newText
                 saveText(titleFieldValue.text)
             },
-            colors = TextFieldDefaults.colors(
-                focusedIndicatorColor = Color.Transparent,
-                unfocusedIndicatorColor = Color.Transparent,
-                focusedContainerColor = Color.Transparent,
-                unfocusedContainerColor = Color.Transparent,
-            ),
             textStyle = TextStyle(
                 fontWeight = FontWeight.Bold,
                 fontSize = 24.sp,

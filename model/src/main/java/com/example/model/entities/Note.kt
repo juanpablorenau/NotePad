@@ -33,18 +33,16 @@ data class Note(
             if (isEmpty()) add(NoteItem(id = getUUID(), noteId = id, isFocused = true))
             else {
                 val focusedIndex = indexOfFirst { it.isFocused }
-                val updatedItems = map { it.copy(isFocused = false) }
-
-                clear()
-                addAll(updatedItems)
 
                 if (!get(focusedIndex).isText()) {
-                    add(index + 1, NoteItem(id = getUUID(), noteId = id, isFocused = true))
+                    val updatedItems = map { it.copy(isFocused = false) }
+                    clear()
+                    addAll(updatedItems)
+                    add(focusedIndex + 1, NoteItem(id = getUUID(), noteId = id, isFocused = true))
                 }
             }
         }
     )
-
 
     fun addCheckbox(noteItemId: String?) =
         this.copy(items = this.items.toMutableList().apply {

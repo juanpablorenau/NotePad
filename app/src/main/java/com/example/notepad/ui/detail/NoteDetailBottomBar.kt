@@ -4,6 +4,7 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyRow
+import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
@@ -23,6 +24,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.example.model.entities.TypeText
 import com.example.notepad.R
 
 
@@ -105,10 +107,7 @@ fun TextFormatComponent(
     Card(
         modifier = Modifier.fillMaxWidth(),
         shape = RoundedCornerShape(
-            topStart = 16.dp,
-            topEnd = 16.dp,
-            bottomStart = 0.dp,
-            bottomEnd = 0.dp
+            topStart = 16.dp, topEnd = 16.dp, bottomStart = 0.dp, bottomEnd = 0.dp
         ),
         elevation = CardDefaults.cardElevation(defaultElevation = 4.dp),
     ) {
@@ -125,7 +124,8 @@ fun TextFormatComponent(
                 Text(
                     text = stringResource(R.string.text_format),
                     fontSize = 18.sp,
-                    fontWeight = FontWeight.Bold
+                    fontWeight = FontWeight.Bold,
+                    color = MaterialTheme.colorScheme.onBackground
                 )
 
                 Icon(
@@ -139,15 +139,63 @@ fun TextFormatComponent(
                 )
             }
 
-            Spacer(modifier = Modifier.height(12.dp))
+            Spacer(modifier = Modifier.height(24.dp))
 
-            LazyRow(
-                modifier = Modifier.fillMaxWidth(),
-
-                ) {
-
-            }
-
+            TypeTextsSelector()
         }
+    }
+}
+
+@Preview(showBackground = true)
+@Composable
+fun TypeTextsSelector() {
+    val selectedIndex = remember { mutableStateOf(-1) }
+
+    val typeTexts = remember {
+        listOf(
+            TypeText("Title", 24, true),
+            TypeText("Header", 20, false),
+            TypeText("Subtitle", 16, true),
+            TypeText("Body", 16, false)
+        )
+    }
+
+    LazyRow(
+        modifier = Modifier.fillMaxWidth(),
+        verticalAlignment = Alignment.Bottom,
+        horizontalArrangement = Arrangement.SpaceEvenly
+    ) {
+        itemsIndexed(typeTexts) { index, typeText ->
+            TypeTextsItem(index, typeText, selectedIndex)
+        }
+
+    }
+}
+
+@Preview(showBackground = true)
+@Composable
+fun TypeTextsItem(
+    index: Int = -1,
+    typeText: TypeText = TypeText("Title", 24, true),
+    selectedIndex: MutableState<Int> = mutableStateOf(-1),
+) {
+    Card(
+        modifier = Modifier.clickable { selectedIndex.value = index },
+        shape = RoundedCornerShape(12.dp),
+        colors = CardDefaults.cardColors(
+            containerColor =
+            if (selectedIndex.value == index) MaterialTheme.colorScheme.primary
+            else MaterialTheme.colorScheme.tertiary
+        ),
+    ) {
+        Text(
+            modifier = Modifier.padding(vertical = 4.dp, horizontal = 16.dp),
+            text = typeText.text,
+            fontSize = typeText.fontSize.sp,
+            fontWeight = if (typeText.isBold) FontWeight.Bold else FontWeight.Normal,
+            color =
+            if (selectedIndex.value == index) MaterialTheme.colorScheme.background
+            else MaterialTheme.colorScheme.onBackground,
+        )
     }
 }

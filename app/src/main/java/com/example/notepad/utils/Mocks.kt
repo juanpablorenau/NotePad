@@ -18,8 +18,9 @@ val mockNote =
         title = "Meeting Notes",
         lightColor = AppColor.PALE_YELLOW.lightColor,
         darkColor = AppColor.PALE_YELLOW.darkColor,
-        isPinned = false,
+        isPinned = true,
     )
 
-val mockNoteItems = listOf(NoteItem(), NoteItem(), NoteItem())
+val mockNoteItems =
+    listOf(NoteItem(text = "Item 1"), NoteItem(text = "Item 2"), NoteItem(text = "Item 3"))
 
