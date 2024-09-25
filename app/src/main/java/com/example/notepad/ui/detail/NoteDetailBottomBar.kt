@@ -25,7 +25,9 @@ import androidx.compose.ui.text.style.TextDecoration
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.example.model.entities.FormatText
 import com.example.model.entities.TypeText
+import com.example.model.utils.capitalizeFirstLetter
 import com.example.notepad.R
 
 
@@ -34,16 +36,18 @@ import com.example.notepad.R
 fun NoteDetailBottomBar(
     addTextField: () -> Unit = {},
     addCheckBox: (String?) -> Unit = {},
+    applyFormat: (FormatText) -> Unit = {},
 ) {
     val showBottomSheet = remember { mutableStateOf(false) }
+    val changeBottomSheetState = { value: Boolean -> showBottomSheet.value = value }
 
-    if (showBottomSheet.value) TextFormatComponent(showBottomSheet)
-    else BottomOptions(showBottomSheet, addTextField, addCheckBox)
+    if (showBottomSheet.value) TextFormatComponent(changeBottomSheetState, applyFormat)
+    else BottomOptions(changeBottomSheetState, addTextField, addCheckBox)
 }
 
 @Composable
 fun BottomOptions(
-    showBottomSheet: MutableState<Boolean> = mutableStateOf(true),
+    changeBottomSheetState: (Boolean) -> Unit = {},
     addTextField: () -> Unit = {},
     addCheckBox: (String?) -> Unit = {},
 ) {
@@ -59,7 +63,7 @@ fun BottomOptions(
     ) {
         Icon(
             modifier = Modifier.clickable {
-                showBottomSheet.value = true
+                changeBottomSheetState(true)
                 keyboardController?.hide()
             },
             painter = painterResource(id = R.drawable.ic_border_color),
@@ -101,83 +105,82 @@ fun BottomOptions(
 @Preview(showBackground = true)
 @Composable
 fun TextFormatComponent(
-    showBottomSheet: MutableState<Boolean> = mutableStateOf(true),
+    changeBottomSheetState: (Boolean) -> Unit = {},
+    applyFormat: (FormatText) -> Unit = {},
 ) {
-    val keyboardController = LocalSoftwareKeyboardController.current
-
     Card(
         modifier = Modifier.fillMaxWidth(),
-        border = BorderStroke(
-            width = 1.dp,
-            color = MaterialTheme.colorScheme.tertiary
-        ),
+        border = BorderStroke(width = 1.dp, color = MaterialTheme.colorScheme.tertiary),
+        elevation = CardDefaults.cardElevation(defaultElevation = 12.dp),
         shape = RoundedCornerShape(
             topStart = 16.dp, topEnd = 16.dp, bottomStart = 0.dp, bottomEnd = 0.dp
         ),
-        elevation = CardDefaults.cardElevation(defaultElevation = 12.dp),
     ) {
         Column(
             modifier = Modifier
                 .background(MaterialTheme.colorScheme.background)
                 .padding(12.dp),
         ) {
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.SpaceBetween,
-                verticalAlignment = Alignment.CenterVertically,
-            ) {
-                Text(
-                    text = stringResource(R.string.text_format),
-                    fontSize = 18.sp,
-                    fontWeight = FontWeight.Bold,
-                    color = MaterialTheme.colorScheme.onBackground
-                )
-
-                Icon(
-                    modifier = Modifier.clickable {
-                        showBottomSheet.value = false
-                        keyboardController?.show()
-                    },
-                    painter = painterResource(id = R.drawable.ic_close),
-                    contentDescription = "close icon",
-                    tint = MaterialTheme.colorScheme.onBackground
-                )
-
-                TextFormatContent()
-            }
+            TextFormatHeader(changeBottomSheetState)
+            TextFormatContent(applyFormat)
         }
     }
 }
 
 @Preview(showBackground = true)
 @Composable
-fun TextFormatContent(){
+fun TextFormatHeader(
+    changeBottomSheetState: (Boolean) -> Unit = {},
+) {
+    val keyboardController = LocalSoftwareKeyboardController.current
+
+    Row(
+        modifier = Modifier.fillMaxWidth(),
+        horizontalArrangement = Arrangement.SpaceBetween,
+        verticalAlignment = Alignment.CenterVertically,
+    ) {
+        Text(
+            text = stringResource(R.string.text_format),
+            fontSize = 18.sp,
+            fontWeight = FontWeight.Bold,
+            color = MaterialTheme.colorScheme.onBackground
+        )
+
+        Icon(
+            modifier = Modifier.clickable {
+                changeBottomSheetState(false)
+                keyboardController?.show()
+            },
+            painter = painterResource(id = R.drawable.ic_close),
+            contentDescription = "close icon",
+            tint = MaterialTheme.colorScheme.onBackground
+        )
+    }
+}
+
+@Preview(showBackground = true)
+@Composable
+fun TextFormatContent(applyFormat: (FormatText) -> Unit = {}) {
     Spacer(modifier = Modifier.height(24.dp))
-
-    TypeTextsSelector()
-
+    TypeTextsSelector(applyFormat)
     Spacer(modifier = Modifier.height(18.dp))
-
-    FormatTextsSelector()
-
+    FormatTextsSelector(applyFormat)
     Spacer(modifier = Modifier.height(12.dp))
-
-    ParagraphsSelectorAndTextColor()
-
+    ParagraphsSelectorAndTextColor(applyFormat)
     Spacer(modifier = Modifier.height(24.dp))
 }
 
 @Preview(showBackground = true)
 @Composable
-fun TypeTextsSelector() {
+fun TypeTextsSelector(applyFormat: (FormatText) -> Unit = {}) {
     val selectedIndex = remember { mutableIntStateOf(-1) }
 
-    val typeTexts = remember {
+    val formatTexts = remember {
         listOf(
-            TypeText("Title", 24, true),
-            TypeText("Header", 20, false),
-            TypeText("Subtitle", 16, true),
-            TypeText("Body", 16, false)
+            FormatText(TypeText.TITLE, 24, true),
+            FormatText(TypeText.HEADER, 20, false),
+            FormatText(TypeText.SUBTITLE, 16, true),
+            FormatText(TypeText.BODY, 16, false)
         )
     }
 
@@ -186,10 +189,9 @@ fun TypeTextsSelector() {
         verticalAlignment = Alignment.Bottom,
         horizontalArrangement = Arrangement.SpaceEvenly
     ) {
-        itemsIndexed(typeTexts) { index, typeText ->
-            TypeTextsItem(index, typeText, selectedIndex)
+        itemsIndexed(formatTexts) { index, typeText ->
+            TypeTextsItem(index, typeText, selectedIndex, applyFormat)
         }
-
     }
 }
 
@@ -197,13 +199,17 @@ fun TypeTextsSelector() {
 @Composable
 fun TypeTextsItem(
     index: Int = -1,
-    typeText: TypeText = TypeText("Title", 24, true),
+    formatText: FormatText = FormatText(),
     selectedIndex: MutableState<Int> = mutableIntStateOf(-1),
+    applyFormat: (FormatText) -> Unit = {},
 ) {
     Card(
         modifier = Modifier
             .height(40.dp)
-            .clickable { selectedIndex.value = index },
+            .clickable {
+                selectedIndex.value = index
+                applyFormat(formatText)
+            },
         shape = RoundedCornerShape(12.dp),
         colors = CardDefaults.cardColors(
             containerColor =
@@ -212,14 +218,14 @@ fun TypeTextsItem(
         ),
     ) {
         Box(
+            modifier = Modifier.fillMaxSize(),
             contentAlignment = Alignment.Center,
-            modifier = Modifier.fillMaxSize()
         ) {
             Text(
                 modifier = Modifier.padding(vertical = 4.dp, horizontal = 16.dp),
-                text = typeText.text,
-                fontSize = typeText.fontSize.sp,
-                fontWeight = if (typeText.isBold) FontWeight.Bold else FontWeight.Normal,
+                text = formatText.typeText.name.capitalizeFirstLetter(),
+                fontSize = formatText.fontSize.sp,
+                fontWeight = if (formatText.isBold) FontWeight.Bold else FontWeight.Normal,
                 color =
                 if (selectedIndex.value == index) MaterialTheme.colorScheme.background
                 else MaterialTheme.colorScheme.secondary,
@@ -230,7 +236,7 @@ fun TypeTextsItem(
 
 @Preview(showBackground = true)
 @Composable
-fun FormatTextsSelector() {
+fun FormatTextsSelector(applyFormat: (FormatText) -> Unit = {}) {
     val selectedIndexes = remember { mutableStateListOf(false, false, false, false) }
 
     Row(
@@ -240,7 +246,10 @@ fun FormatTextsSelector() {
             modifier = Modifier
                 .height(32.dp)
                 .weight(1f)
-                .clickable { selectedIndexes[0] = !selectedIndexes[0] },
+                .clickable {
+                    selectedIndexes[0] = !selectedIndexes[0]
+                    applyFormat(FormatText(isBold = selectedIndexes[0]))
+                },
             shape = RoundedCornerShape(
                 topStart = 12.dp,
                 topEnd = 0.dp,
@@ -275,13 +284,11 @@ fun FormatTextsSelector() {
             modifier = Modifier
                 .height(32.dp)
                 .weight(1f)
-                .clickable { selectedIndexes[1] = !selectedIndexes[1] },
-            shape = RoundedCornerShape(
-                topStart = 0.dp,
-                topEnd = 0.dp,
-                bottomStart = 0.dp,
-                bottomEnd = 0.dp
-            ),
+                .clickable {
+                    selectedIndexes[1] = !selectedIndexes[1]
+                    applyFormat(FormatText(isItalic = selectedIndexes[1]))
+                },
+            shape = RoundedCornerShape(0.dp),
             colors = CardDefaults.cardColors(
                 containerColor =
                 if (selectedIndexes[1]) MaterialTheme.colorScheme.primary
@@ -310,13 +317,11 @@ fun FormatTextsSelector() {
             modifier = Modifier
                 .height(32.dp)
                 .weight(1f)
-                .clickable { selectedIndexes[2] = !selectedIndexes[2] },
-            shape = RoundedCornerShape(
-                topStart = 0.dp,
-                topEnd = 0.dp,
-                bottomStart = 0.dp,
-                bottomEnd = 0.dp
-            ),
+                .clickable {
+                    selectedIndexes[2] = !selectedIndexes[2]
+                    applyFormat(FormatText(isUnderline = selectedIndexes[2]))
+                },
+            shape = RoundedCornerShape(0.dp),
             colors = CardDefaults.cardColors(
                 containerColor =
                 if (selectedIndexes[2]) MaterialTheme.colorScheme.primary
@@ -345,7 +350,10 @@ fun FormatTextsSelector() {
             modifier = Modifier
                 .height(32.dp)
                 .weight(1f)
-                .clickable { selectedIndexes[3] = !selectedIndexes[3] },
+                .clickable {
+                    selectedIndexes[3] = !selectedIndexes[3]
+                    applyFormat(FormatText(isLineThrough = selectedIndexes[3]))
+                },
             shape = RoundedCornerShape(
                 topStart = 0.dp,
                 topEnd = 12.dp,
@@ -378,7 +386,7 @@ fun FormatTextsSelector() {
 
 @Preview(showBackground = true)
 @Composable
-fun ParagraphsSelectorAndTextColor() {
+fun ParagraphsSelectorAndTextColor(applyFormat: (FormatText) -> Unit = {}) {
     val selectedIndex = remember { mutableIntStateOf(-1) }
 
     Row(
@@ -454,12 +462,7 @@ fun ParagraphsSelectorAndTextColor() {
                     .height(32.dp)
                     .weight(1f)
                     .clickable { selectedIndex.intValue = 1 },
-                shape = RoundedCornerShape(
-                    topStart = 0.dp,
-                    topEnd = 0.dp,
-                    bottomStart = 0.dp,
-                    bottomEnd = 0.dp
-                ),
+                shape = RoundedCornerShape(0.dp),
                 colors = CardDefaults.cardColors(
                     containerColor =
                     if (selectedIndex.intValue == 1) MaterialTheme.colorScheme.primary
@@ -488,12 +491,7 @@ fun ParagraphsSelectorAndTextColor() {
                     .height(32.dp)
                     .weight(1f)
                     .clickable { selectedIndex.intValue = 2 },
-                shape = RoundedCornerShape(
-                    topStart = 0.dp,
-                    topEnd = 0.dp,
-                    bottomStart = 0.dp,
-                    bottomEnd = 0.dp
-                ),
+                shape = RoundedCornerShape(0.dp),
                 colors = CardDefaults.cardColors(
                     containerColor =
                     if (selectedIndex.intValue == 2) MaterialTheme.colorScheme.primary
