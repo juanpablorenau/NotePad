@@ -12,4 +12,5 @@ data class NoteItemDb(
     @ColumnInfo(name = "text") val text: String,
     @ColumnInfo(name = "isChecked") val isChecked: Boolean = false,
     @ColumnInfo(name = "type") val type: String ,
+    @ColumnInfo(name = "isFocused") val isFocused: Boolean = false,
 )

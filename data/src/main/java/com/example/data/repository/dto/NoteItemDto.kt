@@ -13,6 +13,7 @@ class NoteItemDto @Inject constructor() {
             noteId = noteItemDb.noteId,
             text = noteItemDb.text,
             isChecked = noteItemDb.isChecked,
+            isFocused = noteItemDb.isFocused,
             type = when (noteItemDb.type) {
                 NoteItemType.TEXT.name -> NoteItemType.TEXT
                 else -> NoteItemType.CHECK_BOX
@@ -25,6 +26,7 @@ class NoteItemDto @Inject constructor() {
             noteId = noteItem.noteId,
             text = noteItem.text,
             isChecked = noteItem.isChecked,
+            isFocused = noteItem.isFocused,
             type = noteItem.type.name
         )
 }

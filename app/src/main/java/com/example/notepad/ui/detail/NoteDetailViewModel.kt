@@ -8,6 +8,7 @@ import com.example.domain.usecase.detail.DeleteNoteUseCase
 import com.example.domain.usecase.detail.GetNoteDetailUseCase
 import com.example.domain.usecase.detail.InsertNoteUseCase
 import com.example.domain.usecase.detail.UpdateNoteUseCase
+import com.example.model.entities.FormatText
 import com.example.model.entities.Note
 import com.example.model.entities.NoteItem
 import com.example.model.utils.getUUID
@@ -49,18 +50,18 @@ class NoteDetailViewModel @Inject constructor(
         _uiState.value = NoteDetailUiState.Error
     }
 
+    private fun getNote() = (_uiState.value as NoteDetailUiState.Success).note
+
     fun manageNote(id: String, index: Int) {
-        if (id.contains("new_element")) createNewNote(index)
+        if (id.contains("new_element")) insertNote(Note(getUUID(), index))
         else getNoteById(id)
     }
 
-    private fun createNewNote(index: Int) {
+    private fun insertNote(note: Note) {
         viewModelScope.launch(dispatcher) {
-            with(Note(getUUID(), index)) {
-                tryOrError {
-                    insertNoteUseCase(this)
-                    setSuccessState(this)
-                }
+            tryOrError {
+                insertNoteUseCase(note)
+                setSuccessState(note)
             }
         }
     }
@@ -74,17 +75,13 @@ class NoteDetailViewModel @Inject constructor(
 
     fun updateNote() {
         viewModelScope.launch(dispatcher) {
-            with(_uiState.value as NoteDetailUiState.Success) {
-                tryOrError { updateNoteUseCase(note) }
-            }
+            tryOrError { updateNoteUseCase(getNote()) }
         }
     }
 
     fun deleteNote() {
         viewModelScope.launch(dispatcher) {
-            with(_uiState.value as NoteDetailUiState.Success) {
-                tryOrError { deleteNoteUseCase(note.id) }
-            }
+            tryOrError { deleteNoteUseCase(getNote().id) }
         }
     }
 
@@ -115,7 +112,6 @@ class NoteDetailViewModel @Inject constructor(
     fun addTextField() {
         _uiState.getAndUpdate {
             with((it as NoteDetailUiState.Success)) {
-                if (note.isLastText()) return
                 copy(note = note.addTextField())
             }
         }
@@ -170,18 +166,15 @@ class NoteDetailViewModel @Inject constructor(
     }
 
     fun copyNote() {
-        viewModelScope.launch(dispatcher) {
-            tryOrError {
-                updateNote()
-                updateCopyNote()
-            }
-        }
+        updateNote()
+        insertNote(getNote().copy(getUUID()))
     }
 
-    private suspend fun updateCopyNote() {
-        with((_uiState.value as NoteDetailUiState.Success).note.copy(getUUID())) {
-            insertNoteUseCase(this)
-            setSuccessState(this)
+    fun applyFormat(formatText: FormatText) {
+        _uiState.getAndUpdate {
+            with((it as NoteDetailUiState.Success)) {
+                copy(note = note.applyFormat(formatText))
+            }
         }
     }
 

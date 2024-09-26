@@ -15,24 +15,25 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.focusRequester
+import androidx.compose.ui.focus.onFocusChanged
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.input.key.Key
 import androidx.compose.ui.input.key.key
 import androidx.compose.ui.input.key.onKeyEvent
 import androidx.compose.ui.text.TextRange
-import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.TextFieldValue
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
-import androidx.lifecycle.compose.LifecycleResumeEffect
 import com.example.model.entities.NoteItem
 import com.example.model.entities.NoteItemType
+import com.example.notepad.utils.toTextStyle
 
 @Preview(showBackground = true)
 @Composable
 fun CheckBoxItem(
     noteItem: NoteItem = NoteItem(type = NoteItemType.CHECK_BOX),
+    isDarkTheme: Boolean = false,
     currentFocusRequester: FocusRequester = FocusRequester(),
     previousFocusRequester: FocusRequester? = null,
     addCheckBox: (String) -> Unit = {},
@@ -59,7 +60,13 @@ fun CheckBoxItem(
                 checked = isChecked,
                 onCheckedChange = { newChecked ->
                     isChecked = newChecked
-                    updateCheckBox(noteItem.copy(text = textFieldValue.text, isChecked = isChecked))
+                    updateCheckBox(
+                        noteItem.copy(
+                            text = textFieldValue.text,
+                            isChecked = isChecked,
+                            isFocused = true
+                        )
+                    )
                 },
                 colors = CheckboxDefaults.colors(
                     checkedColor = MaterialTheme.colorScheme.primary,
@@ -71,6 +78,7 @@ fun CheckBoxItem(
                 modifier = Modifier
                     .fillMaxWidth()
                     .focusRequester(currentFocusRequester)
+                    .onFocusChanged { if (it.isFocused) updateCheckBox(noteItem.copy(isFocused = true)) }
                     .onKeyEvent {
                         if (it.key == Key.Backspace && textFieldValue.text.isEmpty()) {
                             previousFocusRequester?.requestFocus()
@@ -82,7 +90,13 @@ fun CheckBoxItem(
                 singleLine = true,
                 onValueChange = { newTextFieldValue ->
                     textFieldValue = newTextFieldValue.copy(text = newTextFieldValue.text)
-                    updateCheckBox(noteItem.copy(text = textFieldValue.text, isChecked = isChecked))
+                    updateCheckBox(
+                        noteItem.copy(
+                            text = textFieldValue.text,
+                            isChecked = isChecked,
+                            isFocused = true
+                        )
+                    )
                 },
                 keyboardOptions = KeyboardOptions.Default.copy(imeAction = ImeAction.Done),
                 keyboardActions = KeyboardActions(
@@ -94,19 +108,14 @@ fun CheckBoxItem(
                         }
                     },
                 ),
-                textStyle = TextStyle(color = MaterialTheme.colorScheme.secondary)
+                textStyle = noteItem.formatText.toTextStyle(isDarkTheme),
             )
         }
     }
 
-    LifecycleResumeEffect(noteItem.id) {
-        onPauseOrDispose {
-            updateCheckBox(noteItem.copy(text = textFieldValue.text, isChecked = isChecked))
-        }
-    }
-
-    LaunchedEffect(noteItem.id) {
-        currentFocusRequester.requestFocus()
+    LaunchedEffect(noteItem.id, noteItem.isFocused) {
+        if (noteItem.isFocused) currentFocusRequester.requestFocus()
+        else currentFocusRequester.freeFocus()
         textFieldValue = textFieldValue.copy(selection = TextRange(textFieldValue.text.length))
     }
 }
@@ -115,6 +124,7 @@ fun CheckBoxItem(
 @Composable
 fun TextFieldItem(
     noteItem: NoteItem = NoteItem(text = "Sample Text", type = NoteItemType.TEXT),
+    isDarkTheme: Boolean = false,
     currentFocusRequester: FocusRequester = FocusRequester(),
     previousFocusRequester: FocusRequester? = null,
     updateTextField: (NoteItem) -> Unit = {},
@@ -129,6 +139,7 @@ fun TextFieldItem(
             .fillMaxWidth()
             .padding(horizontal = 24.dp)
             .focusRequester(currentFocusRequester)
+            .onFocusChanged { if (it.isFocused) updateTextField(noteItem.copy(isFocused = true)) }
             .onKeyEvent {
                 if (it.key == Key.Backspace && textFieldValue.text.isEmpty()) {
                     previousFocusRequester?.requestFocus()
@@ -136,22 +147,17 @@ fun TextFieldItem(
                     true
                 } else false
             },
+        textStyle = noteItem.formatText.toTextStyle(isDarkTheme),
         value = textFieldValue,
         onValueChange = { newTextFieldValue ->
-            textFieldValue = newTextFieldValue.copy(
-                text = newTextFieldValue.text,
-            )
-            updateTextField(noteItem.copy(text = textFieldValue.text))
+            textFieldValue = newTextFieldValue.copy(text = newTextFieldValue.text)
+            updateTextField(noteItem.copy(text = textFieldValue.text, isFocused = true))
         },
-        textStyle = TextStyle(color = MaterialTheme.colorScheme.secondary)
     )
 
-    LaunchedEffect(noteItem.id) {
-        currentFocusRequester.requestFocus()
+    LaunchedEffect(noteItem.id, noteItem.isFocused) {
+        if (noteItem.isFocused) currentFocusRequester.requestFocus()
+        else currentFocusRequester.freeFocus()
         textFieldValue = textFieldValue.copy(selection = TextRange(textFieldValue.text.length))
-    }
-
-    LifecycleResumeEffect(noteItem.id) {
-        onPauseOrDispose { updateTextField(noteItem.copy(text = textFieldValue.text)) }
     }
 }
