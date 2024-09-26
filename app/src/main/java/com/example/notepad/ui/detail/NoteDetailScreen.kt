@@ -9,6 +9,7 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.lifecycle.compose.LifecycleResumeEffect
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.NavHostController
+import com.example.model.entities.FormatText
 import com.example.model.entities.Note
 import com.example.model.entities.NoteItem
 import com.example.notepad.components.screens.ErrorScreen
@@ -57,7 +58,8 @@ fun NoteDetailScreen(
                 updateCheckBox = { checkBox -> viewModel.updateCheckBox(checkBox) },
                 deleteTextField = { id -> viewModel.deleteTextField(id) },
                 deleteCheckBox = { id -> viewModel.deleteCheckBox(id) },
-                copyNote = { viewModel.copyNote() }
+                copyNote = { viewModel.copyNote() },
+                applyFormat = { format -> viewModel.applyFormat(format) }
             )
         }
     }
@@ -81,6 +83,7 @@ fun SuccessScreen(
     deleteTextField: (String) -> Unit = {},
     deleteCheckBox: (String) -> Unit = {},
     copyNote: () -> Unit = {},
+    applyFormat: (FormatText) -> Unit = {}
 ) {
     Scaffold(
         topBar = {
@@ -111,7 +114,8 @@ fun SuccessScreen(
         bottomBar = {
             NoteDetailBottomBar(
                 addTextField = addTextField,
-                addCheckBox = addCheckBox
+                addCheckBox = addCheckBox,
+                applyFormat =  applyFormat
             )
         },
     )

@@ -21,18 +21,19 @@ import androidx.compose.ui.input.key.Key
 import androidx.compose.ui.input.key.key
 import androidx.compose.ui.input.key.onKeyEvent
 import androidx.compose.ui.text.TextRange
-import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.TextFieldValue
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.example.model.entities.NoteItem
 import com.example.model.entities.NoteItemType
+import com.example.notepad.utils.toTextStyle
 
 @Preview(showBackground = true)
 @Composable
 fun CheckBoxItem(
     noteItem: NoteItem = NoteItem(type = NoteItemType.CHECK_BOX),
+    isDarkTheme: Boolean = false,
     currentFocusRequester: FocusRequester = FocusRequester(),
     previousFocusRequester: FocusRequester? = null,
     addCheckBox: (String) -> Unit = {},
@@ -107,7 +108,7 @@ fun CheckBoxItem(
                         }
                     },
                 ),
-                textStyle = TextStyle(color = MaterialTheme.colorScheme.secondary)
+                textStyle = noteItem.formatText.toTextStyle(isDarkTheme),
             )
         }
     }
@@ -123,6 +124,7 @@ fun CheckBoxItem(
 @Composable
 fun TextFieldItem(
     noteItem: NoteItem = NoteItem(text = "Sample Text", type = NoteItemType.TEXT),
+    isDarkTheme: Boolean = false,
     currentFocusRequester: FocusRequester = FocusRequester(),
     previousFocusRequester: FocusRequester? = null,
     updateTextField: (NoteItem) -> Unit = {},
@@ -145,12 +147,12 @@ fun TextFieldItem(
                     true
                 } else false
             },
+        textStyle = noteItem.formatText.toTextStyle(isDarkTheme),
         value = textFieldValue,
         onValueChange = { newTextFieldValue ->
             textFieldValue = newTextFieldValue.copy(text = newTextFieldValue.text)
             updateTextField(noteItem.copy(text = textFieldValue.text, isFocused = true))
         },
-        textStyle = TextStyle(color = MaterialTheme.colorScheme.secondary)
     )
 
     LaunchedEffect(noteItem.id, noteItem.isFocused) {

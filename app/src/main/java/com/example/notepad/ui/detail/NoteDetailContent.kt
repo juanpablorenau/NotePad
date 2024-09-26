@@ -74,6 +74,7 @@ fun NoteDetailContent(
 
             NoteBody(
                 notesItems = note.items,
+                isDarkTheme = isDarkTheme,
                 addCheckBox = addCheckBox,
                 updateTextField = updateTextField,
                 updateCheckBox = updateCheckBox,
@@ -138,6 +139,7 @@ fun NoteHeader(
 @Composable
 fun NoteBody(
     notesItems: List<NoteItem> = mockNoteItems,
+    isDarkTheme: Boolean = false,
     addCheckBox: (String?) -> Unit = {},
     updateTextField: (NoteItem) -> Unit = {},
     updateCheckBox: (NoteItem) -> Unit = {},
@@ -166,6 +168,7 @@ fun NoteBody(
             when (item.type) {
                 NoteItemType.TEXT -> TextFieldItem(
                     noteItem = item,
+                    isDarkTheme,
                     currentFocusRequester = currentFocusRequester,
                     previousFocusRequester = previousFocusRequester,
                     updateTextField = updateTextField,
@@ -174,6 +177,7 @@ fun NoteBody(
 
                 NoteItemType.CHECK_BOX -> CheckBoxItem(
                     noteItem = item,
+                    isDarkTheme,
                     currentFocusRequester = currentFocusRequester,
                     previousFocusRequester = previousFocusRequester,
                     addCheckBox = addCheckBox,

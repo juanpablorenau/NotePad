@@ -8,6 +8,7 @@ import com.example.domain.usecase.detail.DeleteNoteUseCase
 import com.example.domain.usecase.detail.GetNoteDetailUseCase
 import com.example.domain.usecase.detail.InsertNoteUseCase
 import com.example.domain.usecase.detail.UpdateNoteUseCase
+import com.example.model.entities.FormatText
 import com.example.model.entities.Note
 import com.example.model.entities.NoteItem
 import com.example.model.utils.getUUID
@@ -167,6 +168,14 @@ class NoteDetailViewModel @Inject constructor(
     fun copyNote() {
         updateNote()
         insertNote(getNote().copy(getUUID()))
+    }
+
+    fun applyFormat(formatText: FormatText) {
+        _uiState.getAndUpdate {
+            with((it as NoteDetailUiState.Success)) {
+                copy(note = note.applyFormat(formatText))
+            }
+        }
     }
 
     private suspend fun tryOrError(action: suspend () -> Unit) {

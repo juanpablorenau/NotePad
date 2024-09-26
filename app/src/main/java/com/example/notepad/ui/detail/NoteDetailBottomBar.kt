@@ -26,6 +26,7 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.model.entities.FormatText
+import com.example.model.entities.ParagraphType
 import com.example.model.entities.TypeText
 import com.example.model.utils.capitalizeFirstLetter
 import com.example.notepad.R
@@ -427,7 +428,10 @@ fun ParagraphsSelectorAndTextColor(applyFormat: (FormatText) -> Unit = {}) {
                 modifier = Modifier
                     .height(32.dp)
                     .weight(1f)
-                    .clickable { selectedIndex.intValue = 0 },
+                    .clickable {
+                        selectedIndex.intValue = 0
+                        applyFormat(FormatText(paragraphType = ParagraphType.LEFT))
+                    },
                 shape = RoundedCornerShape(
                     topStart = 12.dp,
                     topEnd = 0.dp,
@@ -461,7 +465,10 @@ fun ParagraphsSelectorAndTextColor(applyFormat: (FormatText) -> Unit = {}) {
                 modifier = Modifier
                     .height(32.dp)
                     .weight(1f)
-                    .clickable { selectedIndex.intValue = 1 },
+                    .clickable {
+                        selectedIndex.intValue = 1
+                        applyFormat(FormatText(paragraphType = ParagraphType.JUSTIFY))
+                    },
                 shape = RoundedCornerShape(0.dp),
                 colors = CardDefaults.cardColors(
                     containerColor =
@@ -490,7 +497,10 @@ fun ParagraphsSelectorAndTextColor(applyFormat: (FormatText) -> Unit = {}) {
                 modifier = Modifier
                     .height(32.dp)
                     .weight(1f)
-                    .clickable { selectedIndex.intValue = 2 },
+                    .clickable {
+                        selectedIndex.intValue = 2
+                        applyFormat(FormatText(paragraphType = ParagraphType.CENTER))
+                    },
                 shape = RoundedCornerShape(0.dp),
                 colors = CardDefaults.cardColors(
                     containerColor =
@@ -519,7 +529,10 @@ fun ParagraphsSelectorAndTextColor(applyFormat: (FormatText) -> Unit = {}) {
                 modifier = Modifier
                     .height(32.dp)
                     .weight(1f)
-                    .clickable { selectedIndex.intValue = 3 },
+                    .clickable {
+                        selectedIndex.intValue = 3
+                        applyFormat(FormatText(paragraphType = ParagraphType.RIGHT))
+                    },
                 shape = RoundedCornerShape(
                     topStart = 0.dp,
                     topEnd = 12.dp,
