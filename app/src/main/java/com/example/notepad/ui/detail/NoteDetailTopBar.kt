@@ -19,7 +19,7 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import com.example.model.entities.Color
+import com.example.model.entities.NoteColor
 import com.example.model.entities.Note
 import com.example.notepad.R
 import com.example.notepad.components.Dialog
@@ -33,11 +33,11 @@ import com.example.notepad.utils.mockNote
 @Composable
 fun NoteDetailTopBar(
     note: Note = mockNote,
-    colors: List<Color> = Color.entries,
+    noteColors: List<NoteColor> = NoteColor.entries,
     onBackClick: () -> Unit = {},
     pinUpNote: () -> Unit = {},
     deleteNote: () -> Unit = {},
-    changeColor: (Color) -> Unit = {},
+    changeColor: (NoteColor) -> Unit = {},
     copyNote: () -> Unit = {},
     isDarkTheme: Boolean = false,
 ) {
@@ -136,7 +136,7 @@ fun NoteDetailTopBar(
                 expanded = showColor,
                 onDismissRequest = { showColor = false }
             ) {
-                ChangeColorMenu(colors, changeColor, isDarkTheme)
+                ChangeColorMenu(noteColors, changeColor, isDarkTheme)
             }
         }
     )
@@ -159,16 +159,16 @@ fun DeleteNoteDialog(deleteNote: () -> Unit = {}, action: () -> Unit = {}) {
 @Preview(showBackground = true)
 @Composable
 fun ChangeColorMenu(
-    colors: List<Color> = Color.entries,
-    changeColor: (Color) -> Unit = {},
+    noteColors: List<NoteColor> = NoteColor.entries,
+    changeColor: (NoteColor) -> Unit = {},
     isDarkTheme: Boolean = false,
 ) {
-    for (i in 0 until colors.size.div(4)) {
+    for (i in 0 until noteColors.size.div(4)) {
         Row(
             modifier = Modifier.padding(8.dp)
         ) {
             for (j in 0 until 4) {
-                ColorItem(item = colors[i * 4 + j], changeColor, isDarkTheme)
+                ColorItem(item = noteColors[i * 4 + j], changeColor, isDarkTheme)
                 Spacer(modifier = Modifier.width(8.dp))
             }
         }
@@ -178,8 +178,8 @@ fun ChangeColorMenu(
 @OptIn(ExperimentalFoundationApi::class)
 @Composable
 fun ColorItem(
-    item: Color = Color.PALE_YELLOW,
-    changeColor: (Color) -> Unit = {},
+    item: NoteColor = NoteColor.PALE_YELLOW,
+    changeColor: (NoteColor) -> Unit = {},
     isDarkTheme: Boolean = false,
 ) {
     val color = getColor(if (isDarkTheme) item.darkColor else item.lightColor)

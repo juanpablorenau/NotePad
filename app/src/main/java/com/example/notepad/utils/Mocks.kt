@@ -2,7 +2,7 @@ package com.example.notepad.utils
 
 import com.example.model.entities.Note
 import com.example.model.entities.NoteItem
-import com.example.model.entities.Color as AppColor
+import com.example.model.entities.NoteColor as AppColor
 
 val mockNoteList by lazy {
     listOf(
@@ -16,8 +16,8 @@ val mockNoteList by lazy {
 val mockNote =
     Note(
         title = "Meeting Notes",
-        lightColor = AppColor.PALE_YELLOW.lightColor,
-        darkColor = AppColor.PALE_YELLOW.darkColor,
+        lightNoteColor = AppColor.PALE_YELLOW.lightColor,
+        darkNoteColor = AppColor.PALE_YELLOW.darkColor,
         isPinned = true,
     )
 

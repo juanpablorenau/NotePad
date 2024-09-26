@@ -7,7 +7,7 @@ data class FormatText(
     val isItalic: Boolean = false,
     val isUnderline: Boolean = false,
     val isLineThrough: Boolean = false,
-    val color: Color = Color.BASIC,
+    val textColor: TextColor = TextColor.BASIC,
     val paragraphType: ParagraphType = ParagraphType.LEFT,
 )
 
@@ -17,5 +17,11 @@ enum class TypeText {
 
 enum class ParagraphType {
     LEFT, RIGHT, CENTER, JUSTIFY
+}
 
+enum class TextColor(
+    val lightColor: String,
+    val darkColor: String
+) {
+    BASIC("#000000", "#FFFFFF"),
 }

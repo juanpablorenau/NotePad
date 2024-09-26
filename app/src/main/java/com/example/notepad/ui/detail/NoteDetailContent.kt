@@ -50,7 +50,7 @@ fun NoteDetailContent(
     deleteTextField: (String) -> Unit = {},
     deleteCheckBox: (String) -> Unit = {},
 ) {
-    val color = getColor(if (isDarkTheme) note.darkColor else note.lightColor)
+    val color = getColor(if (isDarkTheme) note.darkNoteColor else note.lightNoteColor)
 
     Card(
         modifier = Modifier

@@ -67,7 +67,7 @@ fun NotesStaggeredGrid(
                 val interactionSource = remember { MutableInteractionSource() }
 
                 val route = AppScreens.NoteDetailScreen.route.plus("/${item.id}/0")
-                val color = getColor(if (isDarkTheme) item.darkColor else item.lightColor)
+                val color = getColor(if (isDarkTheme) item.darkNoteColor else item.lightNoteColor)
 
                 Card(
                     modifier = Modifier

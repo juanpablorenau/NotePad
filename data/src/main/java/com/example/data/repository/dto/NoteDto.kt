@@ -14,8 +14,8 @@ class NoteDto @Inject constructor(
                 note = NoteEmbeddedDb(
                     id = id,
                     title = title,
-                    lightColor = lightColor,
-                    darkColor = darkColor,
+                    lightColor = lightNoteColor,
+                    darkColor = darkNoteColor,
                     isPinned = isPinned,
                     index = index
                 ),
@@ -28,8 +28,8 @@ class NoteDto @Inject constructor(
             Note(
                 id = note.id,
                 title = note.title,
-                lightColor = note.lightColor,
-                darkColor = note.darkColor,
+                lightNoteColor = note.lightColor,
+                darkNoteColor = note.darkColor,
                 isPinned = note.isPinned,
                 index = note.index,
                 items = items.map { noteItemDto.toDomain(it) }

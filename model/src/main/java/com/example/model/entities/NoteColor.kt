@@ -1,6 +1,6 @@
 package com.example.model.entities
 
-enum class Color(
+enum class NoteColor(
     val lightColor: String,
     val darkColor: String
 ) {

@@ -21,11 +21,11 @@ import kotlinx.coroutines.flow.catch
 import kotlinx.coroutines.flow.getAndUpdate
 import kotlinx.coroutines.launch
 import javax.inject.Inject
-import com.example.model.entities.Color as AppColor
+import com.example.model.entities.NoteColor
 
 sealed class NoteDetailUiState {
     data object Loading : NoteDetailUiState()
-    data class Success(val note: Note, val colors: List<AppColor>) : NoteDetailUiState()
+    data class Success(val note: Note, val colors: List<NoteColor>) : NoteDetailUiState()
     data object Error : NoteDetailUiState()
 }
 
@@ -43,7 +43,7 @@ class NoteDetailViewModel @Inject constructor(
     val uiState = _uiState.asStateFlow()
 
     private fun setSuccessState(note: Note) {
-        _uiState.value = NoteDetailUiState.Success(note, AppColor.entries)
+        _uiState.value = NoteDetailUiState.Success(note, NoteColor.entries)
     }
 
     private fun setErrorState() {
@@ -93,10 +93,10 @@ class NoteDetailViewModel @Inject constructor(
         }
     }
 
-    fun changeColor(color: AppColor) {
+    fun changeColor(color: NoteColor) {
         _uiState.getAndUpdate {
             with((it as NoteDetailUiState.Success)) {
-                copy(note = note.copy(lightColor = color.lightColor, darkColor = color.darkColor))
+                copy(note = note.copy(lightNoteColor = color.lightColor, darkNoteColor = color.darkColor))
             }
         }
     }
