@@ -21,6 +21,8 @@ sealed class NotesUiState {
     data object Loading : NotesUiState()
     data class Success(val notes: List<Note>, val itemsView: Int = 2) : NotesUiState()
     data object Error : NotesUiState()
+
+    fun  asSuccess() = this as Success
 }
 
 @HiltViewModel
@@ -60,7 +62,7 @@ class NotesViewModel @Inject constructor(
 
     fun updateNotes() {
         viewModelScope.launch(dispatcher) {
-            with(_uiState.value as NotesUiState.Success) {
+            with(_uiState.value.asSuccess()) {
                 notes.mapIndexed { index, note -> note.copy(index = index) }
             }.also { notes ->
                 tryOrError { updateNotesUseCase(notes) }
@@ -70,7 +72,7 @@ class NotesViewModel @Inject constructor(
 
     fun deleteNotes() {
         viewModelScope.launch(dispatcher) {
-            with(_uiState.value as NotesUiState.Success) {
+            with(_uiState.value.asSuccess()) {
                 tryOrError {
                     deleteNotesUseCase(getCheckedIds(notes))
                     getNotes()
@@ -83,32 +85,32 @@ class NotesViewModel @Inject constructor(
         notes.filter { it.isChecked }.map { it.id }
 
     fun searchNotes(query: String) {
-        _uiState.getAndUpdate {
-            with((it as NotesUiState.Success)) {
+        _uiState.getAndUpdate { state ->
+            with((state.asSuccess())) {
                 copy(notes = notes.filter { note -> note.contains(query) })
             }
         }
     }
 
     fun restoreNotes(originalNotes: List<Note>) {
-        _uiState.getAndUpdate {
-            with((it as NotesUiState.Success)) {
+        _uiState.getAndUpdate { state ->
+            with((state.asSuccess())) {
                 copy(notes = originalNotes)
             }
         }
     }
 
     fun swipeNotes(oldIndex: Int, newIndex: Int) {
-        _uiState.getAndUpdate {
-            with((it as NotesUiState.Success)) {
+        _uiState.getAndUpdate { state ->
+            with((state.asSuccess())) {
                 copy(notes = notes.toMutableList().apply { add(newIndex, removeAt(oldIndex)) })
             }
         }
     }
 
     fun checkNote(id: String) {
-        _uiState.getAndUpdate {
-            with((it as NotesUiState.Success)) {
+        _uiState.getAndUpdate { state ->
+            with((state.asSuccess())) {
                 copy(notes = notes.map { note ->
                     if (note.id == id) note.copy(isChecked = !note.isChecked) else note
                 })
@@ -117,8 +119,8 @@ class NotesViewModel @Inject constructor(
     }
 
     fun pinUpCheckedNotes() {
-        _uiState.getAndUpdate {
-            with((it as NotesUiState.Success)) {
+        _uiState.getAndUpdate { state ->
+            with((state.asSuccess())) {
                 val arePinned = allCheckedArePinned(notes)
                 copy(notes = notes.map { note ->
                     if (note.isChecked) note.copy(isPinned = !arePinned, isChecked = false)
@@ -132,16 +134,16 @@ class NotesViewModel @Inject constructor(
         notes.filter { it.isChecked }.all { it.isPinned }
 
     fun changeItemsView() {
-        _uiState.getAndUpdate {
-            with((it as NotesUiState.Success)) {
+        _uiState.getAndUpdate { state ->
+            with((state.asSuccess())) {
                 copy(itemsView = if (itemsView == 2) 1 else 2)
             }
         }
     }
 
     fun selectAllNotes(select: Boolean) {
-        _uiState.getAndUpdate {
-            with((it as NotesUiState.Success)) {
+        _uiState.getAndUpdate { state ->
+            with((state.asSuccess())) {
                 copy(notes = notes.map { note -> note.copy(isChecked = select) })
             }
         }
