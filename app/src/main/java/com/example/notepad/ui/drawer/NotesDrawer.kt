@@ -71,9 +71,7 @@ fun DrawerContent(
     navigateToSettings: () -> Unit = {},
 ) {
     ModalDrawerSheet(
-        modifier = Modifier
-            .fillMaxHeight()
-            .fillMaxWidth(0.8f),
+        modifier = Modifier.fillMaxHeight(),
         drawerContainerColor = MaterialTheme.colorScheme.background,
         windowInsets = WindowInsets.statusBars,
         drawerShape = RectangleShape,

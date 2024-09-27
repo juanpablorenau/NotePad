@@ -629,6 +629,7 @@ fun TextColorSelector(
         modifier = Modifier
             .fillMaxWidth()
             .padding(top = 12.dp),
+        horizontalArrangement = Arrangement.Center
     ) {
         items(colors.value) { item ->
             TextColorItem(
