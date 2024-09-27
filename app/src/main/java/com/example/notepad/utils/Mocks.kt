@@ -24,3 +24,4 @@ val mockNote =
 val mockNoteItems =
     listOf(NoteItem(text = "Item 1"), NoteItem(text = "Item 2"), NoteItem(text = "Item 3"))
 
+val mockNoteItem = NoteItem(text = "Item 1")

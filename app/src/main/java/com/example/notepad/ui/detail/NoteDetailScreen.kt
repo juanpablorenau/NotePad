@@ -111,6 +111,7 @@ fun SuccessScreen(
         bottomBar = {
             NoteDetailBottomBar(
                 isDarkTheme = isDarkTheme,
+                note = note,
                 addTextField = addTextField,
                 addCheckBox = addCheckBox,
                 applyFormat =  applyFormat

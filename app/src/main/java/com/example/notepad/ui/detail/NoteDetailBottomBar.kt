@@ -26,28 +26,35 @@ import androidx.compose.ui.text.style.TextDecoration
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import com.example.model.entities.FormatText
-import com.example.model.entities.ParagraphType
-import com.example.model.entities.TextColor
-import com.example.model.entities.TypeText
+import com.example.model.entities.*
 import com.example.model.utils.capitalizeFirstLetter
 import com.example.notepad.R
 import com.example.notepad.utils.getColor
+import com.example.notepad.utils.mockNote
+import com.example.notepad.utils.mockNoteItem
 
 
 @Preview(showBackground = true)
 @Composable
 fun NoteDetailBottomBar(
     isDarkTheme: Boolean = false,
+    note: Note = mockNote,
     addTextField: () -> Unit = {},
     addCheckBox: (String?) -> Unit = {},
     applyFormat: (FormatText) -> Unit = {},
 ) {
     val showBottomSheet = remember { mutableStateOf(false) }
     val changeBottomSheetState = { value: Boolean -> showBottomSheet.value = value }
+    val noteItem = note.items.find { it.isFocused } ?: NoteItem()
 
-    if (showBottomSheet.value) TextFormatComponent(isDarkTheme, changeBottomSheetState, applyFormat)
-    else BottomOptions(changeBottomSheetState, addTextField, addCheckBox)
+    if (showBottomSheet.value) {
+        TextFormatComponent(
+            noteItem = noteItem,
+            isDarkTheme = isDarkTheme,
+            changeBottomSheetState = changeBottomSheetState,
+            applyFormat = applyFormat
+        )
+    } else BottomOptions(changeBottomSheetState, addTextField, addCheckBox)
 }
 
 @Composable
@@ -110,6 +117,7 @@ fun BottomOptions(
 @Preview(showBackground = true)
 @Composable
 fun TextFormatComponent(
+    noteItem: NoteItem = mockNoteItem,
     isDarkTheme: Boolean = false,
     changeBottomSheetState: (Boolean) -> Unit = {},
     applyFormat: (FormatText) -> Unit = {},
@@ -128,7 +136,7 @@ fun TextFormatComponent(
                 .padding(12.dp),
         ) {
             TextFormatHeader(changeBottomSheetState)
-            TextFormatContent(isDarkTheme, applyFormat)
+            TextFormatContent(noteItem, isDarkTheme, applyFormat)
         }
     }
 }
@@ -167,21 +175,25 @@ fun TextFormatHeader(
 @Preview(showBackground = true)
 @Composable
 fun TextFormatContent(
+    noteItem: NoteItem = mockNoteItem,
     isDarkTheme: Boolean = false,
     applyFormat: (FormatText) -> Unit = {},
 ) {
     Spacer(modifier = Modifier.height(24.dp))
-    TypeTextsSelector(applyFormat)
+    TypeTextsSelector(noteItem, applyFormat)
     Spacer(modifier = Modifier.height(12.dp))
-    FormatTextsSelector(applyFormat)
+    FormatTextsSelector(noteItem, applyFormat)
     Spacer(modifier = Modifier.height(12.dp))
-    ParagraphsSelectorAndTextColor(isDarkTheme, applyFormat)
+    ParagraphsSelectorAndTextColor(noteItem, isDarkTheme, applyFormat)
     Spacer(modifier = Modifier.height(24.dp))
 }
 
 @Preview(showBackground = true)
 @Composable
-fun TypeTextsSelector(applyFormat: (FormatText) -> Unit = {}) {
+fun TypeTextsSelector(
+    noteItem: NoteItem = mockNoteItem,
+    applyFormat: (FormatText) -> Unit = {},
+) {
     val selectedIndex = remember { mutableIntStateOf(-1) }
 
     val formatTexts = remember {
@@ -198,8 +210,14 @@ fun TypeTextsSelector(applyFormat: (FormatText) -> Unit = {}) {
         verticalAlignment = Alignment.Bottom,
         horizontalArrangement = Arrangement.SpaceEvenly
     ) {
-        itemsIndexed(formatTexts) { index, typeText ->
-            TypeTextsItem(index, typeText, selectedIndex, applyFormat)
+        itemsIndexed(formatTexts) { index, formatText ->
+            TypeTextsItem(
+                noteItem = noteItem,
+                index = index,
+                formatText = formatText,
+                selectedIndex = selectedIndex,
+                applyFormat = applyFormat
+            )
         }
     }
 }
@@ -207,6 +225,7 @@ fun TypeTextsSelector(applyFormat: (FormatText) -> Unit = {}) {
 @Preview(showBackground = true)
 @Composable
 fun TypeTextsItem(
+    noteItem: NoteItem = mockNoteItem,
     index: Int = -1,
     formatText: FormatText = FormatText(),
     selectedIndex: MutableState<Int> = mutableIntStateOf(-1),
@@ -217,7 +236,13 @@ fun TypeTextsItem(
             .height(40.dp)
             .clickable {
                 selectedIndex.value = index
-                applyFormat(formatText)
+                applyFormat(
+                    noteItem.formatText.copy(
+                        typeText = formatText.typeText,
+                        fontSize = formatText.fontSize,
+                        isBold = formatText.isBold
+                    )
+                )
             },
         shape = RoundedCornerShape(12.dp),
         colors = CardDefaults.cardColors(
@@ -245,7 +270,10 @@ fun TypeTextsItem(
 
 @Preview(showBackground = true)
 @Composable
-fun FormatTextsSelector(applyFormat: (FormatText) -> Unit = {}) {
+fun FormatTextsSelector(
+    noteItem: NoteItem = mockNoteItem,
+    applyFormat: (FormatText) -> Unit = {},
+) {
     val selectedIndexes = remember { mutableStateListOf(false, false, false, false) }
 
     Row(
@@ -257,7 +285,7 @@ fun FormatTextsSelector(applyFormat: (FormatText) -> Unit = {}) {
                 .weight(1f)
                 .clickable {
                     selectedIndexes[0] = !selectedIndexes[0]
-                    applyFormat(FormatText(isBold = selectedIndexes[0]))
+                    applyFormat(noteItem.formatText.copy(isBold = selectedIndexes[0]))
                 },
             shape = RoundedCornerShape(
                 topStart = 12.dp,
@@ -295,7 +323,7 @@ fun FormatTextsSelector(applyFormat: (FormatText) -> Unit = {}) {
                 .weight(1f)
                 .clickable {
                     selectedIndexes[1] = !selectedIndexes[1]
-                    applyFormat(FormatText(isItalic = selectedIndexes[1]))
+                    applyFormat(noteItem.formatText.copy(isItalic = selectedIndexes[1]))
                 },
             shape = RoundedCornerShape(0.dp),
             colors = CardDefaults.cardColors(
@@ -328,7 +356,7 @@ fun FormatTextsSelector(applyFormat: (FormatText) -> Unit = {}) {
                 .weight(1f)
                 .clickable {
                     selectedIndexes[2] = !selectedIndexes[2]
-                    applyFormat(FormatText(isUnderline = selectedIndexes[2]))
+                    applyFormat(noteItem.formatText.copy(isUnderline = selectedIndexes[2]))
                 },
             shape = RoundedCornerShape(0.dp),
             colors = CardDefaults.cardColors(
@@ -361,7 +389,7 @@ fun FormatTextsSelector(applyFormat: (FormatText) -> Unit = {}) {
                 .weight(1f)
                 .clickable {
                     selectedIndexes[3] = !selectedIndexes[3]
-                    applyFormat(FormatText(isLineThrough = selectedIndexes[3]))
+                    applyFormat(noteItem.formatText.copy(isLineThrough = selectedIndexes[3]))
                 },
             shape = RoundedCornerShape(
                 topStart = 0.dp,
@@ -396,11 +424,17 @@ fun FormatTextsSelector(applyFormat: (FormatText) -> Unit = {}) {
 @Preview(showBackground = true)
 @Composable
 fun ParagraphsSelectorAndTextColor(
+    noteItem: NoteItem = mockNoteItem,
     isDarkTheme: Boolean = false,
     applyFormat: (FormatText) -> Unit = {},
 ) {
     val selectedIndex = remember { mutableIntStateOf(-1) }
     val showColorSelector = remember { mutableStateOf(false) }
+    val color =
+        getColor(
+            if (isDarkTheme) noteItem.formatText.textColor.darkColor
+            else noteItem.formatText.textColor.lightColor
+        )
 
     Column {
         Row(modifier = Modifier.fillMaxWidth()) {
@@ -425,7 +459,7 @@ fun ParagraphsSelectorAndTextColor(
                         modifier = Modifier.size(16.dp),
                         painter = painterResource(id = R.drawable.ic_text_format),
                         contentDescription = "text color icon",
-                        tint = MaterialTheme.colorScheme.secondary,
+                        tint = color,
                     )
                 }
             }
@@ -441,7 +475,7 @@ fun ParagraphsSelectorAndTextColor(
                         .weight(1f)
                         .clickable {
                             selectedIndex.intValue = 0
-                            applyFormat(FormatText(paragraphType = ParagraphType.LEFT))
+                            applyFormat(noteItem.formatText.copy(paragraphType = ParagraphType.LEFT))
                         },
                     shape = RoundedCornerShape(
                         topStart = 12.dp,
@@ -478,7 +512,7 @@ fun ParagraphsSelectorAndTextColor(
                         .weight(1f)
                         .clickable {
                             selectedIndex.intValue = 1
-                            applyFormat(FormatText(paragraphType = ParagraphType.JUSTIFY))
+                            applyFormat(noteItem.formatText.copy(paragraphType = ParagraphType.JUSTIFY))
                         },
                     shape = RoundedCornerShape(0.dp),
                     colors = CardDefaults.cardColors(
@@ -510,7 +544,7 @@ fun ParagraphsSelectorAndTextColor(
                         .weight(1f)
                         .clickable {
                             selectedIndex.intValue = 2
-                            applyFormat(FormatText(paragraphType = ParagraphType.CENTER))
+                            applyFormat(noteItem.formatText.copy(paragraphType = ParagraphType.CENTER))
                         },
                     shape = RoundedCornerShape(0.dp),
                     colors = CardDefaults.cardColors(
@@ -542,7 +576,7 @@ fun ParagraphsSelectorAndTextColor(
                         .weight(1f)
                         .clickable {
                             selectedIndex.intValue = 3
-                            applyFormat(FormatText(paragraphType = ParagraphType.RIGHT))
+                            applyFormat(noteItem.formatText.copy(paragraphType = ParagraphType.RIGHT))
                         },
                     shape = RoundedCornerShape(
                         topStart = 0.dp,
@@ -573,13 +607,14 @@ fun ParagraphsSelectorAndTextColor(
             }
         }
 
-        if (showColorSelector.value) TextColorSelector(isDarkTheme, applyFormat)
+        if (showColorSelector.value) TextColorSelector(noteItem, isDarkTheme, applyFormat)
     }
 }
 
 @Preview(showBackground = true)
 @Composable
 fun TextColorSelector(
+    noteItem: NoteItem = mockNoteItem,
     isDarkTheme: Boolean = false,
     applyFormat: (FormatText) -> Unit = {},
 ) {
@@ -591,17 +626,18 @@ fun TextColorSelector(
     ) {
         items(colors.value) { item ->
             TextColorItem(
+                noteItem = noteItem,
                 item = item,
-                applyFormat,
-                isDarkTheme
+                applyFormat = applyFormat,
+                isDarkTheme = isDarkTheme
             )
-
         }
     }
 }
 
 @Composable
 fun TextColorItem(
+    noteItem: NoteItem = mockNoteItem,
     item: TextColor = TextColor.BASIC,
     applyFormat: (FormatText) -> Unit = {},
     isDarkTheme: Boolean = false,
@@ -612,7 +648,7 @@ fun TextColorItem(
         modifier = Modifier
             .size(32.dp)
             .padding(1.dp)
-            .clickable { applyFormat(FormatText(textColor = item)) },
+            .clickable { applyFormat(noteItem.formatText.copy(textColor = item)) },
         shape = RoundedCornerShape(4.dp),
     ) {
         Box(
