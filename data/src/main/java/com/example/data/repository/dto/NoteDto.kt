@@ -32,7 +32,7 @@ class NoteDto @Inject constructor(
                 darkNoteColor = note.darkColor,
                 isPinned = note.isPinned,
                 index = note.index,
-                items = items.map { noteItemDto.toDomain(it) }
+                items = items.map { noteItemDto.typeToDomain(it) }
             )
         }
 }

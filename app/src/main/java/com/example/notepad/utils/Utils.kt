@@ -15,7 +15,7 @@ fun getColor(hexColor: String): Color {
 }
 
 fun FormatText.toTextStyle(isDarkTheme: Boolean): TextStyle {
-    val color = getColor(if (isDarkTheme) textColor.darkColor else textColor.lightColor)
+    val color = getColor(if (isDarkTheme) textDarkColor else textLightColor)
     var textStyle = TextStyle(color = color, fontSize = fontSize.sp)
 
     if (isBold) textStyle = textStyle.copy(fontWeight = FontWeight.Bold)

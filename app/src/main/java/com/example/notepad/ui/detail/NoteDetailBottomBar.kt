@@ -198,10 +198,10 @@ fun TypeTextsSelector(
 
     val formatTexts = remember {
         listOf(
-            FormatText(TypeText.TITLE, 24, true),
-            FormatText(TypeText.HEADER, 20, false),
-            FormatText(TypeText.SUBTITLE, 16, true),
-            FormatText(TypeText.BODY, 16, false)
+            FormatText("0", TypeText.TITLE, 24, true),
+            FormatText("1", TypeText.HEADER, 20, false),
+            FormatText("2", TypeText.SUBTITLE, 16, true),
+            FormatText("3", TypeText.BODY, 16, false)
         )
     }
 
@@ -227,7 +227,7 @@ fun TypeTextsSelector(
 fun TypeTextsItem(
     noteItem: NoteItem = mockNoteItem,
     index: Int = -1,
-    formatText: FormatText = FormatText(),
+    formatText: FormatText = FormatText(""),
     selectedIndex: MutableState<Int> = mutableIntStateOf(-1),
     applyFormat: (FormatText) -> Unit = {},
 ) {
@@ -432,8 +432,8 @@ fun ParagraphsSelectorAndTextColor(
     val showColorSelector = remember { mutableStateOf(false) }
     val color =
         getColor(
-            if (isDarkTheme) noteItem.formatText.textColor.darkColor
-            else noteItem.formatText.textColor.lightColor
+            if (isDarkTheme) noteItem.formatText.textDarkColor
+            else noteItem.formatText.textLightColor
         )
 
     Column {
@@ -648,7 +648,13 @@ fun TextColorItem(
         modifier = Modifier
             .size(32.dp)
             .padding(1.dp)
-            .clickable { applyFormat(noteItem.formatText.copy(textColor = item)) },
+            .clickable {
+                applyFormat(
+                    noteItem.formatText.copy(
+                        textLightColor = item.lightColor, textDarkColor = item.darkColor
+                    )
+                )
+            },
         shape = RoundedCornerShape(4.dp),
     ) {
         Box(

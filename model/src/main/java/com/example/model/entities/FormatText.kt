@@ -1,13 +1,15 @@
 package com.example.model.entities
 
 data class FormatText(
+    val formatTextId: String,
     val typeText: TypeText = TypeText.BODY,
     val fontSize: Int = 16,
     val isBold: Boolean = false,
     val isItalic: Boolean = false,
     val isUnderline: Boolean = false,
     val isLineThrough: Boolean = false,
-    val textColor: TextColor = TextColor.BASIC,
+    val textLightColor: String = TextColor.BASIC.lightColor,
+    val textDarkColor: String = TextColor.BASIC.darkColor,
     val paragraphType: ParagraphType = ParagraphType.LEFT,
 )
 

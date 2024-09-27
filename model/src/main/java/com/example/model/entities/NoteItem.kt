@@ -1,5 +1,7 @@
 package com.example.model.entities
 
+import com.example.model.utils.getUUID
+
 data class NoteItem(
     val id: String = "",
     val noteId: String = "",
@@ -7,7 +9,7 @@ data class NoteItem(
     val isChecked: Boolean = false,
     val type: NoteItemType = NoteItemType.TEXT,
     val isFocused: Boolean = false,
-    val formatText: FormatText = FormatText()
+    val formatText: FormatText = FormatText(formatTextId = getUUID())
 ){
     constructor(id: String, noteId: String): this(
         id = id,

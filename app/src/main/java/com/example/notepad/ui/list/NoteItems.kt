@@ -31,8 +31,8 @@ fun CheckBoxItem(
     isDarkTheme: Boolean = false,
 ) {
     val color = getColor(
-        if (isDarkTheme) noteItem.formatText.textColor.darkColor
-        else noteItem.formatText.textColor.lightColor
+        if (isDarkTheme) noteItem.formatText.textDarkColor
+        else noteItem.formatText.textLightColor
     )
 
     Row(
@@ -84,8 +84,8 @@ fun TextFieldItem(
     isDarkTheme: Boolean = false,
 ) {
     val color = getColor(
-        if (isDarkTheme) noteItem.formatText.textColor.darkColor
-        else noteItem.formatText.textColor.lightColor
+        if (isDarkTheme) noteItem.formatText.textDarkColor
+        else noteItem.formatText.textLightColor
     )
 
     with(noteItem.formatText) {
