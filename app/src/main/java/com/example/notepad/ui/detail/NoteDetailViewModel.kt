@@ -10,6 +10,7 @@ import com.example.domain.usecase.detail.InsertNoteUseCase
 import com.example.domain.usecase.detail.UpdateNoteUseCase
 import com.example.model.entities.FormatText
 import com.example.model.entities.Note
+import com.example.model.entities.NoteColor
 import com.example.model.entities.NoteItem
 import com.example.model.utils.getUUID
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -21,12 +22,13 @@ import kotlinx.coroutines.flow.catch
 import kotlinx.coroutines.flow.getAndUpdate
 import kotlinx.coroutines.launch
 import javax.inject.Inject
-import com.example.model.entities.Color as AppColor
 
 sealed class NoteDetailUiState {
     data object Loading : NoteDetailUiState()
-    data class Success(val note: Note, val colors: List<AppColor>) : NoteDetailUiState()
+    data class Success(val note: Note) : NoteDetailUiState()
     data object Error : NoteDetailUiState()
+
+    fun  asSuccess() = this as Success
 }
 
 @HiltViewModel
@@ -42,15 +44,15 @@ class NoteDetailViewModel @Inject constructor(
     private val _uiState = MutableStateFlow<NoteDetailUiState>(NoteDetailUiState.Loading)
     val uiState = _uiState.asStateFlow()
 
+    private fun getNote() = _uiState.value.asSuccess().note
+
     private fun setSuccessState(note: Note) {
-        _uiState.value = NoteDetailUiState.Success(note, AppColor.entries)
+        _uiState.value = NoteDetailUiState.Success(note)
     }
 
     private fun setErrorState() {
         _uiState.value = NoteDetailUiState.Error
     }
-
-    private fun getNote() = (_uiState.value as NoteDetailUiState.Success).note
 
     fun manageNote(id: String, index: Int) {
         if (id.contains("new_element")) insertNote(Note(getUUID(), index))
@@ -86,64 +88,64 @@ class NoteDetailViewModel @Inject constructor(
     }
 
     fun pinUpNote() {
-        _uiState.getAndUpdate {
-            with((it as NoteDetailUiState.Success)) {
+        _uiState.getAndUpdate { state ->
+            with((state.asSuccess())) {
                 copy(note = note.copy(isPinned = !note.isPinned))
             }
         }
     }
 
-    fun changeColor(color: AppColor) {
-        _uiState.getAndUpdate {
-            with((it as NoteDetailUiState.Success)) {
-                copy(note = note.copy(lightColor = color.lightColor, darkColor = color.darkColor))
+    fun changeColor(color: NoteColor) {
+        _uiState.getAndUpdate { state ->
+            with((state.asSuccess())) {
+                copy(note = note.copy(lightNoteColor = color.lightColor, darkNoteColor = color.darkColor))
             }
         }
     }
 
     fun saveText(title: String) {
-        _uiState.getAndUpdate {
-            with((it as NoteDetailUiState.Success)) {
+        _uiState.getAndUpdate { state ->
+            with((state.asSuccess())) {
                 copy(note = note.copy(title = title))
             }
         }
     }
 
     fun addTextField() {
-        _uiState.getAndUpdate {
-            with((it as NoteDetailUiState.Success)) {
+        _uiState.getAndUpdate { state ->
+            with((state.asSuccess())) {
                 copy(note = note.addTextField())
             }
         }
     }
 
     fun addCheckBox(noteItemId: String?) {
-        _uiState.getAndUpdate {
-            with((it as NoteDetailUiState.Success)) {
+        _uiState.getAndUpdate { state ->
+            with((state.asSuccess())) {
                 copy(note = note.addCheckbox(noteItemId))
             }
         }
     }
 
     fun updateTextField(textField: NoteItem) {
-        _uiState.getAndUpdate {
-            with((it as NoteDetailUiState.Success)) {
+        _uiState.getAndUpdate { state ->
+            with((state.asSuccess())) {
                 copy(note = note.updateTextField(textField))
             }
         }
     }
 
     fun updateCheckBox(checkBox: NoteItem) {
-        _uiState.getAndUpdate {
-            with((it as NoteDetailUiState.Success)) {
+        _uiState.getAndUpdate { state ->
+            with((state.asSuccess())) {
                 copy(note = note.updateCheckbox(checkBox))
             }
         }
     }
 
     fun deleteTextField(id: String) {
-        _uiState.getAndUpdate {
-            with((it as NoteDetailUiState.Success)) {
+        _uiState.getAndUpdate { state ->
+            with((state.asSuccess())) {
                 deleteNoteItem(id)
                 copy(note = note.deleteTextField(id))
             }
@@ -157,8 +159,8 @@ class NoteDetailViewModel @Inject constructor(
     }
 
     fun deleteCheckBox(id: String) {
-        _uiState.getAndUpdate {
-            with((it as NoteDetailUiState.Success)) {
+        _uiState.getAndUpdate { state ->
+            with((state.asSuccess())) {
                 deleteNoteItem(id)
                 copy(note = note.deleteCheckbox(id))
             }
@@ -171,8 +173,8 @@ class NoteDetailViewModel @Inject constructor(
     }
 
     fun applyFormat(formatText: FormatText) {
-        _uiState.getAndUpdate {
-            with((it as NoteDetailUiState.Success)) {
+        _uiState.getAndUpdate { state ->
+            with((state.asSuccess())) {
                 copy(note = note.applyFormat(formatText))
             }
         }

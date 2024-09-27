@@ -67,7 +67,7 @@ fun NotesStaggeredGrid(
                 val interactionSource = remember { MutableInteractionSource() }
 
                 val route = AppScreens.NoteDetailScreen.route.plus("/${item.id}/0")
-                val color = getColor(if (isDarkTheme) item.darkColor else item.lightColor)
+                val color = getColor(if (isDarkTheme) item.darkNoteColor else item.lightNoteColor)
 
                 Card(
                     modifier = Modifier
@@ -117,7 +117,7 @@ fun NotesStaggeredGrid(
                     ) {
                         NoteHeader(item)
                         Spacer(modifier = Modifier.height(16.dp))
-                        NoteBody(item.items.take(3))
+                        NoteBody(item.items.take(3), isDarkTheme)
                     }
                 }
             }
@@ -152,11 +152,11 @@ fun NoteHeader(item: Note) {
 }
 
 @Composable
-fun NoteBody(notesItems: List<NoteItem> = mockNoteItems) {
+fun NoteBody(notesItems: List<NoteItem> = mockNoteItems, isDarkTheme: Boolean = false) {
     notesItems.forEach { item ->
         when (item.type) {
-            NoteItemType.TEXT -> TextFieldItem(item)
-            NoteItemType.CHECK_BOX -> CheckBoxItem(item)
+            NoteItemType.TEXT -> TextFieldItem(item, isDarkTheme)
+            NoteItemType.CHECK_BOX -> CheckBoxItem(item, isDarkTheme)
         }
     }
 }

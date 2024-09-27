@@ -5,6 +5,7 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyRow
+import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Card
@@ -25,25 +26,35 @@ import androidx.compose.ui.text.style.TextDecoration
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import com.example.model.entities.FormatText
-import com.example.model.entities.ParagraphType
-import com.example.model.entities.TypeText
+import com.example.model.entities.*
 import com.example.model.utils.capitalizeFirstLetter
 import com.example.notepad.R
+import com.example.notepad.utils.getColor
+import com.example.notepad.utils.mockNote
+import com.example.notepad.utils.mockNoteItem
 
 
 @Preview(showBackground = true)
 @Composable
 fun NoteDetailBottomBar(
+    isDarkTheme: Boolean = false,
+    note: Note = mockNote,
     addTextField: () -> Unit = {},
     addCheckBox: (String?) -> Unit = {},
     applyFormat: (FormatText) -> Unit = {},
 ) {
     val showBottomSheet = remember { mutableStateOf(false) }
     val changeBottomSheetState = { value: Boolean -> showBottomSheet.value = value }
+    val noteItem = note.items.find { it.isFocused } ?: NoteItem()
 
-    if (showBottomSheet.value) TextFormatComponent(changeBottomSheetState, applyFormat)
-    else BottomOptions(changeBottomSheetState, addTextField, addCheckBox)
+    if (showBottomSheet.value) {
+        TextFormatComponent(
+            noteItem = noteItem,
+            isDarkTheme = isDarkTheme,
+            changeBottomSheetState = changeBottomSheetState,
+            applyFormat = applyFormat
+        )
+    } else BottomOptions(changeBottomSheetState, addTextField, addCheckBox)
 }
 
 @Composable
@@ -106,6 +117,8 @@ fun BottomOptions(
 @Preview(showBackground = true)
 @Composable
 fun TextFormatComponent(
+    noteItem: NoteItem = mockNoteItem,
+    isDarkTheme: Boolean = false,
     changeBottomSheetState: (Boolean) -> Unit = {},
     applyFormat: (FormatText) -> Unit = {},
 ) {
@@ -123,7 +136,7 @@ fun TextFormatComponent(
                 .padding(12.dp),
         ) {
             TextFormatHeader(changeBottomSheetState)
-            TextFormatContent(applyFormat)
+            TextFormatContent(noteItem, isDarkTheme, applyFormat)
         }
     }
 }
@@ -161,37 +174,51 @@ fun TextFormatHeader(
 
 @Preview(showBackground = true)
 @Composable
-fun TextFormatContent(applyFormat: (FormatText) -> Unit = {}) {
+fun TextFormatContent(
+    noteItem: NoteItem = mockNoteItem,
+    isDarkTheme: Boolean = false,
+    applyFormat: (FormatText) -> Unit = {},
+) {
     Spacer(modifier = Modifier.height(24.dp))
-    TypeTextsSelector(applyFormat)
-    Spacer(modifier = Modifier.height(18.dp))
-    FormatTextsSelector(applyFormat)
+    TypeTextsSelector(noteItem, applyFormat)
     Spacer(modifier = Modifier.height(12.dp))
-    ParagraphsSelectorAndTextColor(applyFormat)
+    FormatTextsSelector(noteItem, applyFormat)
+    Spacer(modifier = Modifier.height(12.dp))
+    ParagraphsSelectorAndTextColor(noteItem, isDarkTheme, applyFormat)
     Spacer(modifier = Modifier.height(24.dp))
 }
 
 @Preview(showBackground = true)
 @Composable
-fun TypeTextsSelector(applyFormat: (FormatText) -> Unit = {}) {
-    val selectedIndex = remember { mutableIntStateOf(-1) }
-
+fun TypeTextsSelector(
+    noteItem: NoteItem = mockNoteItem,
+    applyFormat: (FormatText) -> Unit = {},
+) {
     val formatTexts = remember {
         listOf(
-            FormatText(TypeText.TITLE, 24, true),
-            FormatText(TypeText.HEADER, 20, false),
-            FormatText(TypeText.SUBTITLE, 16, true),
-            FormatText(TypeText.BODY, 16, false)
+            FormatText("0", TypeText.TITLE, 24, true),
+            FormatText("1", TypeText.HEADER, 20, false),
+            FormatText("2", TypeText.SUBTITLE, 16, true),
+            FormatText("3", TypeText.BODY, 16, false)
         )
     }
+    val selectedIndex = remember { mutableIntStateOf(-1) }
+    selectedIndex.intValue =
+        formatTexts.indexOfFirst { it.typeText == noteItem.formatText.typeText }
 
     LazyRow(
         modifier = Modifier.fillMaxWidth(),
         verticalAlignment = Alignment.Bottom,
         horizontalArrangement = Arrangement.SpaceEvenly
     ) {
-        itemsIndexed(formatTexts) { index, typeText ->
-            TypeTextsItem(index, typeText, selectedIndex, applyFormat)
+        itemsIndexed(formatTexts) { index, formatText ->
+            TypeTextsItem(
+                noteItem = noteItem,
+                index = index,
+                formatText = formatText,
+                selectedIndex = selectedIndex,
+                applyFormat = applyFormat
+            )
         }
     }
 }
@@ -199,8 +226,9 @@ fun TypeTextsSelector(applyFormat: (FormatText) -> Unit = {}) {
 @Preview(showBackground = true)
 @Composable
 fun TypeTextsItem(
+    noteItem: NoteItem = mockNoteItem,
     index: Int = -1,
-    formatText: FormatText = FormatText(),
+    formatText: FormatText = FormatText(""),
     selectedIndex: MutableState<Int> = mutableIntStateOf(-1),
     applyFormat: (FormatText) -> Unit = {},
 ) {
@@ -209,7 +237,13 @@ fun TypeTextsItem(
             .height(40.dp)
             .clickable {
                 selectedIndex.value = index
-                applyFormat(formatText)
+                applyFormat(
+                    noteItem.formatText.copy(
+                        typeText = formatText.typeText,
+                        fontSize = formatText.fontSize,
+                        isBold = formatText.isBold
+                    )
+                )
             },
         shape = RoundedCornerShape(12.dp),
         colors = CardDefaults.cardColors(
@@ -237,200 +271,25 @@ fun TypeTextsItem(
 
 @Preview(showBackground = true)
 @Composable
-fun FormatTextsSelector(applyFormat: (FormatText) -> Unit = {}) {
-    val selectedIndexes = remember { mutableStateListOf(false, false, false, false) }
-
-    Row(
-        modifier = Modifier.fillMaxWidth(),
-    ) {
-        Card(
-            modifier = Modifier
-                .height(32.dp)
-                .weight(1f)
-                .clickable {
-                    selectedIndexes[0] = !selectedIndexes[0]
-                    applyFormat(FormatText(isBold = selectedIndexes[0]))
-                },
-            shape = RoundedCornerShape(
-                topStart = 12.dp,
-                topEnd = 0.dp,
-                bottomStart = 12.dp,
-                bottomEnd = 0.dp
-            ),
-            colors = CardDefaults.cardColors(
-                containerColor =
-                if (selectedIndexes[0]) MaterialTheme.colorScheme.primary
-                else MaterialTheme.colorScheme.tertiary
-            ),
-        ) {
-            Box(
-                modifier = Modifier.fillMaxSize(),
-                contentAlignment = Alignment.Center
-            ) {
-                Text(
-                    modifier = Modifier.padding(vertical = 4.dp, horizontal = 16.dp),
-                    text = "B",
-                    fontSize = 16.sp,
-                    fontWeight = FontWeight.Bold,
-                    color =
-                    if (selectedIndexes[0]) MaterialTheme.colorScheme.background
-                    else MaterialTheme.colorScheme.secondary,
-                )
-            }
+fun FormatTextsSelector(
+    noteItem: NoteItem = mockNoteItem,
+    applyFormat: (FormatText) -> Unit = {},
+) {
+    with(noteItem.formatText) {
+        val selectedIndexes = remember(this) {
+            mutableStateListOf(isBold, isItalic, isUnderline, isLineThrough)
         }
-
-        Spacer(modifier = Modifier.width(1.dp))
-
-        Card(
-            modifier = Modifier
-                .height(32.dp)
-                .weight(1f)
-                .clickable {
-                    selectedIndexes[1] = !selectedIndexes[1]
-                    applyFormat(FormatText(isItalic = selectedIndexes[1]))
-                },
-            shape = RoundedCornerShape(0.dp),
-            colors = CardDefaults.cardColors(
-                containerColor =
-                if (selectedIndexes[1]) MaterialTheme.colorScheme.primary
-                else MaterialTheme.colorScheme.tertiary
-            ),
-        ) {
-            Box(
-                modifier = Modifier.fillMaxSize(),
-                contentAlignment = Alignment.Center
-            ) {
-                Text(
-                    modifier = Modifier.padding(vertical = 4.dp, horizontal = 16.dp),
-                    text = "I",
-                    fontSize = 16.sp,
-                    fontStyle = FontStyle.Italic,
-                    color =
-                    if (selectedIndexes[1]) MaterialTheme.colorScheme.background
-                    else MaterialTheme.colorScheme.secondary,
-                )
-            }
-        }
-
-        Spacer(modifier = Modifier.width(1.dp))
-
-        Card(
-            modifier = Modifier
-                .height(32.dp)
-                .weight(1f)
-                .clickable {
-                    selectedIndexes[2] = !selectedIndexes[2]
-                    applyFormat(FormatText(isUnderline = selectedIndexes[2]))
-                },
-            shape = RoundedCornerShape(0.dp),
-            colors = CardDefaults.cardColors(
-                containerColor =
-                if (selectedIndexes[2]) MaterialTheme.colorScheme.primary
-                else MaterialTheme.colorScheme.tertiary
-            ),
-        ) {
-            Box(
-                modifier = Modifier.fillMaxSize(),
-                contentAlignment = Alignment.Center
-            ) {
-                Text(
-                    modifier = Modifier.padding(vertical = 4.dp, horizontal = 16.dp),
-                    text = "U",
-                    fontSize = 16.sp,
-                    style = TextStyle(textDecoration = TextDecoration.Underline),
-                    color =
-                    if (selectedIndexes[2]) MaterialTheme.colorScheme.background
-                    else MaterialTheme.colorScheme.secondary,
-                )
-            }
-        }
-
-        Spacer(modifier = Modifier.width(1.dp))
-
-        Card(
-            modifier = Modifier
-                .height(32.dp)
-                .weight(1f)
-                .clickable {
-                    selectedIndexes[3] = !selectedIndexes[3]
-                    applyFormat(FormatText(isLineThrough = selectedIndexes[3]))
-                },
-            shape = RoundedCornerShape(
-                topStart = 0.dp,
-                topEnd = 12.dp,
-                bottomStart = 0.dp,
-                bottomEnd = 12.dp
-            ),
-            colors = CardDefaults.cardColors(
-                containerColor =
-                if (selectedIndexes[3]) MaterialTheme.colorScheme.primary
-                else MaterialTheme.colorScheme.tertiary
-            ),
-        ) {
-            Box(
-                modifier = Modifier.fillMaxSize(),
-                contentAlignment = Alignment.Center
-            ) {
-                Text(
-                    modifier = Modifier.padding(vertical = 4.dp, horizontal = 16.dp),
-                    text = "S",
-                    fontSize = 16.sp,
-                    style = TextStyle(textDecoration = TextDecoration.LineThrough),
-                    color =
-                    if (selectedIndexes[3]) MaterialTheme.colorScheme.background
-                    else MaterialTheme.colorScheme.secondary,
-                )
-            }
-        }
-    }
-}
-
-@Preview(showBackground = true)
-@Composable
-fun ParagraphsSelectorAndTextColor(applyFormat: (FormatText) -> Unit = {}) {
-    val selectedIndex = remember { mutableIntStateOf(-1) }
-
-    Row(
-        modifier = Modifier.fillMaxWidth(),
-    ) {
-
-        Card(
-            modifier = Modifier
-                .height(32.dp)
-                .weight(1f),
-            colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.tertiary),
-            shape = RoundedCornerShape(
-                topStart = 12.dp,
-                topEnd = 12.dp,
-                bottomStart = 12.dp,
-                bottomEnd = 12.dp
-            ),
-        ) {
-            Box(
-                modifier = Modifier.fillMaxSize(),
-                contentAlignment = Alignment.Center
-            ) {
-                Icon(
-                    modifier = Modifier.size(16.dp),
-                    painter = painterResource(id = R.drawable.ic_text_format),
-                    contentDescription = "text color icon",
-                    tint = MaterialTheme.colorScheme.secondary,
-                )
-            }
-        }
-
-        Spacer(modifier = Modifier.width(12.dp))
 
         Row(
-            modifier = Modifier.weight(4f)
+            modifier = Modifier.fillMaxWidth(),
         ) {
             Card(
                 modifier = Modifier
                     .height(32.dp)
                     .weight(1f)
                     .clickable {
-                        selectedIndex.intValue = 0
-                        applyFormat(FormatText(paragraphType = ParagraphType.LEFT))
+                        selectedIndexes[0] = !selectedIndexes[0]
+                        applyFormat(copy(isBold = selectedIndexes[0]))
                     },
                 shape = RoundedCornerShape(
                     topStart = 12.dp,
@@ -440,7 +299,7 @@ fun ParagraphsSelectorAndTextColor(applyFormat: (FormatText) -> Unit = {}) {
                 ),
                 colors = CardDefaults.cardColors(
                     containerColor =
-                    if (selectedIndex.intValue == 0) MaterialTheme.colorScheme.primary
+                    if (selectedIndexes[0]) MaterialTheme.colorScheme.primary
                     else MaterialTheme.colorScheme.tertiary
                 ),
             ) {
@@ -448,12 +307,13 @@ fun ParagraphsSelectorAndTextColor(applyFormat: (FormatText) -> Unit = {}) {
                     modifier = Modifier.fillMaxSize(),
                     contentAlignment = Alignment.Center
                 ) {
-                    Icon(
-                        modifier = Modifier.size(16.dp),
-                        painter = painterResource(id = R.drawable.ic_format_align_left),
-                        contentDescription = "text color icon",
-                        tint =
-                        if (selectedIndex.intValue == 0) MaterialTheme.colorScheme.background
+                    Text(
+                        modifier = Modifier.padding(vertical = 4.dp, horizontal = 16.dp),
+                        text = "B",
+                        fontSize = 16.sp,
+                        fontWeight = FontWeight.Bold,
+                        color =
+                        if (selectedIndexes[0]) MaterialTheme.colorScheme.background
                         else MaterialTheme.colorScheme.secondary,
                     )
                 }
@@ -466,13 +326,13 @@ fun ParagraphsSelectorAndTextColor(applyFormat: (FormatText) -> Unit = {}) {
                     .height(32.dp)
                     .weight(1f)
                     .clickable {
-                        selectedIndex.intValue = 1
-                        applyFormat(FormatText(paragraphType = ParagraphType.JUSTIFY))
+                        selectedIndexes[1] = !selectedIndexes[1]
+                        applyFormat(copy(isItalic = selectedIndexes[1]))
                     },
                 shape = RoundedCornerShape(0.dp),
                 colors = CardDefaults.cardColors(
                     containerColor =
-                    if (selectedIndex.intValue == 1) MaterialTheme.colorScheme.primary
+                    if (selectedIndexes[1]) MaterialTheme.colorScheme.primary
                     else MaterialTheme.colorScheme.tertiary
                 ),
             ) {
@@ -480,12 +340,13 @@ fun ParagraphsSelectorAndTextColor(applyFormat: (FormatText) -> Unit = {}) {
                     modifier = Modifier.fillMaxSize(),
                     contentAlignment = Alignment.Center
                 ) {
-                    Icon(
-                        modifier = Modifier.size(16.dp),
-                        painter = painterResource(id = R.drawable.ic_format_align_justify),
-                        contentDescription = "text color icon",
-                        tint =
-                        if (selectedIndex.intValue == 1) MaterialTheme.colorScheme.background
+                    Text(
+                        modifier = Modifier.padding(vertical = 4.dp, horizontal = 16.dp),
+                        text = "I",
+                        fontSize = 16.sp,
+                        fontStyle = FontStyle.Italic,
+                        color =
+                        if (selectedIndexes[1]) MaterialTheme.colorScheme.background
                         else MaterialTheme.colorScheme.secondary,
                     )
                 }
@@ -498,13 +359,13 @@ fun ParagraphsSelectorAndTextColor(applyFormat: (FormatText) -> Unit = {}) {
                     .height(32.dp)
                     .weight(1f)
                     .clickable {
-                        selectedIndex.intValue = 2
-                        applyFormat(FormatText(paragraphType = ParagraphType.CENTER))
+                        selectedIndexes[2] = !selectedIndexes[2]
+                        applyFormat(copy(isUnderline = selectedIndexes[2]))
                     },
                 shape = RoundedCornerShape(0.dp),
                 colors = CardDefaults.cardColors(
                     containerColor =
-                    if (selectedIndex.intValue == 2) MaterialTheme.colorScheme.primary
+                    if (selectedIndexes[2]) MaterialTheme.colorScheme.primary
                     else MaterialTheme.colorScheme.tertiary
                 ),
             ) {
@@ -512,12 +373,13 @@ fun ParagraphsSelectorAndTextColor(applyFormat: (FormatText) -> Unit = {}) {
                     modifier = Modifier.fillMaxSize(),
                     contentAlignment = Alignment.Center
                 ) {
-                    Icon(
-                        modifier = Modifier.size(16.dp),
-                        painter = painterResource(id = R.drawable.ic_format_align_center),
-                        contentDescription = "text color icon",
-                        tint =
-                        if (selectedIndex.intValue == 2) MaterialTheme.colorScheme.background
+                    Text(
+                        modifier = Modifier.padding(vertical = 4.dp, horizontal = 16.dp),
+                        text = "U",
+                        fontSize = 16.sp,
+                        style = TextStyle(textDecoration = TextDecoration.Underline),
+                        color =
+                        if (selectedIndexes[2]) MaterialTheme.colorScheme.background
                         else MaterialTheme.colorScheme.secondary,
                     )
                 }
@@ -530,8 +392,8 @@ fun ParagraphsSelectorAndTextColor(applyFormat: (FormatText) -> Unit = {}) {
                     .height(32.dp)
                     .weight(1f)
                     .clickable {
-                        selectedIndex.intValue = 3
-                        applyFormat(FormatText(paragraphType = ParagraphType.RIGHT))
+                        selectedIndexes[3] = !selectedIndexes[3]
+                        applyFormat(copy(isLineThrough = selectedIndexes[3]))
                     },
                 shape = RoundedCornerShape(
                     topStart = 0.dp,
@@ -541,8 +403,58 @@ fun ParagraphsSelectorAndTextColor(applyFormat: (FormatText) -> Unit = {}) {
                 ),
                 colors = CardDefaults.cardColors(
                     containerColor =
-                    if (selectedIndex.intValue == 3) MaterialTheme.colorScheme.primary
+                    if (selectedIndexes[3]) MaterialTheme.colorScheme.primary
                     else MaterialTheme.colorScheme.tertiary
+                ),
+            ) {
+                Box(
+                    modifier = Modifier.fillMaxSize(),
+                    contentAlignment = Alignment.Center
+                ) {
+                    Text(
+                        modifier = Modifier.padding(vertical = 4.dp, horizontal = 16.dp),
+                        text = "S",
+                        fontSize = 16.sp,
+                        style = TextStyle(textDecoration = TextDecoration.LineThrough),
+                        color =
+                        if (selectedIndexes[3]) MaterialTheme.colorScheme.background
+                        else MaterialTheme.colorScheme.secondary,
+                    )
+                }
+            }
+        }
+    }
+}
+
+@Preview(showBackground = true)
+@Composable
+fun ParagraphsSelectorAndTextColor(
+    noteItem: NoteItem = mockNoteItem,
+    isDarkTheme: Boolean = false,
+    applyFormat: (FormatText) -> Unit = {},
+) {
+    val paragraphType = remember { mutableStateOf(noteItem.formatText.paragraphType) }
+
+    val showColorSelector = remember { mutableStateOf(false) }
+    val color =
+        getColor(
+            if (isDarkTheme) noteItem.formatText.textDarkColor
+            else noteItem.formatText.textLightColor
+        )
+
+    Column {
+        Row(modifier = Modifier.fillMaxWidth()) {
+            Card(
+                modifier = Modifier
+                    .height(32.dp)
+                    .weight(1f)
+                    .clickable { showColorSelector.value = !showColorSelector.value },
+                colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.tertiary),
+                shape = RoundedCornerShape(
+                    topStart = 12.dp,
+                    topEnd = 12.dp,
+                    bottomStart = 12.dp,
+                    bottomEnd = 12.dp
                 ),
             ) {
                 Box(
@@ -551,14 +463,211 @@ fun ParagraphsSelectorAndTextColor(applyFormat: (FormatText) -> Unit = {}) {
                 ) {
                     Icon(
                         modifier = Modifier.size(16.dp),
-                        painter = painterResource(id = R.drawable.ic_format_align_right),
+                        painter = painterResource(id = R.drawable.ic_text_format),
                         contentDescription = "text color icon",
-                        tint =
-                        if (selectedIndex.intValue == 3) MaterialTheme.colorScheme.background
-                        else MaterialTheme.colorScheme.secondary,
+                        tint = color,
                     )
                 }
             }
+
+            Spacer(modifier = Modifier.width(12.dp))
+
+            Row(
+                modifier = Modifier.weight(4f)
+            ) {
+                Card(
+                    modifier = Modifier
+                        .height(32.dp)
+                        .weight(1f)
+                        .clickable {
+                            paragraphType.value = ParagraphType.LEFT
+                            applyFormat(noteItem.formatText.copy(paragraphType = ParagraphType.LEFT))
+                        },
+                    shape = RoundedCornerShape(
+                        topStart = 12.dp,
+                        topEnd = 0.dp,
+                        bottomStart = 12.dp,
+                        bottomEnd = 0.dp
+                    ),
+                    colors = CardDefaults.cardColors(
+                        containerColor =
+                        if (paragraphType.value == ParagraphType.LEFT) MaterialTheme.colorScheme.primary
+                        else MaterialTheme.colorScheme.tertiary
+                    ),
+                ) {
+                    Box(
+                        modifier = Modifier.fillMaxSize(),
+                        contentAlignment = Alignment.Center
+                    ) {
+                        Icon(
+                            modifier = Modifier.size(16.dp),
+                            painter = painterResource(id = R.drawable.ic_format_align_left),
+                            contentDescription = "text color icon",
+                            tint =
+                            if (paragraphType.value == ParagraphType.LEFT) MaterialTheme.colorScheme.background
+                            else MaterialTheme.colorScheme.secondary,
+                        )
+                    }
+                }
+
+                Spacer(modifier = Modifier.width(1.dp))
+
+                Card(
+                    modifier = Modifier
+                        .height(32.dp)
+                        .weight(1f)
+                        .clickable {
+                            paragraphType.value = ParagraphType.JUSTIFY
+                            applyFormat(noteItem.formatText.copy(paragraphType = ParagraphType.JUSTIFY))
+                        },
+                    shape = RoundedCornerShape(0.dp),
+                    colors = CardDefaults.cardColors(
+                        containerColor =
+                        if (paragraphType.value == ParagraphType.JUSTIFY) MaterialTheme.colorScheme.primary
+                        else MaterialTheme.colorScheme.tertiary
+                    ),
+                ) {
+                    Box(
+                        modifier = Modifier.fillMaxSize(),
+                        contentAlignment = Alignment.Center
+                    ) {
+                        Icon(
+                            modifier = Modifier.size(16.dp),
+                            painter = painterResource(id = R.drawable.ic_format_align_justify),
+                            contentDescription = "text color icon",
+                            tint =
+                            if (paragraphType.value == ParagraphType.JUSTIFY) MaterialTheme.colorScheme.background
+                            else MaterialTheme.colorScheme.secondary,
+                        )
+                    }
+                }
+
+                Spacer(modifier = Modifier.width(1.dp))
+
+                Card(
+                    modifier = Modifier
+                        .height(32.dp)
+                        .weight(1f)
+                        .clickable {
+                            paragraphType.value = ParagraphType.CENTER
+                            applyFormat(noteItem.formatText.copy(paragraphType = ParagraphType.CENTER))
+                        },
+                    shape = RoundedCornerShape(0.dp),
+                    colors = CardDefaults.cardColors(
+                        containerColor =
+                        if (paragraphType.value == ParagraphType.CENTER) MaterialTheme.colorScheme.primary
+                        else MaterialTheme.colorScheme.tertiary
+                    ),
+                ) {
+                    Box(
+                        modifier = Modifier.fillMaxSize(),
+                        contentAlignment = Alignment.Center
+                    ) {
+                        Icon(
+                            modifier = Modifier.size(16.dp),
+                            painter = painterResource(id = R.drawable.ic_format_align_center),
+                            contentDescription = "text color icon",
+                            tint =
+                            if (paragraphType.value == ParagraphType.CENTER) MaterialTheme.colorScheme.background
+                            else MaterialTheme.colorScheme.secondary,
+                        )
+                    }
+                }
+
+                Spacer(modifier = Modifier.width(1.dp))
+
+                Card(
+                    modifier = Modifier
+                        .height(32.dp)
+                        .weight(1f)
+                        .clickable {
+                            paragraphType.value = ParagraphType.RIGHT
+                            applyFormat(noteItem.formatText.copy(paragraphType = ParagraphType.RIGHT))
+                        },
+                    shape = RoundedCornerShape(
+                        topStart = 0.dp,
+                        topEnd = 12.dp,
+                        bottomStart = 0.dp,
+                        bottomEnd = 12.dp
+                    ),
+                    colors = CardDefaults.cardColors(
+                        containerColor =
+                        if (paragraphType.value == ParagraphType.RIGHT) MaterialTheme.colorScheme.primary
+                        else MaterialTheme.colorScheme.tertiary
+                    ),
+                ) {
+                    Box(
+                        modifier = Modifier.fillMaxSize(),
+                        contentAlignment = Alignment.Center
+                    ) {
+                        Icon(
+                            modifier = Modifier.size(16.dp),
+                            painter = painterResource(id = R.drawable.ic_format_align_right),
+                            contentDescription = "text color icon",
+                            tint =
+                            if (paragraphType.value == ParagraphType.RIGHT) MaterialTheme.colorScheme.background
+                            else MaterialTheme.colorScheme.secondary,
+                        )
+                    }
+                }
+            }
+        }
+
+        if (showColorSelector.value) TextColorSelector(noteItem, isDarkTheme, applyFormat)
+    }
+}
+
+@Preview(showBackground = true)
+@Composable
+fun TextColorSelector(
+    noteItem: NoteItem = mockNoteItem,
+    isDarkTheme: Boolean = false,
+    applyFormat: (FormatText) -> Unit = {},
+) {
+    val colors = remember { mutableStateOf(TextColor.entries) }
+    LazyRow(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(top = 12.dp),
+    ) {
+        items(colors.value) { item ->
+            TextColorItem(
+                noteItem = noteItem,
+                item = item,
+                applyFormat = applyFormat,
+                isDarkTheme = isDarkTheme
+            )
         }
     }
 }
+
+@Composable
+fun TextColorItem(
+    noteItem: NoteItem = mockNoteItem,
+    item: TextColor = TextColor.BASIC,
+    applyFormat: (FormatText) -> Unit = {},
+    isDarkTheme: Boolean = false,
+) {
+    val color = getColor(if (isDarkTheme) item.darkColor else item.lightColor)
+
+    Card(
+        modifier = Modifier
+            .size(32.dp)
+            .padding(1.dp)
+            .clickable {
+                applyFormat(
+                    noteItem.formatText.copy(
+                        textLightColor = item.lightColor, textDarkColor = item.darkColor
+                    )
+                )
+            },
+        shape = RoundedCornerShape(4.dp),
+    ) {
+        Box(
+            modifier = Modifier
+                .fillMaxSize()
+                .background(color)
+        )
+    }
+}
+

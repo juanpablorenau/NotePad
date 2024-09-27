@@ -16,7 +16,7 @@ import com.example.notepad.components.screens.ErrorScreen
 import com.example.notepad.components.screens.LoadingScreen
 import com.example.notepad.utils.getViewModel
 import com.example.notepad.utils.mockNote
-import com.example.model.entities.Color as AppColor
+import com.example.model.entities.NoteColor as AppColor
 
 @Composable
 fun NoteDetailScreen(
@@ -42,7 +42,6 @@ fun NoteDetailScreen(
         is NoteDetailUiState.Success -> {
             SuccessScreen(
                 note = state.note,
-                colors = state.colors,
                 onBackClick = { navController.popBackStack() },
                 saveText = { title -> viewModel.saveText(title) },
                 pinUpNote = { viewModel.pinUpNote() },
@@ -69,7 +68,6 @@ fun NoteDetailScreen(
 @Composable
 fun SuccessScreen(
     note: Note = mockNote,
-    colors: List<AppColor> = AppColor.entries,
     onBackClick: () -> Unit = {},
     pinUpNote: () -> Unit = {},
     deleteNote: () -> Unit = {},
@@ -89,7 +87,6 @@ fun SuccessScreen(
         topBar = {
             NoteDetailTopBar(
                 note = note,
-                colors = colors,
                 onBackClick = onBackClick,
                 changeColor = changeColor,
                 pinUpNote = pinUpNote,
@@ -113,6 +110,8 @@ fun SuccessScreen(
         },
         bottomBar = {
             NoteDetailBottomBar(
+                isDarkTheme = isDarkTheme,
+                note = note,
                 addTextField = addTextField,
                 addCheckBox = addCheckBox,
                 applyFormat =  applyFormat

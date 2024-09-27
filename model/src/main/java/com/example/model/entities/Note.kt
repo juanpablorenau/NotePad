@@ -6,8 +6,8 @@ import com.example.model.utils.normalize
 data class Note(
     val id: String = "",
     val title: String = "New Title",
-    val lightColor: String = Color.PALE_YELLOW.lightColor,
-    val darkColor: String = Color.PALE_YELLOW.darkColor,
+    val lightNoteColor: String = NoteColor.PALE_YELLOW.lightColor,
+    val darkNoteColor: String = NoteColor.PALE_YELLOW.darkColor,
     val isPinned: Boolean = false,
     val isChecked: Boolean = false,
     val index: Int = 0,
@@ -106,8 +106,8 @@ data class Note(
 
     fun copy(newNoteId: String) = Note(id = newNoteId,
         title = title,
-        lightColor = lightColor,
-        darkColor = darkColor,
+        lightNoteColor = lightNoteColor,
+        darkNoteColor = darkNoteColor,
         isPinned = isPinned,
         isChecked = isChecked,
         index = index,

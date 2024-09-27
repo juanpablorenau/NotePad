@@ -11,19 +11,31 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.scale
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.text.font.FontStyle
+import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.text.style.TextDecoration
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.model.entities.NoteItem
 import com.example.model.entities.NoteItemType
+import com.example.model.entities.ParagraphType
+import com.example.notepad.utils.getColor
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Preview(showBackground = true)
 @Composable
 fun CheckBoxItem(
     noteItem: NoteItem = NoteItem(type = NoteItemType.CHECK_BOX),
+    isDarkTheme: Boolean = false,
 ) {
+    val color = getColor(
+        if (isDarkTheme) noteItem.formatText.textDarkColor
+        else noteItem.formatText.textLightColor
+    )
+
     Row(
         modifier = Modifier.fillMaxWidth(),
         horizontalArrangement = Arrangement.SpaceBetween,
@@ -46,14 +58,35 @@ fun CheckBoxItem(
                 )
             }
 
-            Text(
-                modifier = Modifier.fillMaxWidth().padding(8.dp),
-                text = noteItem.text,
-                maxLines = 1,
-                overflow = TextOverflow.Ellipsis,
-                color = MaterialTheme.colorScheme.secondary,
-                fontSize = 12.sp
-            )
+            with(noteItem.formatText) {
+                Text(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(8.dp),
+                    text = noteItem.text,
+                    maxLines = 1,
+                    overflow = TextOverflow.Ellipsis,
+                    color = color,
+                    fontSize = fontSize.sp,
+                    fontWeight = if (isBold) FontWeight.Bold else FontWeight.Normal,
+                    fontStyle = if (isItalic) FontStyle.Italic else FontStyle.Normal,
+                    textDecoration = when {
+                        isUnderline && isLineThrough -> TextDecoration.combine(
+                            listOf(TextDecoration.Underline, TextDecoration.LineThrough)
+                        )
+
+                        isUnderline -> TextDecoration.Underline
+                        isLineThrough -> TextDecoration.LineThrough
+                        else -> null
+                    },
+                    textAlign = when (noteItem.formatText.paragraphType) {
+                        ParagraphType.LEFT -> TextAlign.Start
+                        ParagraphType.CENTER -> TextAlign.Center
+                        ParagraphType.RIGHT -> TextAlign.End
+                        else -> TextAlign.Justify
+                    }
+                )
+            }
         }
     }
 }
@@ -62,13 +95,38 @@ fun CheckBoxItem(
 @Composable
 fun TextFieldItem(
     noteItem: NoteItem = NoteItem(text = "Sample Text", type = NoteItemType.TEXT),
+    isDarkTheme: Boolean = false,
 ) {
-    Text(
-        modifier = Modifier.fillMaxWidth(),
-        maxLines = 8,
-        overflow = TextOverflow.Ellipsis,
-        text = noteItem.text,
-        color = MaterialTheme.colorScheme.secondary,
-        fontSize = 12.sp
+    val color = getColor(
+        if (isDarkTheme) noteItem.formatText.textDarkColor
+        else noteItem.formatText.textLightColor
     )
+
+    with(noteItem.formatText) {
+        Text(
+            modifier = Modifier.fillMaxWidth(),
+            maxLines = 8,
+            overflow = TextOverflow.Ellipsis,
+            text = noteItem.text,
+            color = color,
+            fontSize = fontSize.sp,
+            fontWeight = if (isBold) FontWeight.Bold else FontWeight.Normal,
+            fontStyle = if (isItalic) FontStyle.Italic else FontStyle.Normal,
+            textDecoration = when {
+                isUnderline && isLineThrough -> TextDecoration.combine(
+                    listOf(TextDecoration.Underline, TextDecoration.LineThrough)
+                )
+
+                isUnderline -> TextDecoration.Underline
+                isLineThrough -> TextDecoration.LineThrough
+                else -> null
+            },
+            textAlign = when (noteItem.formatText.paragraphType) {
+                ParagraphType.LEFT -> TextAlign.Start
+                ParagraphType.CENTER -> TextAlign.Center
+                ParagraphType.RIGHT -> TextAlign.End
+                else -> TextAlign.Justify
+            }
+        )
+    }
 }

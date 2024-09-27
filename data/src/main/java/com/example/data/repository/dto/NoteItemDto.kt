@@ -5,19 +5,20 @@ import com.example.model.entities.NoteItem
 import com.example.model.entities.NoteItemType
 import javax.inject.Inject
 
-class NoteItemDto @Inject constructor() {
+class NoteItemDto @Inject constructor(
+    private val formatTextDto: FormatTextDto,
+    private val noteItemTypeDto: NoteItemTypeDto,
+) {
 
-    fun toDomain(noteItemDb: NoteItemDb) =
+    fun typeToDomain(noteItemDb: NoteItemDb) =
         NoteItem(
             id = noteItemDb.id,
             noteId = noteItemDb.noteId,
             text = noteItemDb.text,
             isChecked = noteItemDb.isChecked,
             isFocused = noteItemDb.isFocused,
-            type = when (noteItemDb.type) {
-                NoteItemType.TEXT.name -> NoteItemType.TEXT
-                else -> NoteItemType.CHECK_BOX
-            }
+            type = noteItemTypeDto.toDomain(noteItemDb.type),
+            formatText = formatTextDto.toDomain(noteItemDb.formatText)
         )
 
     fun toDb(noteItem: NoteItem) =
@@ -27,6 +28,16 @@ class NoteItemDto @Inject constructor() {
             text = noteItem.text,
             isChecked = noteItem.isChecked,
             isFocused = noteItem.isFocused,
-            type = noteItem.type.name
+            type = noteItem.type.name,
+            formatText = formatTextDto.toDb(noteItem.formatText)
         )
 }
+
+class NoteItemTypeDto @Inject constructor() {
+    fun toDomain(type: String): NoteItemType =
+        when (type) {
+            NoteItemType.TEXT.name -> NoteItemType.TEXT
+            else -> NoteItemType.CHECK_BOX
+        }
+}
+
