@@ -67,7 +67,7 @@ fun CheckBoxItem(
                     maxLines = 1,
                     overflow = TextOverflow.Ellipsis,
                     color = color,
-                    fontSize = fontSize.sp,
+                    fontSize = 12.sp,
                     fontWeight = if (isBold) FontWeight.Bold else FontWeight.Normal,
                     fontStyle = if (isItalic) FontStyle.Italic else FontStyle.Normal,
                     textDecoration = when {
@@ -109,7 +109,7 @@ fun TextFieldItem(
             overflow = TextOverflow.Ellipsis,
             text = noteItem.text,
             color = color,
-            fontSize = fontSize.sp,
+            fontSize = 12.sp,
             fontWeight = if (isBold) FontWeight.Bold else FontWeight.Normal,
             fontStyle = if (isItalic) FontStyle.Italic else FontStyle.Normal,
             textDecoration = when {
