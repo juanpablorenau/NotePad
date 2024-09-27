@@ -5,6 +5,7 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyRow
+import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Card
@@ -27,14 +28,17 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.model.entities.FormatText
 import com.example.model.entities.ParagraphType
+import com.example.model.entities.TextColor
 import com.example.model.entities.TypeText
 import com.example.model.utils.capitalizeFirstLetter
 import com.example.notepad.R
+import com.example.notepad.utils.getColor
 
 
 @Preview(showBackground = true)
 @Composable
 fun NoteDetailBottomBar(
+    isDarkTheme: Boolean = false,
     addTextField: () -> Unit = {},
     addCheckBox: (String?) -> Unit = {},
     applyFormat: (FormatText) -> Unit = {},
@@ -42,7 +46,7 @@ fun NoteDetailBottomBar(
     val showBottomSheet = remember { mutableStateOf(false) }
     val changeBottomSheetState = { value: Boolean -> showBottomSheet.value = value }
 
-    if (showBottomSheet.value) TextFormatComponent(changeBottomSheetState, applyFormat)
+    if (showBottomSheet.value) TextFormatComponent(isDarkTheme, changeBottomSheetState, applyFormat)
     else BottomOptions(changeBottomSheetState, addTextField, addCheckBox)
 }
 
@@ -106,6 +110,7 @@ fun BottomOptions(
 @Preview(showBackground = true)
 @Composable
 fun TextFormatComponent(
+    isDarkTheme: Boolean = false,
     changeBottomSheetState: (Boolean) -> Unit = {},
     applyFormat: (FormatText) -> Unit = {},
 ) {
@@ -123,7 +128,7 @@ fun TextFormatComponent(
                 .padding(12.dp),
         ) {
             TextFormatHeader(changeBottomSheetState)
-            TextFormatContent(applyFormat)
+            TextFormatContent(isDarkTheme, applyFormat)
         }
     }
 }
@@ -161,13 +166,16 @@ fun TextFormatHeader(
 
 @Preview(showBackground = true)
 @Composable
-fun TextFormatContent(applyFormat: (FormatText) -> Unit = {}) {
+fun TextFormatContent(
+    isDarkTheme: Boolean = false,
+    applyFormat: (FormatText) -> Unit = {},
+) {
     Spacer(modifier = Modifier.height(24.dp))
     TypeTextsSelector(applyFormat)
-    Spacer(modifier = Modifier.height(18.dp))
+    Spacer(modifier = Modifier.height(12.dp))
     FormatTextsSelector(applyFormat)
     Spacer(modifier = Modifier.height(12.dp))
-    ParagraphsSelectorAndTextColor(applyFormat)
+    ParagraphsSelectorAndTextColor(isDarkTheme, applyFormat)
     Spacer(modifier = Modifier.height(24.dp))
 }
 
@@ -387,178 +395,231 @@ fun FormatTextsSelector(applyFormat: (FormatText) -> Unit = {}) {
 
 @Preview(showBackground = true)
 @Composable
-fun ParagraphsSelectorAndTextColor(applyFormat: (FormatText) -> Unit = {}) {
+fun ParagraphsSelectorAndTextColor(
+    isDarkTheme: Boolean = false,
+    applyFormat: (FormatText) -> Unit = {},
+) {
     val selectedIndex = remember { mutableIntStateOf(-1) }
+    val showColorSelector = remember { mutableStateOf(false) }
 
-    Row(
-        modifier = Modifier.fillMaxWidth(),
-    ) {
-
-        Card(
-            modifier = Modifier
-                .height(32.dp)
-                .weight(1f),
-            colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.tertiary),
-            shape = RoundedCornerShape(
-                topStart = 12.dp,
-                topEnd = 12.dp,
-                bottomStart = 12.dp,
-                bottomEnd = 12.dp
-            ),
-        ) {
-            Box(
-                modifier = Modifier.fillMaxSize(),
-                contentAlignment = Alignment.Center
+    Column {
+        Row(modifier = Modifier.fillMaxWidth()) {
+            Card(
+                modifier = Modifier
+                    .height(32.dp)
+                    .weight(1f)
+                    .clickable { showColorSelector.value = !showColorSelector.value },
+                colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.tertiary),
+                shape = RoundedCornerShape(
+                    topStart = 12.dp,
+                    topEnd = 12.dp,
+                    bottomStart = 12.dp,
+                    bottomEnd = 12.dp
+                ),
             ) {
-                Icon(
-                    modifier = Modifier.size(16.dp),
-                    painter = painterResource(id = R.drawable.ic_text_format),
-                    contentDescription = "text color icon",
-                    tint = MaterialTheme.colorScheme.secondary,
-                )
+                Box(
+                    modifier = Modifier.fillMaxSize(),
+                    contentAlignment = Alignment.Center
+                ) {
+                    Icon(
+                        modifier = Modifier.size(16.dp),
+                        painter = painterResource(id = R.drawable.ic_text_format),
+                        contentDescription = "text color icon",
+                        tint = MaterialTheme.colorScheme.secondary,
+                    )
+                }
+            }
+
+            Spacer(modifier = Modifier.width(12.dp))
+
+            Row(
+                modifier = Modifier.weight(4f)
+            ) {
+                Card(
+                    modifier = Modifier
+                        .height(32.dp)
+                        .weight(1f)
+                        .clickable {
+                            selectedIndex.intValue = 0
+                            applyFormat(FormatText(paragraphType = ParagraphType.LEFT))
+                        },
+                    shape = RoundedCornerShape(
+                        topStart = 12.dp,
+                        topEnd = 0.dp,
+                        bottomStart = 12.dp,
+                        bottomEnd = 0.dp
+                    ),
+                    colors = CardDefaults.cardColors(
+                        containerColor =
+                        if (selectedIndex.intValue == 0) MaterialTheme.colorScheme.primary
+                        else MaterialTheme.colorScheme.tertiary
+                    ),
+                ) {
+                    Box(
+                        modifier = Modifier.fillMaxSize(),
+                        contentAlignment = Alignment.Center
+                    ) {
+                        Icon(
+                            modifier = Modifier.size(16.dp),
+                            painter = painterResource(id = R.drawable.ic_format_align_left),
+                            contentDescription = "text color icon",
+                            tint =
+                            if (selectedIndex.intValue == 0) MaterialTheme.colorScheme.background
+                            else MaterialTheme.colorScheme.secondary,
+                        )
+                    }
+                }
+
+                Spacer(modifier = Modifier.width(1.dp))
+
+                Card(
+                    modifier = Modifier
+                        .height(32.dp)
+                        .weight(1f)
+                        .clickable {
+                            selectedIndex.intValue = 1
+                            applyFormat(FormatText(paragraphType = ParagraphType.JUSTIFY))
+                        },
+                    shape = RoundedCornerShape(0.dp),
+                    colors = CardDefaults.cardColors(
+                        containerColor =
+                        if (selectedIndex.intValue == 1) MaterialTheme.colorScheme.primary
+                        else MaterialTheme.colorScheme.tertiary
+                    ),
+                ) {
+                    Box(
+                        modifier = Modifier.fillMaxSize(),
+                        contentAlignment = Alignment.Center
+                    ) {
+                        Icon(
+                            modifier = Modifier.size(16.dp),
+                            painter = painterResource(id = R.drawable.ic_format_align_justify),
+                            contentDescription = "text color icon",
+                            tint =
+                            if (selectedIndex.intValue == 1) MaterialTheme.colorScheme.background
+                            else MaterialTheme.colorScheme.secondary,
+                        )
+                    }
+                }
+
+                Spacer(modifier = Modifier.width(1.dp))
+
+                Card(
+                    modifier = Modifier
+                        .height(32.dp)
+                        .weight(1f)
+                        .clickable {
+                            selectedIndex.intValue = 2
+                            applyFormat(FormatText(paragraphType = ParagraphType.CENTER))
+                        },
+                    shape = RoundedCornerShape(0.dp),
+                    colors = CardDefaults.cardColors(
+                        containerColor =
+                        if (selectedIndex.intValue == 2) MaterialTheme.colorScheme.primary
+                        else MaterialTheme.colorScheme.tertiary
+                    ),
+                ) {
+                    Box(
+                        modifier = Modifier.fillMaxSize(),
+                        contentAlignment = Alignment.Center
+                    ) {
+                        Icon(
+                            modifier = Modifier.size(16.dp),
+                            painter = painterResource(id = R.drawable.ic_format_align_center),
+                            contentDescription = "text color icon",
+                            tint =
+                            if (selectedIndex.intValue == 2) MaterialTheme.colorScheme.background
+                            else MaterialTheme.colorScheme.secondary,
+                        )
+                    }
+                }
+
+                Spacer(modifier = Modifier.width(1.dp))
+
+                Card(
+                    modifier = Modifier
+                        .height(32.dp)
+                        .weight(1f)
+                        .clickable {
+                            selectedIndex.intValue = 3
+                            applyFormat(FormatText(paragraphType = ParagraphType.RIGHT))
+                        },
+                    shape = RoundedCornerShape(
+                        topStart = 0.dp,
+                        topEnd = 12.dp,
+                        bottomStart = 0.dp,
+                        bottomEnd = 12.dp
+                    ),
+                    colors = CardDefaults.cardColors(
+                        containerColor =
+                        if (selectedIndex.intValue == 3) MaterialTheme.colorScheme.primary
+                        else MaterialTheme.colorScheme.tertiary
+                    ),
+                ) {
+                    Box(
+                        modifier = Modifier.fillMaxSize(),
+                        contentAlignment = Alignment.Center
+                    ) {
+                        Icon(
+                            modifier = Modifier.size(16.dp),
+                            painter = painterResource(id = R.drawable.ic_format_align_right),
+                            contentDescription = "text color icon",
+                            tint =
+                            if (selectedIndex.intValue == 3) MaterialTheme.colorScheme.background
+                            else MaterialTheme.colorScheme.secondary,
+                        )
+                    }
+                }
             }
         }
 
-        Spacer(modifier = Modifier.width(12.dp))
+        if (showColorSelector.value) TextColorSelector(isDarkTheme, applyFormat)
+    }
+}
 
-        Row(
-            modifier = Modifier.weight(4f)
-        ) {
-            Card(
-                modifier = Modifier
-                    .height(32.dp)
-                    .weight(1f)
-                    .clickable {
-                        selectedIndex.intValue = 0
-                        applyFormat(FormatText(paragraphType = ParagraphType.LEFT))
-                    },
-                shape = RoundedCornerShape(
-                    topStart = 12.dp,
-                    topEnd = 0.dp,
-                    bottomStart = 12.dp,
-                    bottomEnd = 0.dp
-                ),
-                colors = CardDefaults.cardColors(
-                    containerColor =
-                    if (selectedIndex.intValue == 0) MaterialTheme.colorScheme.primary
-                    else MaterialTheme.colorScheme.tertiary
-                ),
-            ) {
-                Box(
-                    modifier = Modifier.fillMaxSize(),
-                    contentAlignment = Alignment.Center
-                ) {
-                    Icon(
-                        modifier = Modifier.size(16.dp),
-                        painter = painterResource(id = R.drawable.ic_format_align_left),
-                        contentDescription = "text color icon",
-                        tint =
-                        if (selectedIndex.intValue == 0) MaterialTheme.colorScheme.background
-                        else MaterialTheme.colorScheme.secondary,
-                    )
-                }
-            }
+@Preview(showBackground = true)
+@Composable
+fun TextColorSelector(
+    isDarkTheme: Boolean = false,
+    applyFormat: (FormatText) -> Unit = {},
+) {
+    val colors = remember { mutableStateOf(TextColor.entries) }
+    LazyRow(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(top = 12.dp),
+    ) {
+        items(colors.value) { item ->
+            TextColorItem(
+                item = item,
+                applyFormat,
+                isDarkTheme
+            )
 
-            Spacer(modifier = Modifier.width(1.dp))
-
-            Card(
-                modifier = Modifier
-                    .height(32.dp)
-                    .weight(1f)
-                    .clickable {
-                        selectedIndex.intValue = 1
-                        applyFormat(FormatText(paragraphType = ParagraphType.JUSTIFY))
-                    },
-                shape = RoundedCornerShape(0.dp),
-                colors = CardDefaults.cardColors(
-                    containerColor =
-                    if (selectedIndex.intValue == 1) MaterialTheme.colorScheme.primary
-                    else MaterialTheme.colorScheme.tertiary
-                ),
-            ) {
-                Box(
-                    modifier = Modifier.fillMaxSize(),
-                    contentAlignment = Alignment.Center
-                ) {
-                    Icon(
-                        modifier = Modifier.size(16.dp),
-                        painter = painterResource(id = R.drawable.ic_format_align_justify),
-                        contentDescription = "text color icon",
-                        tint =
-                        if (selectedIndex.intValue == 1) MaterialTheme.colorScheme.background
-                        else MaterialTheme.colorScheme.secondary,
-                    )
-                }
-            }
-
-            Spacer(modifier = Modifier.width(1.dp))
-
-            Card(
-                modifier = Modifier
-                    .height(32.dp)
-                    .weight(1f)
-                    .clickable {
-                        selectedIndex.intValue = 2
-                        applyFormat(FormatText(paragraphType = ParagraphType.CENTER))
-                    },
-                shape = RoundedCornerShape(0.dp),
-                colors = CardDefaults.cardColors(
-                    containerColor =
-                    if (selectedIndex.intValue == 2) MaterialTheme.colorScheme.primary
-                    else MaterialTheme.colorScheme.tertiary
-                ),
-            ) {
-                Box(
-                    modifier = Modifier.fillMaxSize(),
-                    contentAlignment = Alignment.Center
-                ) {
-                    Icon(
-                        modifier = Modifier.size(16.dp),
-                        painter = painterResource(id = R.drawable.ic_format_align_center),
-                        contentDescription = "text color icon",
-                        tint =
-                        if (selectedIndex.intValue == 2) MaterialTheme.colorScheme.background
-                        else MaterialTheme.colorScheme.secondary,
-                    )
-                }
-            }
-
-            Spacer(modifier = Modifier.width(1.dp))
-
-            Card(
-                modifier = Modifier
-                    .height(32.dp)
-                    .weight(1f)
-                    .clickable {
-                        selectedIndex.intValue = 3
-                        applyFormat(FormatText(paragraphType = ParagraphType.RIGHT))
-                    },
-                shape = RoundedCornerShape(
-                    topStart = 0.dp,
-                    topEnd = 12.dp,
-                    bottomStart = 0.dp,
-                    bottomEnd = 12.dp
-                ),
-                colors = CardDefaults.cardColors(
-                    containerColor =
-                    if (selectedIndex.intValue == 3) MaterialTheme.colorScheme.primary
-                    else MaterialTheme.colorScheme.tertiary
-                ),
-            ) {
-                Box(
-                    modifier = Modifier.fillMaxSize(),
-                    contentAlignment = Alignment.Center
-                ) {
-                    Icon(
-                        modifier = Modifier.size(16.dp),
-                        painter = painterResource(id = R.drawable.ic_format_align_right),
-                        contentDescription = "text color icon",
-                        tint =
-                        if (selectedIndex.intValue == 3) MaterialTheme.colorScheme.background
-                        else MaterialTheme.colorScheme.secondary,
-                    )
-                }
-            }
         }
     }
 }
+
+@Composable
+fun TextColorItem(
+    item: TextColor = TextColor.BASIC,
+    applyFormat: (FormatText) -> Unit = {},
+    isDarkTheme: Boolean = false,
+) {
+    val color = getColor(if (isDarkTheme) item.darkColor else item.lightColor)
+
+    Card(
+        modifier = Modifier
+            .size(32.dp)
+            .padding(1.dp)
+            .clickable { applyFormat(FormatText(textColor = item)) },
+        shape = RoundedCornerShape(4.dp),
+    ) {
+        Box(
+            modifier = Modifier
+                .fillMaxSize()
+                .background(color)
+        )
+    }
+}
+

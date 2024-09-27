@@ -12,7 +12,6 @@ import com.example.model.entities.FormatText
 import com.example.model.entities.Note
 import com.example.model.entities.NoteColor
 import com.example.model.entities.NoteItem
-import com.example.model.entities.TextColor
 import com.example.model.utils.getUUID
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.CoroutineDispatcher
@@ -26,11 +25,7 @@ import javax.inject.Inject
 
 sealed class NoteDetailUiState {
     data object Loading : NoteDetailUiState()
-    data class Success(
-        val note: Note,
-        val noteColors: List<NoteColor> = NoteColor.entries,
-        val textColors: List<TextColor> = TextColor.entries
-    ) : NoteDetailUiState()
+    data class Success(val note: Note) : NoteDetailUiState()
     data object Error : NoteDetailUiState()
 
     fun  asSuccess() = this as Success

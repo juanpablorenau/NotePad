@@ -42,7 +42,6 @@ fun NoteDetailScreen(
         is NoteDetailUiState.Success -> {
             SuccessScreen(
                 note = state.note,
-                noteColors = state.noteColors,
                 onBackClick = { navController.popBackStack() },
                 saveText = { title -> viewModel.saveText(title) },
                 pinUpNote = { viewModel.pinUpNote() },
@@ -69,7 +68,6 @@ fun NoteDetailScreen(
 @Composable
 fun SuccessScreen(
     note: Note = mockNote,
-    noteColors: List<AppColor> = AppColor.entries,
     onBackClick: () -> Unit = {},
     pinUpNote: () -> Unit = {},
     deleteNote: () -> Unit = {},
@@ -89,7 +87,6 @@ fun SuccessScreen(
         topBar = {
             NoteDetailTopBar(
                 note = note,
-                noteColors = noteColors,
                 onBackClick = onBackClick,
                 changeColor = changeColor,
                 pinUpNote = pinUpNote,
@@ -113,6 +110,7 @@ fun SuccessScreen(
         },
         bottomBar = {
             NoteDetailBottomBar(
+                isDarkTheme = isDarkTheme,
                 addTextField = addTextField,
                 addCheckBox = addCheckBox,
                 applyFormat =  applyFormat

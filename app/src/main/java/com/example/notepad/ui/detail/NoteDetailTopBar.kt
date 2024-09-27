@@ -1,9 +1,7 @@
 package com.example.notepad.ui.detail
 
-import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
-import androidx.compose.foundation.combinedClickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material3.*
@@ -19,8 +17,8 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import com.example.model.entities.NoteColor
 import com.example.model.entities.Note
+import com.example.model.entities.NoteColor
 import com.example.notepad.R
 import com.example.notepad.components.Dialog
 import com.example.notepad.components.MenuItem
@@ -33,7 +31,6 @@ import com.example.notepad.utils.mockNote
 @Composable
 fun NoteDetailTopBar(
     note: Note = mockNote,
-    noteColors: List<NoteColor> = NoteColor.entries,
     onBackClick: () -> Unit = {},
     pinUpNote: () -> Unit = {},
     deleteNote: () -> Unit = {},
@@ -136,7 +133,7 @@ fun NoteDetailTopBar(
                 expanded = showColor,
                 onDismissRequest = { showColor = false }
             ) {
-                ChangeColorMenu(noteColors, changeColor, isDarkTheme)
+                ChangeColorMenu(changeColor, isDarkTheme)
             }
         }
     )
@@ -159,23 +156,23 @@ fun DeleteNoteDialog(deleteNote: () -> Unit = {}, action: () -> Unit = {}) {
 @Preview(showBackground = true)
 @Composable
 fun ChangeColorMenu(
-    noteColors: List<NoteColor> = NoteColor.entries,
     changeColor: (NoteColor) -> Unit = {},
     isDarkTheme: Boolean = false,
 ) {
-    for (i in 0 until noteColors.size.div(4)) {
+    val colors = remember { NoteColor.entries }
+
+    for (i in 0 until colors.size.div(4)) {
         Row(
             modifier = Modifier.padding(8.dp)
         ) {
             for (j in 0 until 4) {
-                ColorItem(item = noteColors[i * 4 + j], changeColor, isDarkTheme)
-                Spacer(modifier = Modifier.width(8.dp))
+                ColorItem(item = colors[i * 4 + j], changeColor, isDarkTheme)
+                if(j != 3) Spacer(modifier = Modifier.width(8.dp))
             }
         }
     }
 }
 
-@OptIn(ExperimentalFoundationApi::class)
 @Composable
 fun ColorItem(
     item: NoteColor = NoteColor.PALE_YELLOW,
@@ -188,10 +185,7 @@ fun ColorItem(
         shape = CircleShape,
         modifier = Modifier
             .size(36.dp)
-            .combinedClickable(
-                onClick = { changeColor(item) },
-                onLongClick = { }
-            )
+            .clickable { changeColor(item) },
     ) {
         Box(
             modifier = Modifier
