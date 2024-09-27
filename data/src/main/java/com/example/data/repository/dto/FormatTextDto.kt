@@ -20,7 +20,7 @@ class FormatTextDto @Inject constructor(
             isItalic = formatTextDb.isItalic,
             isUnderline = formatTextDb.isUnderline,
             isLineThrough = formatTextDb.isLineThrough,
-            textLightColor = formatTextDb.textDarkColor,
+            textLightColor = formatTextDb.textLightColor,
             textDarkColor = formatTextDb.textDarkColor,
             paragraphType = paragraphTypeDto.toDomain(formatTextDb.paragraphType)
         )
