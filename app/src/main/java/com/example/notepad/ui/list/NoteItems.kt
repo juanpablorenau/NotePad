@@ -11,9 +11,9 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.scale
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontStyle
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextDecoration
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
@@ -21,6 +21,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.model.entities.NoteItem
 import com.example.model.entities.NoteItemType
+import com.example.model.entities.ParagraphType
 import com.example.notepad.utils.getColor
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -67,10 +68,23 @@ fun CheckBoxItem(
                     overflow = TextOverflow.Ellipsis,
                     color = color,
                     fontSize = fontSize.sp,
-                    fontWeight = if (isBold) FontWeight.Bold else null,
-                    fontStyle = if (isItalic) FontStyle.Italic else null,
-                    textDecoration = if (isUnderline) TextDecoration.Underline else null,
-                    style = TextStyle(textDecoration = if (isLineThrough) TextDecoration.LineThrough else null),
+                    fontWeight = if (isBold) FontWeight.Bold else FontWeight.Normal,
+                    fontStyle = if (isItalic) FontStyle.Italic else FontStyle.Normal,
+                    textDecoration = when {
+                        isUnderline && isLineThrough -> TextDecoration.combine(
+                            listOf(TextDecoration.Underline, TextDecoration.LineThrough)
+                        )
+
+                        isUnderline -> TextDecoration.Underline
+                        isLineThrough -> TextDecoration.LineThrough
+                        else -> null
+                    },
+                    textAlign = when (noteItem.formatText.paragraphType) {
+                        ParagraphType.LEFT -> TextAlign.Start
+                        ParagraphType.CENTER -> TextAlign.Center
+                        ParagraphType.RIGHT -> TextAlign.End
+                        else -> TextAlign.Justify
+                    }
                 )
             }
         }
@@ -96,10 +110,23 @@ fun TextFieldItem(
             text = noteItem.text,
             color = color,
             fontSize = fontSize.sp,
-            fontWeight = if (isBold) FontWeight.Bold else null,
-            fontStyle = if (isItalic) FontStyle.Italic else null,
-            textDecoration = if (isUnderline) TextDecoration.Underline else null,
-            style = TextStyle(textDecoration = if (isLineThrough) TextDecoration.LineThrough else null),
+            fontWeight = if (isBold) FontWeight.Bold else FontWeight.Normal,
+            fontStyle = if (isItalic) FontStyle.Italic else FontStyle.Normal,
+            textDecoration = when {
+                isUnderline && isLineThrough -> TextDecoration.combine(
+                    listOf(TextDecoration.Underline, TextDecoration.LineThrough)
+                )
+
+                isUnderline -> TextDecoration.Underline
+                isLineThrough -> TextDecoration.LineThrough
+                else -> null
+            },
+            textAlign = when (noteItem.formatText.paragraphType) {
+                ParagraphType.LEFT -> TextAlign.Start
+                ParagraphType.CENTER -> TextAlign.Center
+                ParagraphType.RIGHT -> TextAlign.End
+                else -> TextAlign.Justify
+            }
         )
     }
 }
