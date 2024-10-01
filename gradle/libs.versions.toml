@@ -6,6 +6,7 @@ coil-compose = "2.5.0"
 compose-bom = "2024.02.01"
 converter-gson = "2.9.0"
 converter-moshi = "2.9.0"
+datastore-preferences = "1.1.1"
 espresso-core = "3.5.1"
 glide = "4.16.0"
 gson = "2.10.1"
@@ -109,6 +110,9 @@ androidx-room-compiler = { module = "androidx.room:room-compiler", version.ref =
 androidx-room-ktx = { module = "androidx.room:room-ktx", version.ref = "room-runtime" }
 androidx-room-paging = { module = "androidx.room:room-paging", version.ref = "room-runtime" }
 androidx-room-runtime = { module = "androidx.room:room-runtime", version.ref = "room-runtime" }
+
+# DataStore
+androidx-datastore-preferences = { module = "androidx.datastore:datastore-preferences", version.ref = "datastore-preferences" }
 
 [plugins]
 jetbrains-kotlin-jvm = { id = "org.jetbrains.kotlin.jvm", version.ref = "jetbrains-kotlin-jvm" }

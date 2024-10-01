@@ -16,7 +16,6 @@ fun AppNavigation(
     navController: NavHostController,
     openDrawer: () -> Unit,
     isDarkTheme: Boolean = false,
-    changeDarkTheme: () -> Unit,
 ) {
     Surface {
         NavHost(
@@ -60,7 +59,6 @@ fun AppNavigation(
                 SettingsScreen(
                     openDrawer = { openDrawer() },
                     isDarkTheme = isDarkTheme,
-                    changeDarkTheme = { changeDarkTheme() }
                 )
             }
         }

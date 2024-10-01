@@ -23,7 +23,6 @@ import kotlinx.coroutines.launch
 @Composable
 fun DrawerNotes(
     isDarkTheme: Boolean = false,
-    changeDarkTheme: () -> Unit = {},
 ) {
     val navController = rememberNavController()
     val drawerState = rememberDrawerState(DrawerValue.Closed)
@@ -58,7 +57,6 @@ fun DrawerNotes(
                 navController = navController,
                 openDrawer = openDrawer,
                 isDarkTheme = isDarkTheme,
-                changeDarkTheme = changeDarkTheme
             )
         }
     )
