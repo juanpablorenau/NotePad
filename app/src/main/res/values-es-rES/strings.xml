@@ -22,4 +22,9 @@
     <string name="share">Compartir</string>
     <string name="text_format">Formato de texto</string>
     <string name="language">Idioma</string>
+    <string name="new_title">Nuevo Título</string>
+    <string name="title">Título</string>
+    <string name="header">Encabezamiento</string>
+    <string name="subtitle">Subtítulo</string>
+    <string name="body">Cuerpo</string>
 </resources>

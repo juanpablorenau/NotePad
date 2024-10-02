@@ -186,7 +186,7 @@ fun LanguageSelector(
                     },
                     onClick = {
                         expanded = false
-                        changeLanguage(language.name)
+                        changeLanguage(language.key)
                     }
                 )
             }

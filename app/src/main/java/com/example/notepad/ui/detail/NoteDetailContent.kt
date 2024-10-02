@@ -20,6 +20,7 @@ import androidx.compose.ui.focus.FocusDirection
 import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.ImeAction
@@ -92,7 +93,8 @@ fun NoteHeader(
     saveText: (String) -> Unit = { },
 ) {
     val focusManager = LocalFocusManager.current
-    var titleFieldValue by remember(note.id) { mutableStateOf(TextFieldValue(note.title)) }
+    val title = note.title.ifBlank { stringResource(id = R.string.new_title) }
+    var titleFieldValue by remember(note.id) { mutableStateOf(TextFieldValue(title)) }
 
     Row(
         modifier = Modifier

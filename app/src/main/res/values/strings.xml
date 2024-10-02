@@ -21,4 +21,9 @@
     <string name="share">Share</string>
     <string name="text_format">Text Format</string>
     <string name="language">Language</string>
+    <string name="new_title">New Title</string>
+    <string name="title">Title</string>
+    <string name="header">Header</string>
+    <string name="subtitle">subtitle</string>
+    <string name="body">body</string>
 </resources>
