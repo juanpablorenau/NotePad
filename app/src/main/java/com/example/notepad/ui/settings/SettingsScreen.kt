@@ -1,22 +1,12 @@
 package com.example.notepad.ui.settings
 
-import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.PaddingValues
-import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.padding
-import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButton
-import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Scaffold
-import androidx.compose.material3.Switch
-import androidx.compose.material3.SwitchDefaults
-import androidx.compose.material3.Text
-import androidx.compose.material3.TopAppBar
-import androidx.compose.material3.TopAppBarDefaults
+import androidx.compose.foundation.layout.*
+import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -27,16 +17,17 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.example.model.entities.Language
 import com.example.notepad.R
 import com.example.notepad.theme.DarkSkyBlue
 import com.example.notepad.theme.LightSkyBlue
 import com.example.notepad.utils.getViewModel
 
-@Preview(showBackground = true)
 @Composable
 fun SettingsScreen(
     openDrawer: () -> Unit = {},
     isDarkTheme: Boolean = false,
+    language: Language = Language.EN
 ) {
     val viewModel = LocalContext.current.getViewModel<SettingsViewModel>()
 
@@ -48,16 +39,19 @@ fun SettingsScreen(
             SettingsContent(
                 padding = padding,
                 isDarkTheme = isDarkTheme,
-                changeDarkTheme = { viewModel.setIsDarkTheme(!isDarkTheme) }
+                language = language,
+                changeDarkTheme = { viewModel.setIsDarkTheme(!isDarkTheme) },
+                changeLanguage = { languageKey -> viewModel.setLanguage(languageKey) }
             )
         },
         containerColor = MaterialTheme.colorScheme.background
     )
 }
 
+@Preview(showBackground = true)
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun SettingsTopBar(openDrawer: () -> Unit) {
+fun SettingsTopBar(openDrawer: () -> Unit = {}) {
     TopAppBar(
         colors = TopAppBarDefaults.topAppBarColors(containerColor = Color.Transparent),
         navigationIcon = {
@@ -81,22 +75,28 @@ fun SettingsTopBar(openDrawer: () -> Unit) {
     )
 }
 
+@Preview(showBackground = true)
 @Composable
 fun SettingsContent(
     padding: PaddingValues = PaddingValues(),
     isDarkTheme: Boolean = false,
+    language: Language = Language.EN,
     changeDarkTheme: () -> Unit = {},
+    changeLanguage: (String) -> Unit = {},
 ) {
     Column(
-        modifier = Modifier.padding(padding)
+        modifier = Modifier.padding(padding),
     ) {
         DarkModeSwitch(
             isDarkTheme = isDarkTheme,
             changeDarkTheme = changeDarkTheme
         )
+
+        LanguageSelector(language = language, changeLanguage = changeLanguage)
     }
 }
 
+@Preview(showBackground = true)
 @Composable
 fun DarkModeSwitch(
     isDarkTheme: Boolean = true,
@@ -143,5 +143,53 @@ fun DarkModeSwitch(
                 }
             }
         )
+    }
+}
+
+@OptIn(ExperimentalMaterial3Api::class)
+@Preview(showBackground = true)
+@Composable
+fun LanguageSelector(
+    language: Language = Language.EN,
+    languages: List<Language> = Language.entries,
+    label: String = stringResource(R.string.language),
+    changeLanguage: (String) -> Unit = {},
+) {
+    var expanded by remember { mutableStateOf(false) }
+
+    ExposedDropdownMenuBox(
+        expanded = expanded,
+        onExpandedChange = { expanded = !expanded },
+        modifier = Modifier.padding(horizontal = 24.dp)
+    ) {
+        OutlinedTextField(
+            readOnly = true,
+            value = language.fullName,
+            onValueChange = {},
+            label = {
+                Text(text = label)
+            },
+            trailingIcon = {
+                ExposedDropdownMenuDefaults.TrailingIcon(expanded = expanded)
+            },
+            colors = OutlinedTextFieldDefaults.colors(),
+            modifier = Modifier
+                .menuAnchor()
+                .fillMaxWidth()
+        )
+
+        ExposedDropdownMenu(expanded = expanded, onDismissRequest = { expanded = false }) {
+            languages.forEach { language: Language ->
+                DropdownMenuItem(
+                    text = {
+                        Text(text = language.fullName, fontSize = 16.sp)
+                    },
+                    onClick = {
+                        expanded = false
+                        changeLanguage(language.key)
+                    }
+                )
+            }
+        }
     }
 }

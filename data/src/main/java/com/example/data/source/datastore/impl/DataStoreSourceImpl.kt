@@ -5,8 +5,10 @@ import androidx.datastore.preferences.core.Preferences
 import androidx.datastore.preferences.core.booleanPreferencesKey
 import androidx.datastore.preferences.core.edit
 import androidx.datastore.preferences.core.intPreferencesKey
+import androidx.datastore.preferences.core.stringPreferencesKey
 import com.example.data.source.datastore.DataStoreSource
 import kotlinx.coroutines.CoroutineDispatcher
+import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.flowOn
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.withContext
@@ -34,6 +36,17 @@ class DataStoreSourceImpl @Inject constructor(
     override suspend fun putInteger(key: String, value: Int) {
         withContext(dispatcher) {
             dataStore.edit { preferences -> preferences[intPreferencesKey(key)] = value }
+        }
+    }
+
+    override fun getString(key: String, defaultValue: String): Flow<String> =
+        dataStore.data.map { preferences ->
+            preferences[stringPreferencesKey(key)] ?: defaultValue
+        }.flowOn(dispatcher)
+
+    override suspend fun putString(key: String, value: String) {
+        withContext(dispatcher) {
+            dataStore.edit { preferences -> preferences[stringPreferencesKey(key)] = value }
         }
     }
 }

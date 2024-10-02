@@ -15,6 +15,7 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.compose.rememberNavController
+import com.example.model.entities.Language
 import com.example.notepad.R
 import com.example.notepad.navigation.AppNavigation
 import com.example.notepad.navigation.AppScreens
@@ -23,6 +24,7 @@ import kotlinx.coroutines.launch
 @Composable
 fun DrawerNotes(
     isDarkTheme: Boolean = false,
+    language: Language = Language.EN
 ) {
     val navController = rememberNavController()
     val drawerState = rememberDrawerState(DrawerValue.Closed)
@@ -32,15 +34,15 @@ fun DrawerNotes(
 
     val navigateToNotes: () -> Unit = {
         coroutineScope.launch {
-            navController.popBackStack(AppScreens.NotesScreen.route, false)
             drawerState.close()
+            navController.popBackStack(AppScreens.NotesScreen.route, false)
         }
     }
 
     val navigateToSettings: () -> Unit = {
         coroutineScope.launch {
-            navController.navigate(AppScreens.SettingsScreen.route)
             drawerState.close()
+            navController.navigate(AppScreens.SettingsScreen.route)
         }
     }
 
@@ -57,6 +59,7 @@ fun DrawerNotes(
                 navController = navController,
                 openDrawer = openDrawer,
                 isDarkTheme = isDarkTheme,
+                language = language
             )
         }
     )

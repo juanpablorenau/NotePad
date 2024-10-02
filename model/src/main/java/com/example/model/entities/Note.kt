@@ -5,7 +5,7 @@ import com.example.model.utils.normalize
 
 data class Note(
     val id: String = "",
-    val title: String = "New Title",
+    val title: String = "",
     val lightNoteColor: String = NoteColor.PALE_YELLOW.lightColor,
     val darkNoteColor: String = NoteColor.PALE_YELLOW.darkColor,
     val isPinned: Boolean = false,

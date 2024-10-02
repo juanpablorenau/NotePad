@@ -7,6 +7,7 @@ import androidx.navigation.NavType
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.navArgument
+import com.example.model.entities.Language
 import com.example.notepad.ui.detail.NoteDetailScreen
 import com.example.notepad.ui.list.NotesScreen
 import com.example.notepad.ui.settings.SettingsScreen
@@ -16,6 +17,7 @@ fun AppNavigation(
     navController: NavHostController,
     openDrawer: () -> Unit,
     isDarkTheme: Boolean = false,
+    language: Language = Language.EN
 ) {
     Surface {
         NavHost(
@@ -59,6 +61,7 @@ fun AppNavigation(
                 SettingsScreen(
                     openDrawer = { openDrawer() },
                     isDarkTheme = isDarkTheme,
+                    language = language
                 )
             }
         }

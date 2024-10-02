@@ -27,7 +27,6 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.model.entities.*
-import com.example.model.utils.capitalizeFirstLetter
 import com.example.notepad.R
 import com.example.notepad.utils.getColor
 import com.example.notepad.utils.mockNote
@@ -258,7 +257,12 @@ fun TypeTextsItem(
         ) {
             Text(
                 modifier = Modifier.padding(vertical = 4.dp, horizontal = 16.dp),
-                text = formatText.typeText.name.capitalizeFirstLetter(),
+                text = when (formatText.typeText) {
+                    TypeText.TITLE -> stringResource(id = R.string.title)
+                    TypeText.HEADER -> stringResource(id = R.string.header)
+                    TypeText.SUBTITLE -> stringResource(id = R.string.subtitle)
+                    TypeText.BODY -> stringResource(id = R.string.body)
+                },
                 fontSize = formatText.fontSize.sp,
                 fontWeight = if (formatText.isBold) FontWeight.Bold else FontWeight.Normal,
                 color =
