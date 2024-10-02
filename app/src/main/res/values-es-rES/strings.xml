@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">NotePad</string>
+    <string name="notes_title">Notas</string>
+    <string name="search">Buscar</string>
+    <string name="close">Cerrar</string>
+    <string name="delete">Eliminar</string>
+    <string name="pin">Fijar</string>
+    <string name="accept">Aceptar</string>
+    <string name="cancel">Cancelar</string>
+    <string name="delete_question">¿Estás seguro de que deseas eliminar?</string>
+    <string name="select_all">Seleccionar todo</string>
+    <string name="generic_error_msg">Ha ocurrido un error</string>
+    <string name="change_color">Cambiar color</string>
+    <string name="unselect_all">Deseleccionar todo</string>
+    <string name="select_color">Seleccionar color</string>
+    <string name="try_again_later">Por favor, inténtalo de nuevo más tarde</string>
+    <string name="unpin">Desfijar</string>
+    <string name="settings">Configuración</string>
+    <string name="dark_mode">Modo oscuro</string>
+    <string name="copy">Copiar</string>
+    <string name="share">Compartir</string>
+    <string name="text_format">Formato de texto</string>
+    <string name="language">Idioma</string>
+</resources>

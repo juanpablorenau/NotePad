@@ -2,6 +2,7 @@ package com.example.data.di
 
 import com.example.data.repository.NoteRepository
 import com.example.data.repository.PreferencesRepository
+import com.example.data.repository.dto.LanguageDto
 import com.example.data.repository.dto.NoteDto
 import com.example.data.repository.impl.NoteRepositoryImpl
 import com.example.data.repository.impl.PreferencesRepositoryImpl
@@ -28,6 +29,7 @@ class RepositoryModule {
     fun providesPreferencesRepository(
         dataStoreSource: DataStoreSource,
         dispatcher: CoroutineDispatcher,
-    ): PreferencesRepository = PreferencesRepositoryImpl(dataStoreSource, dispatcher)
+        languageDto: LanguageDto,
+    ): PreferencesRepository = PreferencesRepositoryImpl(dataStoreSource, dispatcher, languageDto)
 
 }
