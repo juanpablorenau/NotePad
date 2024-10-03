@@ -1,5 +1,6 @@
 package com.example.notepad.utils
 
+import com.example.model.entities.Cell
 import com.example.model.entities.Note
 import com.example.model.entities.NoteItem
 import com.example.model.entities.NoteColor as AppColor
@@ -25,3 +26,5 @@ val mockNoteItems =
     listOf(NoteItem(text = "Item 1"), NoteItem(text = "Item 2"), NoteItem(text = "Item 3"))
 
 val mockNoteItem = NoteItem(text = "Item 1")
+
+val mockCell = Cell()

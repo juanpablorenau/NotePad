@@ -67,6 +67,10 @@ data class Note(
         }
     })
 
+    fun addTable() = this.copy(items = this.items.toMutableList().apply {
+        add(NoteItem(getUUID(), id, listOf(Pair(Cell(), Cell()))))
+    })
+
 
     fun updateTextField(textField: NoteItem) = copy(items = items.map { current ->
         if (current.id == textField.id) textField

@@ -1,7 +1,10 @@
 package com.example.notepad.ui.detail
 
+import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.RowScope
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.text.BasicTextField
@@ -10,7 +13,12 @@ import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material3.Checkbox
 import androidx.compose.material3.CheckboxDefaults
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.runtime.*
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.focus.FocusRequester
@@ -25,8 +33,10 @@ import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.TextFieldValue
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import com.example.model.entities.Cell
 import com.example.model.entities.NoteItem
 import com.example.model.entities.NoteItemType
+import com.example.notepad.utils.mockCell
 import com.example.notepad.utils.toTextStyle
 
 @Preview(showBackground = true)
@@ -160,4 +170,50 @@ fun TextFieldItem(
         else currentFocusRequester.freeFocus()
         textFieldValue = textFieldValue.copy(selection = TextRange(textFieldValue.text.length))
     }
+}
+
+@Preview(showBackground = true)
+@Composable
+fun TableItem(
+    cells: List<Pair<Cell, Cell>> = listOf(Pair(mockCell, mockCell)),
+    isDarkTheme: Boolean = false,
+) {
+    Column(
+        modifier =
+        Modifier
+            .fillMaxWidth()
+            .padding(horizontal = 24.dp),
+        horizontalAlignment = Alignment.CenterHorizontally,
+    ) {
+        cells.forEach { cell ->
+            Row {
+                TableCell(cell.first, isDarkTheme)
+                TableCell(cell.second, isDarkTheme)
+            }
+        }
+    }
+}
+
+@Preview(showBackground = true)
+@Composable
+fun RowScope.TableCell(
+    cell: Cell = Cell(text = "text"),
+    isDarkTheme: Boolean = false,
+    weight: Float = 1f,
+) {
+    var textFieldValue by remember {
+        mutableStateOf(TextFieldValue(cell.text, TextRange(cell.text.length)))
+    }
+
+    BasicTextField(
+        modifier = Modifier
+            .weight(weight)
+            .border(1.dp, MaterialTheme.colorScheme.onBackground)
+            .padding(8.dp),
+        textStyle = cell.formatText.toTextStyle(isDarkTheme),
+        value = textFieldValue,
+        onValueChange = { newTextFieldValue ->
+            textFieldValue = newTextFieldValue.copy(text = newTextFieldValue.text)
+        },
+    )
 }

@@ -127,6 +127,14 @@ class NoteDetailViewModel @Inject constructor(
         }
     }
 
+    fun addTable(){
+        _uiState.getAndUpdate { state ->
+            with((state.asSuccess())) {
+                copy(note = note.addTable())
+            }
+        }
+    }
+
     fun updateTextField(textField: NoteItem) {
         _uiState.getAndUpdate { state ->
             with((state.asSuccess())) {

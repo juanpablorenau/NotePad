@@ -1,7 +1,15 @@
 package com.example.notepad.ui.detail
 
 import androidx.compose.foundation.background
-import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.fillMaxHeight
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.lazy.rememberLazyListState
@@ -13,7 +21,12 @@ import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.runtime.*
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.focus.FocusDirection
@@ -170,7 +183,7 @@ fun NoteBody(
             when (item.type) {
                 NoteItemType.TEXT -> TextFieldItem(
                     noteItem = item,
-                    isDarkTheme,
+                    isDarkTheme = isDarkTheme,
                     currentFocusRequester = currentFocusRequester,
                     previousFocusRequester = previousFocusRequester,
                     updateTextField = updateTextField,
@@ -179,12 +192,17 @@ fun NoteBody(
 
                 NoteItemType.CHECK_BOX -> CheckBoxItem(
                     noteItem = item,
-                    isDarkTheme,
+                    isDarkTheme = isDarkTheme,
                     currentFocusRequester = currentFocusRequester,
                     previousFocusRequester = previousFocusRequester,
                     addCheckBox = addCheckBox,
                     updateCheckBox = updateCheckBox,
                     deleteCheckBox = deleteCheckBox
+                )
+
+                NoteItemType.TABLE -> TableItem(
+                    cells = item.cells,
+                    isDarkTheme = isDarkTheme,
                 )
             }
         }
