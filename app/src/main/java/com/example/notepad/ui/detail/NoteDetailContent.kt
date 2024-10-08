@@ -179,6 +179,7 @@ fun NoteBody(
         itemsIndexed(notesItems, key = { _, item -> item.id }) { index, item ->
             val currentFocusRequester = focusRequesters[index]
             val previousFocusRequester = focusRequesters.getOrNull(index - 1)
+            val isPreviousItemTable = notesItems.getOrNull(index - 1)?.isTable() ?: false
 
             when (item.type) {
                 NoteItemType.TEXT -> TextFieldItem(
@@ -201,8 +202,9 @@ fun NoteBody(
                 )
 
                 NoteItemType.TABLE -> TableItem(
-                    cells = item.cells,
+                    table = item.table,
                     isDarkTheme = isDarkTheme,
+                    isPreviousItemTable = isPreviousItemTable
                 )
             }
         }

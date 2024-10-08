@@ -10,7 +10,7 @@ data class NoteItem(
     val type: NoteItemType = NoteItemType.TEXT,
     val isFocused: Boolean = false,
     val formatText: FormatText = FormatText(formatTextId = getUUID()),
-    val cells: List<Pair<Cell, Cell>> = listOf(),
+    val table: Pair<Cell, Cell> = Pair(Cell(), Cell())
 ) {
     constructor(id: String, noteId: String) : this(
         id = id,
@@ -18,14 +18,15 @@ data class NoteItem(
         type = NoteItemType.TEXT,
     )
 
-    constructor(id: String, noteId: String, cells: List<Pair<Cell, Cell>>) : this(
+    constructor(id: String, noteId: String, table: Pair<Cell, Cell>) : this(
         id = id,
         noteId = noteId,
         type = NoteItemType.TABLE,
-        cells = cells,
+        table = table,
     )
 
     fun isText() = type == NoteItemType.TEXT
+    fun isTable() = type == NoteItemType.TABLE
 }
 
 data class Cell(

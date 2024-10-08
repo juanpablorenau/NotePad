@@ -1,8 +1,6 @@
 package com.example.notepad.ui.detail
 
-import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.RowScope
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -13,12 +11,7 @@ import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material3.Checkbox
 import androidx.compose.material3.CheckboxDefaults
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
+import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.focus.FocusRequester
@@ -36,8 +29,7 @@ import androidx.compose.ui.unit.dp
 import com.example.model.entities.Cell
 import com.example.model.entities.NoteItem
 import com.example.model.entities.NoteItemType
-import com.example.notepad.utils.mockCell
-import com.example.notepad.utils.toTextStyle
+import com.example.notepad.utils.*
 
 @Preview(showBackground = true)
 @Composable
@@ -67,20 +59,15 @@ fun CheckBoxItem(
             horizontalArrangement = Arrangement.Absolute.Left
         ) {
             Checkbox(
-                checked = isChecked,
-                onCheckedChange = { newChecked ->
+                checked = isChecked, onCheckedChange = { newChecked ->
                     isChecked = newChecked
                     updateCheckBox(
                         noteItem.copy(
-                            text = textFieldValue.text,
-                            isChecked = isChecked,
-                            isFocused = true
+                            text = textFieldValue.text, isChecked = isChecked, isFocused = true
                         )
                     )
-                },
-                colors = CheckboxDefaults.colors(
-                    checkedColor = MaterialTheme.colorScheme.primary,
-                    checkmarkColor = Color.White
+                }, colors = CheckboxDefaults.colors(
+                    checkedColor = MaterialTheme.colorScheme.primary, checkmarkColor = Color.White
                 )
             )
 
@@ -102,9 +89,7 @@ fun CheckBoxItem(
                     textFieldValue = newTextFieldValue.copy(text = newTextFieldValue.text)
                     updateCheckBox(
                         noteItem.copy(
-                            text = textFieldValue.text,
-                            isChecked = isChecked,
-                            isFocused = true
+                            text = textFieldValue.text, isChecked = isChecked, isFocused = true
                         )
                     )
                 },
@@ -175,22 +160,24 @@ fun TextFieldItem(
 @Preview(showBackground = true)
 @Composable
 fun TableItem(
-    cells: List<Pair<Cell, Cell>> = listOf(Pair(mockCell, mockCell)),
+    table: Pair<Cell, Cell> = mockTable,
     isDarkTheme: Boolean = false,
+    isPreviousItemTable: Boolean = false
 ) {
-    Column(
-        modifier =
-        Modifier
+    val color = MaterialTheme.colorScheme.onBackground
+    val hasFirstLongerText = table.first.text.length >= table.second.text.length
+
+    Row(
+        modifier = Modifier
             .fillMaxWidth()
-            .padding(horizontal = 24.dp),
-        horizontalAlignment = Alignment.CenterHorizontally,
+            .padding(horizontal = 24.dp)
+            .topBorder(if (!isPreviousItemTable) 0.5.dp else 0.dp, color = color)
+            .bottomBorder(color = color)
+            .startBorder(color = color)
+            .endBorder(color = color)
     ) {
-        cells.forEach { cell ->
-            Row {
-                TableCell(cell.first, isDarkTheme)
-                TableCell(cell.second, isDarkTheme)
-            }
-        }
+        TableCell(table.first, isDarkTheme, hasFirstLongerText)
+        TableCell(table.second, isDarkTheme, !hasFirstLongerText)
     }
 }
 
@@ -199,17 +186,20 @@ fun TableItem(
 fun RowScope.TableCell(
     cell: Cell = Cell(text = "text"),
     isDarkTheme: Boolean = false,
-    weight: Float = 1f,
+    hasFirstLongerText: Boolean = false,
 ) {
+    val color = MaterialTheme.colorScheme.onBackground
+
     var textFieldValue by remember {
         mutableStateOf(TextFieldValue(cell.text, TextRange(cell.text.length)))
     }
 
     BasicTextField(
         modifier = Modifier
-            .weight(weight)
-            .border(1.dp, MaterialTheme.colorScheme.onBackground)
-            .padding(8.dp),
+            .startBorder(if (!hasFirstLongerText) 0.5.dp else 0.dp, color = color)
+            .endBorder(if (hasFirstLongerText) 0.5.dp else 0.dp, color = color)
+            .padding(8.dp)
+            .weight(1f),
         textStyle = cell.formatText.toTextStyle(isDarkTheme),
         value = textFieldValue,
         onValueChange = { newTextFieldValue ->

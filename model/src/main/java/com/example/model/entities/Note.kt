@@ -68,7 +68,7 @@ data class Note(
     })
 
     fun addTable() = this.copy(items = this.items.toMutableList().apply {
-        add(NoteItem(getUUID(), id, listOf(Pair(Cell(), Cell()))))
+        add(NoteItem(getUUID(), id, Pair(Cell(), Cell())))
     })
 
 
