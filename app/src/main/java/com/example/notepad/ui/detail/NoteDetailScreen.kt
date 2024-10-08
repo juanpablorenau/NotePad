@@ -53,8 +53,8 @@ fun NoteDetailScreen(
                 isDarkTheme = isDarkTheme,
                 addTextField = { viewModel.addTextField() },
                 addCheckBox = { id -> viewModel.addCheckBox(id) },
-                updateTextField = { textField -> viewModel.updateTextField(textField) },
-                updateCheckBox = { checkBox -> viewModel.updateCheckBox(checkBox) },
+                addTable = { viewModel.addTable()},
+                updateNoteItem = { textField -> viewModel.updateNoteItem(textField) },
                 deleteTextField = { id -> viewModel.deleteTextField(id) },
                 deleteCheckBox = { id -> viewModel.deleteCheckBox(id) },
                 copyNote = { viewModel.copyNote() },
@@ -76,8 +76,8 @@ fun SuccessScreen(
     isDarkTheme: Boolean = false,
     addTextField: () -> Unit = {},
     addCheckBox: (String?) -> Unit = {},
-    updateTextField: (NoteItem) -> Unit = {},
-    updateCheckBox: (NoteItem) -> Unit = {},
+    addTable: () -> Unit = {},
+    updateNoteItem: (NoteItem) -> Unit = {},
     deleteTextField: (String) -> Unit = {},
     deleteCheckBox: (String) -> Unit = {},
     copyNote: () -> Unit = {},
@@ -102,8 +102,7 @@ fun SuccessScreen(
                 saveText = saveText,
                 isDarkTheme = isDarkTheme,
                 addCheckBox = addCheckBox,
-                updateTextField = updateTextField,
-                updateCheckBox = updateCheckBox,
+                updateNoteItem = updateNoteItem,
                 deleteTextField = deleteTextField,
                 deleteCheckBox = deleteCheckBox
             )
@@ -114,6 +113,7 @@ fun SuccessScreen(
                 note = note,
                 addTextField = addTextField,
                 addCheckBox = addCheckBox,
+                addTable = addTable,
                 applyFormat =  applyFormat
             )
         },

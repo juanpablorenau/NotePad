@@ -13,7 +13,12 @@ import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.runtime.*
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.focus.FocusDirection
@@ -46,8 +51,7 @@ fun NoteDetailContent(
     saveText: (String) -> Unit = { },
     isDarkTheme: Boolean = false,
     addCheckBox: (String?) -> Unit = {},
-    updateTextField: (NoteItem) -> Unit = {},
-    updateCheckBox: (NoteItem) -> Unit = {},
+    updateNoteItem: (NoteItem) -> Unit = {},
     deleteTextField: (String) -> Unit = {},
     deleteCheckBox: (String) -> Unit = {},
 ) {
@@ -77,8 +81,7 @@ fun NoteDetailContent(
                 notesItems = note.items,
                 isDarkTheme = isDarkTheme,
                 addCheckBox = addCheckBox,
-                updateTextField = updateTextField,
-                updateCheckBox = updateCheckBox,
+                updateNoteItem = updateNoteItem,
                 deleteTextField = deleteTextField,
                 deleteCheckBox = deleteCheckBox
             )
@@ -143,8 +146,7 @@ fun NoteBody(
     notesItems: List<NoteItem> = mockNoteItems,
     isDarkTheme: Boolean = false,
     addCheckBox: (String?) -> Unit = {},
-    updateTextField: (NoteItem) -> Unit = {},
-    updateCheckBox: (NoteItem) -> Unit = {},
+    updateNoteItem: (NoteItem) -> Unit = {},
     deleteTextField: (String) -> Unit = {},
     deleteCheckBox: (String) -> Unit = {},
 ) {
@@ -166,25 +168,33 @@ fun NoteBody(
         itemsIndexed(notesItems, key = { _, item -> item.id }) { index, item ->
             val currentFocusRequester = focusRequesters[index]
             val previousFocusRequester = focusRequesters.getOrNull(index - 1)
+            val isPreviousItemTable = notesItems.getOrNull(index - 1)?.isTable() ?: false
 
             when (item.type) {
                 NoteItemType.TEXT -> TextFieldItem(
                     noteItem = item,
-                    isDarkTheme,
+                    isDarkTheme = isDarkTheme,
                     currentFocusRequester = currentFocusRequester,
                     previousFocusRequester = previousFocusRequester,
-                    updateTextField = updateTextField,
+                    updateNoteItem = updateNoteItem,
                     deleteTextField = deleteTextField
                 )
 
                 NoteItemType.CHECK_BOX -> CheckBoxItem(
                     noteItem = item,
-                    isDarkTheme,
+                    isDarkTheme = isDarkTheme,
                     currentFocusRequester = currentFocusRequester,
                     previousFocusRequester = previousFocusRequester,
                     addCheckBox = addCheckBox,
-                    updateCheckBox = updateCheckBox,
+                    updateNoteItem = updateNoteItem,
                     deleteCheckBox = deleteCheckBox
+                )
+
+                NoteItemType.TABLE -> TableItem(
+                    noteItem = item,
+                    isDarkTheme = isDarkTheme,
+                    isPreviousItemTable = isPreviousItemTable,
+                    updateNoteItem = updateNoteItem
                 )
             }
         }

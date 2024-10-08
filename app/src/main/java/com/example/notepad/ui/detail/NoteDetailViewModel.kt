@@ -127,18 +127,18 @@ class NoteDetailViewModel @Inject constructor(
         }
     }
 
-    fun updateTextField(textField: NoteItem) {
+    fun addTable(){
         _uiState.getAndUpdate { state ->
             with((state.asSuccess())) {
-                copy(note = note.updateTextField(textField))
+                copy(note = note.addTable())
             }
         }
     }
 
-    fun updateCheckBox(checkBox: NoteItem) {
+    fun updateNoteItem(noteItem: NoteItem) {
         _uiState.getAndUpdate { state ->
             with((state.asSuccess())) {
-                copy(note = note.updateCheckbox(checkBox))
+                copy(note = note.updateNoteItem(noteItem))
             }
         }
     }
