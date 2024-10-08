@@ -1,15 +1,7 @@
 package com.example.notepad.ui.detail
 
 import androidx.compose.foundation.background
-import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.PaddingValues
-import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.fillMaxHeight
-import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.lazy.rememberLazyListState
@@ -59,8 +51,7 @@ fun NoteDetailContent(
     saveText: (String) -> Unit = { },
     isDarkTheme: Boolean = false,
     addCheckBox: (String?) -> Unit = {},
-    updateTextField: (NoteItem) -> Unit = {},
-    updateCheckBox: (NoteItem) -> Unit = {},
+    updateNoteItem: (NoteItem) -> Unit = {},
     deleteTextField: (String) -> Unit = {},
     deleteCheckBox: (String) -> Unit = {},
 ) {
@@ -90,8 +81,7 @@ fun NoteDetailContent(
                 notesItems = note.items,
                 isDarkTheme = isDarkTheme,
                 addCheckBox = addCheckBox,
-                updateTextField = updateTextField,
-                updateCheckBox = updateCheckBox,
+                updateNoteItem = updateNoteItem,
                 deleteTextField = deleteTextField,
                 deleteCheckBox = deleteCheckBox
             )
@@ -156,8 +146,7 @@ fun NoteBody(
     notesItems: List<NoteItem> = mockNoteItems,
     isDarkTheme: Boolean = false,
     addCheckBox: (String?) -> Unit = {},
-    updateTextField: (NoteItem) -> Unit = {},
-    updateCheckBox: (NoteItem) -> Unit = {},
+    updateNoteItem: (NoteItem) -> Unit = {},
     deleteTextField: (String) -> Unit = {},
     deleteCheckBox: (String) -> Unit = {},
 ) {
@@ -187,7 +176,7 @@ fun NoteBody(
                     isDarkTheme = isDarkTheme,
                     currentFocusRequester = currentFocusRequester,
                     previousFocusRequester = previousFocusRequester,
-                    updateTextField = updateTextField,
+                    updateNoteItem = updateNoteItem,
                     deleteTextField = deleteTextField
                 )
 
@@ -197,14 +186,15 @@ fun NoteBody(
                     currentFocusRequester = currentFocusRequester,
                     previousFocusRequester = previousFocusRequester,
                     addCheckBox = addCheckBox,
-                    updateCheckBox = updateCheckBox,
+                    updateNoteItem = updateNoteItem,
                     deleteCheckBox = deleteCheckBox
                 )
 
                 NoteItemType.TABLE -> TableItem(
-                    table = item.table,
+                    noteItem = item,
                     isDarkTheme = isDarkTheme,
-                    isPreviousItemTable = isPreviousItemTable
+                    isPreviousItemTable = isPreviousItemTable,
+                    updateNoteItem = updateNoteItem
                 )
             }
         }

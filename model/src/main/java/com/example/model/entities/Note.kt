@@ -71,14 +71,8 @@ data class Note(
         add(NoteItem(getUUID(), id, Pair(Cell(), Cell())))
     })
 
-
-    fun updateTextField(textField: NoteItem) = copy(items = items.map { current ->
-        if (current.id == textField.id) textField
-        else current.copy(isFocused = false)
-    })
-
-    fun updateCheckbox(checkBox: NoteItem) = copy(items = items.map { current ->
-        if (current.id == checkBox.id) checkBox
+    fun updateNoteItem(noteItem: NoteItem) = copy(items = items.map { current ->
+        if (current.id == noteItem.id) noteItem
         else current.copy(isFocused = false)
     })
 
