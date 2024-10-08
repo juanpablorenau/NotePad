@@ -10,7 +10,7 @@ import com.example.domain.usecase.detail.InsertNoteUseCase
 import com.example.domain.usecase.detail.UpdateNoteUseCase
 import com.example.model.entities.FormatText
 import com.example.model.entities.Note
-import com.example.model.entities.NoteColor
+import com.example.model.enums.NoteColor
 import com.example.model.entities.NoteItem
 import com.example.model.utils.getUUID
 import dagger.hilt.android.lifecycle.HiltViewModel

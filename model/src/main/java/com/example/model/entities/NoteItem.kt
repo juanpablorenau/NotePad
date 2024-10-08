@@ -1,5 +1,6 @@
 package com.example.model.entities
 
+import com.example.model.enums.NoteItemType
 import com.example.model.utils.getUUID
 
 data class NoteItem(
@@ -10,7 +11,7 @@ data class NoteItem(
     val type: NoteItemType = NoteItemType.TEXT,
     val isFocused: Boolean = false,
     val formatText: FormatText = FormatText(formatTextId = getUUID()),
-    val table: Pair<Cell, Cell> = Pair(Cell(), Cell())
+    val table: Table = Table(),
 ) {
     constructor(id: String, noteId: String) : this(
         id = id,
@@ -18,30 +19,13 @@ data class NoteItem(
         type = NoteItemType.TEXT,
     )
 
-    constructor(id: String, noteId: String, table: Pair<Cell, Cell>) : this(
+    constructor(id: String, noteId: String, table: Table) : this(
         id = id,
         noteId = noteId,
         type = NoteItemType.TABLE,
-        table = table,
+        table = table.copy(noteItemId = id)
     )
 
     fun isText() = type == NoteItemType.TEXT
     fun isTable() = type == NoteItemType.TABLE
-}
-
-data class Cell(
-    val id: String = "",
-    val text: String = "",
-    val isFocused: Boolean = false,
-    val formatText: FormatText = FormatText(formatTextId = getUUID()),
-) {
-    constructor() : this(
-        text = ""
-    )
-}
-
-enum class NoteItemType {
-    TEXT,
-    CHECK_BOX,
-    TABLE,
 }

@@ -20,8 +20,8 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.model.entities.NoteItem
-import com.example.model.entities.NoteItemType
 import com.example.model.entities.ParagraphType
+import com.example.model.enums.NoteItemType
 import com.example.notepad.utils.getColor
 
 @OptIn(ExperimentalMaterial3Api::class)

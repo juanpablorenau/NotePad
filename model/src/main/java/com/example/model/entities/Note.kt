@@ -1,5 +1,7 @@
 package com.example.model.entities
 
+import com.example.model.enums.NoteColor
+import com.example.model.enums.NoteItemType
 import com.example.model.utils.getUUID
 import com.example.model.utils.normalize
 
@@ -68,7 +70,7 @@ data class Note(
     })
 
     fun addTable() = this.copy(items = this.items.toMutableList().apply {
-        add(NoteItem(getUUID(), id, Pair(Cell(), Cell())))
+        add(NoteItem(getUUID(), id, Table()))
     })
 
     fun updateNoteItem(noteItem: NoteItem) = copy(items = items.map { current ->

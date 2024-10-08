@@ -27,7 +27,7 @@ import androidx.compose.ui.text.input.TextFieldValue
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.example.model.entities.NoteItem
-import com.example.model.entities.NoteItemType
+import com.example.model.enums.NoteItemType
 import com.example.notepad.utils.*
 
 @Preview(showBackground = true)
@@ -165,16 +165,15 @@ fun TableItem(
     updateNoteItem: (NoteItem) -> Unit = {},
 ) {
     with(noteItem.table) {
-
         val color = MaterialTheme.colorScheme.onBackground
-        val hasFirstLongerText = first.text.length >= second.text.length
+        val isStartCellTextLonger = startCell.text.length >= endCell.text.length
 
-        var firstCellTextField by remember {
-            mutableStateOf(TextFieldValue(first.text, TextRange(first.text.length)))
+        var startCellTextField by remember {
+            mutableStateOf(TextFieldValue(startCell.text, TextRange(startCell.text.length)))
         }
 
-        var secondCellTextField by remember {
-            mutableStateOf(TextFieldValue(second.text, TextRange(second.text.length)))
+        var endCellTextField by remember {
+            mutableStateOf(TextFieldValue(endCell.text, TextRange(endCell.text.length)))
         }
 
         Row(
@@ -188,21 +187,22 @@ fun TableItem(
         ) {
             Box(
                 modifier = Modifier
-                    .endBorder(color = if (hasFirstLongerText) color else Color.Transparent)
+                    .endBorder(color = if (isStartCellTextLonger) color else Color.Transparent)
                     .padding(8.dp)
                     .weight(1f),
             ) {
                 BasicTextField(
-                    textStyle = first.formatText.toTextStyle(isDarkTheme),
-                    value = firstCellTextField,
+                    textStyle = startCell.formatText.toTextStyle(isDarkTheme),
+                    value = startCellTextField,
                     onValueChange = { newTextFieldValue ->
-                        firstCellTextField = newTextFieldValue.copy(text = newTextFieldValue.text)
+                        startCellTextField =
+                            newTextFieldValue.copy(text = newTextFieldValue.text)
                         updateNoteItem(
                             noteItem.copy(
                                 table = noteItem.table.copy(
-                                    first = first.copy(text = firstCellTextField.text),
-                                    second = second.copy(text = secondCellTextField.text)
-                                )
+                                    startCell = startCell.copy(text = startCellTextField.text),
+                                    endCell = endCell.copy(text = endCellTextField.text)
+                                ),
                             )
                         )
                     },
@@ -211,26 +211,26 @@ fun TableItem(
 
             Box(
                 modifier = Modifier
-                    .startBorder(color = if (!hasFirstLongerText) color else Color.Transparent)
+                    .startBorder(color = if (!isStartCellTextLonger) color else Color.Transparent)
                     .padding(8.dp)
                     .weight(1f),
             ) {
-            BasicTextField(
-                textStyle = second.formatText.toTextStyle(isDarkTheme),
-                value = secondCellTextField,
-                onValueChange = { newTextFieldValue ->
-                    secondCellTextField = newTextFieldValue.copy(text = newTextFieldValue.text)
-                    updateNoteItem(
-                        noteItem.copy(
-                            table = noteItem.table.copy(
-                                first = first.copy(text = firstCellTextField.text),
-                                second = second.copy(text = secondCellTextField.text)
+                BasicTextField(
+                    textStyle = endCell.formatText.toTextStyle(isDarkTheme),
+                    value = endCellTextField,
+                    onValueChange = { newTextFieldValue ->
+                        endCellTextField = newTextFieldValue.copy(text = newTextFieldValue.text)
+                        updateNoteItem(
+                            noteItem.copy(
+                                table = noteItem.table.copy(
+                                    startCell = startCell.copy(text = startCellTextField.text),
+                                    endCell = endCell.copy(text = endCellTextField.text)
+                                ),
                             )
                         )
-                    )
-                },
-            )
-        }
+                    },
+                )
             }
+        }
     }
 }

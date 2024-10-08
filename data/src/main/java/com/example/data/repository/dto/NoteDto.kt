@@ -6,8 +6,21 @@ import com.example.model.entities.Note
 import javax.inject.Inject
 
 class NoteDto @Inject constructor(
-    private val noteItemDto: NoteItemDto
+    private val noteItemDto: NoteItemDto,
 ) {
+    fun toDomain(noteDb: NoteDb) =
+        with(noteDb) {
+            Note(
+                id = note.id,
+                title = note.title,
+                lightNoteColor = note.lightColor,
+                darkNoteColor = note.darkColor,
+                isPinned = note.isPinned,
+                index = note.index,
+                items = items.map { noteItemDto.toDomain(it) }
+            )
+        }
+
     fun toDb(note: Note) =
         with(note) {
             NoteDb(
@@ -20,19 +33,6 @@ class NoteDto @Inject constructor(
                     index = index
                 ),
                 items = items.map { noteItemDto.toDb(it) }
-            )
-        }
-
-    fun toDomain(noteDb: NoteDb) =
-        with(noteDb) {
-            Note(
-                id = note.id,
-                title = note.title,
-                lightNoteColor = note.lightColor,
-                darkNoteColor = note.darkColor,
-                isPinned = note.isPinned,
-                index = note.index,
-                items = items.map { noteItemDto.typeToDomain(it) }
             )
         }
 }

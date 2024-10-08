@@ -1,14 +1,11 @@
 package com.example.data.source.local.dao
 
-import androidx.room.*
-import com.example.data.model.db.NoteDb
-import com.example.data.model.db.NoteEmbeddedDb
-import com.example.data.model.db.NoteItemDb
+import androidx.room.Dao
 
 @Dao
 interface NoteDao {
 
-    @Transaction
+/*    @Transaction
     @Query("SELECT * FROM Notes")
     suspend fun getNotes(): List<NoteDb>
 
@@ -50,5 +47,5 @@ interface NoteDao {
     suspend fun deleteNoteItems(noteId: String)
 
     @Query("DELETE FROM NoteItems WHERE id = :id")
-    suspend fun deleteNoteItem(id: String)
+    suspend fun deleteNoteItem(id: String)*/
 }

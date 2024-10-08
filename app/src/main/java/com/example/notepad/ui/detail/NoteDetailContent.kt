@@ -36,7 +36,7 @@ import androidx.compose.ui.unit.sp
 import androidx.lifecycle.compose.LifecycleResumeEffect
 import com.example.model.entities.Note
 import com.example.model.entities.NoteItem
-import com.example.model.entities.NoteItemType
+import com.example.model.enums.NoteItemType
 import com.example.notepad.R
 import com.example.notepad.utils.getColor
 import com.example.notepad.utils.mockNote

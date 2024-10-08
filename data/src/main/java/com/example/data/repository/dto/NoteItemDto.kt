@@ -1,43 +1,42 @@
 package com.example.data.repository.dto
 
 import com.example.data.model.db.NoteItemDb
+import com.example.data.model.db.NoteItemEmbeddedDb
 import com.example.model.entities.NoteItem
-import com.example.model.entities.NoteItemType
+import com.example.model.enums.NoteItemType
 import javax.inject.Inject
 
 class NoteItemDto @Inject constructor(
     private val formatTextDto: FormatTextDto,
-    private val noteItemTypeDto: NoteItemTypeDto,
+    private val tableDto: TableDto,
 ) {
-
-    fun typeToDomain(noteItemDb: NoteItemDb) =
-        NoteItem(
-            id = noteItemDb.id,
-            noteId = noteItemDb.noteId,
-            text = noteItemDb.text,
-            isChecked = noteItemDb.isChecked,
-            isFocused = noteItemDb.isFocused,
-            type = noteItemTypeDto.toDomain(noteItemDb.type),
-            formatText = formatTextDto.toDomain(noteItemDb.formatText)
-        )
+    fun toDomain(noteItemDb: NoteItemDb) =
+        with(noteItemDb) {
+            NoteItem(
+                id = noteItem.id,
+                noteId = noteItem.noteId,
+                text = noteItem.text,
+                isChecked = noteItem.isChecked,
+                isFocused = noteItem.isFocused,
+                type = NoteItemType.valueOf(noteItem.type),
+                formatText = formatTextDto.toDomain(formatText),
+                table = tableDto.toDomain(table)
+            )
+        }
 
     fun toDb(noteItem: NoteItem) =
-        NoteItemDb(
-            id = noteItem.id,
-            noteId = noteItem.noteId,
-            text = noteItem.text,
-            isChecked = noteItem.isChecked,
-            isFocused = noteItem.isFocused,
-            type = noteItem.type.name,
-            formatText = formatTextDto.toDb(noteItem.formatText)
-        )
-}
-
-class NoteItemTypeDto @Inject constructor() {
-    fun toDomain(type: String): NoteItemType =
-        when (type) {
-            NoteItemType.TEXT.name -> NoteItemType.TEXT
-            else -> NoteItemType.CHECK_BOX
+        with(noteItem) {
+            NoteItemDb(
+                noteItem = NoteItemEmbeddedDb(
+                    id = id,
+                    noteId = noteId,
+                    text = text,
+                    isChecked = isChecked,
+                    isFocused = isFocused,
+                    type = type.name,
+                ),
+                formatText = formatTextDto.toDb(formatText),
+                table = tableDto.toDb(table)
+            )
         }
 }
-

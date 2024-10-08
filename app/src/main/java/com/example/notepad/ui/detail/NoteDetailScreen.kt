@@ -16,7 +16,7 @@ import com.example.notepad.components.screens.ErrorScreen
 import com.example.notepad.components.screens.LoadingScreen
 import com.example.notepad.utils.getViewModel
 import com.example.notepad.utils.mockNote
-import com.example.model.entities.NoteColor as AppColor
+import com.example.model.enums.NoteColor
 
 @Composable
 fun NoteDetailScreen(
@@ -71,7 +71,7 @@ fun SuccessScreen(
     onBackClick: () -> Unit = {},
     pinUpNote: () -> Unit = {},
     deleteNote: () -> Unit = {},
-    changeColor: (AppColor) -> Unit = {},
+    changeColor: (NoteColor) -> Unit = {},
     saveText: (String) -> Unit = { },
     isDarkTheme: Boolean = false,
     addTextField: () -> Unit = {},

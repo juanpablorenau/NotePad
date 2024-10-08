@@ -17,7 +17,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import com.example.model.entities.Language
+import com.example.model.enums.Language
 import com.example.notepad.R
 import com.example.notepad.theme.DarkSkyBlue
 import com.example.notepad.theme.LightSkyBlue

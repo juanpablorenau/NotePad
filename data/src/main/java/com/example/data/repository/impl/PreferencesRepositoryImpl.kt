@@ -4,7 +4,7 @@ import com.example.data.model.Preference
 import com.example.data.repository.PreferencesRepository
 import com.example.data.repository.dto.LanguageDto
 import com.example.data.source.datastore.DataStoreSource
-import com.example.model.entities.Language
+import com.example.model.enums.Language
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.flowOn

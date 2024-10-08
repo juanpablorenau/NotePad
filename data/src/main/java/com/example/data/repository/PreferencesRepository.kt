@@ -1,6 +1,6 @@
 package com.example.data.repository
 
-import com.example.model.entities.Language
+import com.example.model.enums.Language
 import kotlinx.coroutines.flow.Flow
 
 interface PreferencesRepository {

@@ -7,9 +7,11 @@ import androidx.room.PrimaryKey
 import androidx.room.Relation
 
 data class NoteDb(
-    @Embedded val note: NoteEmbeddedDb,
+    @Embedded
+    val note: NoteEmbeddedDb,
 
     @Relation(
+        entity = NoteItemEmbeddedDb::class,
         parentColumn = "id",
         entityColumn = "noteId"
     )
@@ -19,6 +21,7 @@ data class NoteDb(
 @Entity(tableName = "Notes")
 data class NoteEmbeddedDb(
     @PrimaryKey val id: String,
+
     @ColumnInfo(name = "title") val title: String = "New Title",
     @ColumnInfo(name = "lightColor") val lightColor: String = "",
     @ColumnInfo(name = "darkColor") val darkColor: String = "",

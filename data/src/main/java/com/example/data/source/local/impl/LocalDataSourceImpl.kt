@@ -13,24 +13,24 @@ class LocalDataSourceImpl @Inject constructor(
 ) : LocalDataSource {
 
     override suspend fun getNotes(): List<NoteDb> =
-        dispatcher { noteDao.getNotes() }
+        dispatcher { listOf() }
 
     override suspend fun getNoteById(id: String): NoteDb? =
-        dispatcher { noteDao.getNoteById(id) }
+        dispatcher {null }
 
     override suspend fun insertNote(note: NoteDb) {
-        dispatcher { noteDao.insertNote(note) }
+        dispatcher {  }
     }
 
     override suspend fun updateNote(note: NoteDb) {
-        dispatcher { noteDao.updateNote(note) }
+        dispatcher {  }
     }
 
     override suspend fun deleteNote(id: String) {
-        dispatcher { noteDao.deleteNote(id) }
+        dispatcher {  }
     }
 
     override suspend fun deleteNoteItem(id: String) {
-        dispatcher { noteDao.deleteNoteItem(id) }
+        dispatcher {  }
     }
 }
