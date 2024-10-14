@@ -6,7 +6,6 @@ import com.example.data.source.local.FormatTextDataSource
 import com.example.data.source.local.NoteItemDataSource
 import com.example.data.source.local.TableDataSource
 import com.example.data.source.local.dao.NoteItemDao
-import com.example.data.utils.tryRoom
 import javax.inject.Inject
 
 class NoteItemDataSourceImpl @Inject constructor(
@@ -16,9 +15,9 @@ class NoteItemDataSourceImpl @Inject constructor(
 ) : NoteItemDataSource {
 
     override suspend fun insertNoteItem(noteItem: NoteItemDb) {
-        tryRoom(this.toString()) { noteItemDao.insertNoteItem(noteItem.noteItem) }
-        if (noteItem.table != null) tableDataSource.insertTable(noteItem.table)
+        noteItemDao.insertNoteItem(noteItem.noteItem)
         formatTextDataSource.insertFormatText(noteItem.formatText)
+        if (noteItem.table != null) tableDataSource.insertTable(noteItem.table)
     }
 
     override suspend fun deleteNoteItem(noteItem: NoteItemEmbeddedDb) {

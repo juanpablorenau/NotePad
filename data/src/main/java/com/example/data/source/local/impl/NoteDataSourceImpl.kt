@@ -5,7 +5,6 @@ import com.example.data.model.db.NoteDb
 import com.example.data.source.local.NoteDataSource
 import com.example.data.source.local.NoteItemDataSource
 import com.example.data.source.local.dao.NoteDao
-import com.example.data.utils.tryRoom
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.invoke
 import javax.inject.Inject
@@ -16,16 +15,14 @@ class NoteDataSourceImpl @Inject constructor(
     private val dispatcher: CoroutineDispatcher,
 ) : NoteDataSource {
 
-    override suspend fun getNotes(): List<NoteDb> =
-        dispatcher { noteDao.getNotes() }
+    override suspend fun getNotes(): List<NoteDb> = dispatcher { noteDao.getNotes() }
 
-    override suspend fun getNoteById(id: String): NoteDb? =
-        dispatcher { noteDao.getNoteById(id) }
+    override suspend fun getNoteById(id: String): NoteDb? = dispatcher { noteDao.getNoteById(id) }
 
     @Transaction
     override suspend fun insertNote(note: NoteDb) {
         dispatcher {
-            tryRoom(this.toString()) { noteDao.insertNote(note.note) }
+            noteDao.insertNote(note.note)
             note.items.forEach { currentItem ->
                 noteItemDataSource.insertNoteItem(currentItem)
             }
@@ -35,7 +32,7 @@ class NoteDataSourceImpl @Inject constructor(
     @Transaction
     override suspend fun updateNote(note: NoteDb) {
         dispatcher {
-            tryRoom(this.toString()) { noteDao.updateNote(note.note) }
+            noteDao.updateNote(note.note)
             note.items.forEach { currentItem ->
                 noteItemDataSource.insertNoteItem(currentItem)
             }
