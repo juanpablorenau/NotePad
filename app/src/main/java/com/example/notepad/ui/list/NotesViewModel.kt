@@ -157,7 +157,6 @@ class NotesViewModel @Inject constructor(
             action()
         } catch (e: Exception) {
             setErrorState()
-            Log.e("ROOM ERROR", e.toString())
         }
     }
 }

@@ -22,7 +22,7 @@ data class NoteItemDb(
         parentColumn = "id",
         entityColumn = "noteItemId"
     )
-    val table: TableDb,
+    val table: TableDb?,
 )
 
 @Entity(tableName = "NoteItems")

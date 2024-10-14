@@ -1,7 +1,7 @@
 package com.example.model.entities
 
 data class FormatText(
-    val id: String,
+    val id: String = "",
     val formatTextId: String = "",
     val typeText: TypeText = TypeText.BODY,
     val fontSize: Int = 16,

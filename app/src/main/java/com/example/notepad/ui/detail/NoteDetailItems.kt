@@ -27,13 +27,12 @@ import androidx.compose.ui.text.input.TextFieldValue
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.example.model.entities.NoteItem
-import com.example.model.enums.NoteItemType
 import com.example.notepad.utils.*
 
 @Preview(showBackground = true)
 @Composable
 fun CheckBoxItem(
-    noteItem: NoteItem = NoteItem(type = NoteItemType.CHECK_BOX),
+    noteItem: NoteItem = mockCheckBox,
     isDarkTheme: Boolean = false,
     currentFocusRequester: FocusRequester = FocusRequester(),
     previousFocusRequester: FocusRequester? = null,
@@ -117,7 +116,7 @@ fun CheckBoxItem(
 @Preview(showBackground = true)
 @Composable
 fun TextFieldItem(
-    noteItem: NoteItem = NoteItem(text = "Sample Text", type = NoteItemType.TEXT),
+    noteItem: NoteItem = mockNoteItem,
     isDarkTheme: Boolean = false,
     currentFocusRequester: FocusRequester = FocusRequester(),
     previousFocusRequester: FocusRequester? = null,
@@ -164,72 +163,74 @@ fun TableItem(
     isPreviousItemTable: Boolean = false,
     updateNoteItem: (NoteItem) -> Unit = {},
 ) {
-    with(noteItem.table) {
-        val color = MaterialTheme.colorScheme.onBackground
-        val isStartCellTextLonger = startCell.text.length >= endCell.text.length
+    noteItem.table?.let { table ->
+        with(table) {
+            val color = MaterialTheme.colorScheme.onBackground
+            val isStartCellTextLonger = startCell.text.length >= endCell.text.length
 
-        var startCellTextField by remember {
-            mutableStateOf(TextFieldValue(startCell.text, TextRange(startCell.text.length)))
-        }
-
-        var endCellTextField by remember {
-            mutableStateOf(TextFieldValue(endCell.text, TextRange(endCell.text.length)))
-        }
-
-        Row(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(horizontal = 24.dp)
-                .topBorder(if (!isPreviousItemTable) 0.5.dp else 0.dp, color = color)
-                .bottomBorder(color = color)
-                .startBorder(color = color)
-                .endBorder(color = color)
-        ) {
-            Box(
-                modifier = Modifier
-                    .endBorder(color = if (isStartCellTextLonger) color else Color.Transparent)
-                    .padding(8.dp)
-                    .weight(1f),
-            ) {
-                BasicTextField(
-                    textStyle = startCell.formatText.toTextStyle(isDarkTheme),
-                    value = startCellTextField,
-                    onValueChange = { newTextFieldValue ->
-                        startCellTextField =
-                            newTextFieldValue.copy(text = newTextFieldValue.text)
-                        updateNoteItem(
-                            noteItem.copy(
-                                table = noteItem.table.copy(
-                                    startCell = startCell.copy(text = startCellTextField.text),
-                                    endCell = endCell.copy(text = endCellTextField.text)
-                                ),
-                            )
-                        )
-                    },
-                )
+            var startCellTextField by remember {
+                mutableStateOf(TextFieldValue(startCell.text, TextRange(startCell.text.length)))
             }
 
-            Box(
+            var endCellTextField by remember {
+                mutableStateOf(TextFieldValue(endCell.text, TextRange(endCell.text.length)))
+            }
+
+            Row(
                 modifier = Modifier
-                    .startBorder(color = if (!isStartCellTextLonger) color else Color.Transparent)
-                    .padding(8.dp)
-                    .weight(1f),
+                    .fillMaxWidth()
+                    .padding(horizontal = 24.dp)
+                    .topBorder(if (!isPreviousItemTable) 0.5.dp else 0.dp, color = color)
+                    .bottomBorder(color = color)
+                    .startBorder(color = color)
+                    .endBorder(color = color)
             ) {
-                BasicTextField(
-                    textStyle = endCell.formatText.toTextStyle(isDarkTheme),
-                    value = endCellTextField,
-                    onValueChange = { newTextFieldValue ->
-                        endCellTextField = newTextFieldValue.copy(text = newTextFieldValue.text)
-                        updateNoteItem(
-                            noteItem.copy(
-                                table = noteItem.table.copy(
-                                    startCell = startCell.copy(text = startCellTextField.text),
-                                    endCell = endCell.copy(text = endCellTextField.text)
-                                ),
+                Box(
+                    modifier = Modifier
+                        .endBorder(color = if (isStartCellTextLonger) color else Color.Transparent)
+                        .padding(8.dp)
+                        .weight(1f),
+                ) {
+                    BasicTextField(
+                        textStyle = startCell.formatText.toTextStyle(isDarkTheme),
+                        value = startCellTextField,
+                        onValueChange = { newTextFieldValue ->
+                            startCellTextField =
+                                newTextFieldValue.copy(text = newTextFieldValue.text)
+                            updateNoteItem(
+                                noteItem.copy(
+                                    table = table.copy(
+                                        startCell = startCell.copy(text = startCellTextField.text),
+                                        endCell = endCell.copy(text = endCellTextField.text)
+                                    ),
+                                )
                             )
-                        )
-                    },
-                )
+                        },
+                    )
+                }
+
+                Box(
+                    modifier = Modifier
+                        .startBorder(color = if (!isStartCellTextLonger) color else Color.Transparent)
+                        .padding(8.dp)
+                        .weight(1f),
+                ) {
+                    BasicTextField(
+                        textStyle = endCell.formatText.toTextStyle(isDarkTheme),
+                        value = endCellTextField,
+                        onValueChange = { newTextFieldValue ->
+                            endCellTextField = newTextFieldValue.copy(text = newTextFieldValue.text)
+                            updateNoteItem(
+                                noteItem.copy(
+                                    table = table.copy(
+                                        startCell = startCell.copy(text = startCellTextField.text),
+                                        endCell = endCell.copy(text = endCellTextField.text)
+                                    ),
+                                )
+                            )
+                        },
+                    )
+                }
             }
         }
     }

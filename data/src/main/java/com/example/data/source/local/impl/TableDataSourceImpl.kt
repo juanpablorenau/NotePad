@@ -4,6 +4,7 @@ import com.example.data.model.db.TableDb
 import com.example.data.source.local.CellDataSource
 import com.example.data.source.local.TableDataSource
 import com.example.data.source.local.dao.TableDao
+import com.example.data.utils.tryRoom
 import javax.inject.Inject
 
 class TableDataSourceImpl @Inject constructor(
@@ -11,16 +12,9 @@ class TableDataSourceImpl @Inject constructor(
     private val cellDataSource: CellDataSource,
 ) : TableDataSource {
     override suspend fun insertTable(table: TableDb) {
-        tableDao.insertTable(table.table)
+        tryRoom(this.toString()) { tableDao.insertTable(table.table) }
         table.cells.forEach { currentCell ->
             cellDataSource.insertCell(currentCell)
-        }
-    }
-
-    override suspend fun updateTable(table: TableDb) {
-        tableDao.updateTable(table.table)
-        table.cells.forEach { currentCell ->
-            cellDataSource.updateCell(currentCell)
         }
     }
 

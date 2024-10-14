@@ -1,7 +1,6 @@
 package com.example.model.entities
 
 import com.example.model.enums.NoteColor
-import com.example.model.enums.NoteItemType
 import com.example.model.utils.getUUID
 import com.example.model.utils.normalize
 
@@ -18,8 +17,7 @@ data class Note(
     constructor(id: String, index: Int) : this(
         id = id,
         index = index,
-        items = listOf(NoteItem(id = getUUID(), noteId = id, isFocused = true))
-
+        items = listOf(NoteItem(id = getUUID(), noteId = id))
     )
 
     fun contains(query: String) = containsInTitle(query) || containsInItems(query)
@@ -31,7 +29,7 @@ data class Note(
         items.any { it.text.normalize().contains(query.normalize(), ignoreCase = true) }
 
     fun addTextField() = this.copy(items = items.toMutableList().apply {
-        if (isEmpty()) add(NoteItem(id = getUUID(), noteId = id, isFocused = true))
+        if (isEmpty()) add(NoteItem(id = getUUID(), noteId = id))
         else {
             val focusedIndex = indexOfFirst { it.isFocused }
 
@@ -39,19 +37,14 @@ data class Note(
                 val updatedItems = map { it.copy(isFocused = false) }
                 clear()
                 addAll(updatedItems)
-                add(focusedIndex + 1, NoteItem(id = getUUID(), noteId = id, isFocused = true))
+                add(focusedIndex + 1, NoteItem(id = getUUID(), noteId = id))
             }
         }
     })
 
     fun addCheckbox(noteItemId: String?) = this.copy(items = this.items.toMutableList().apply {
-        if (isEmpty()) {
-            add(
-                NoteItem(
-                    id = getUUID(), noteId = id, type = NoteItemType.CHECK_BOX, isFocused = true
-                )
-            )
-        } else {
+        if (isEmpty()) add(NoteItem(id = getUUID(), noteId = id, isChecked = false))
+        else {
             val focusedIndex = indexOfFirst { it.isFocused }
             val updatedItems = map { it.copy(isFocused = false) }
 
@@ -61,16 +54,12 @@ data class Note(
             val index = if (noteItemId != null) indexOfFirst { item -> item.id == noteItemId } + 1
             else focusedIndex + 1
 
-            add(
-                index, NoteItem(
-                    id = getUUID(), noteId = id, type = NoteItemType.CHECK_BOX, isFocused = true
-                )
-            )
+            add(index, NoteItem(id = getUUID(), noteId = id, isChecked = false))
         }
     })
 
     fun addTable() = this.copy(items = this.items.toMutableList().apply {
-        add(NoteItem(getUUID(), id, Table()))
+        add(NoteItem(getUUID(), id, Table(id = getUUID())))
     })
 
     fun updateNoteItem(noteItem: NoteItem) = copy(items = items.map { current ->
@@ -118,6 +107,7 @@ data class Note(
                 text = it.text,
                 type = it.type,
                 isChecked = it.isChecked,
+                formatText = it.formatText,
             )
         })
 }

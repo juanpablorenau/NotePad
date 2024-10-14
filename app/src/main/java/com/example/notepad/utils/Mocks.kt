@@ -1,6 +1,5 @@
 package com.example.notepad.utils
 
-import com.example.model.entities.Cell
 import com.example.model.entities.Note
 import com.example.model.entities.NoteItem
 import com.example.model.enums.NoteColor as AppColor
@@ -17,7 +16,5 @@ val mockNote by lazy {
 }
 
 val mockNoteItems by lazy { listOf(mockNoteItem, mockNoteItem, mockNoteItem) }
-val mockNoteItem by lazy { NoteItem(text = "Item 1") }
-
-val mockCell by lazy { Cell(text = "Alex") }
-val mockTable by lazy { Pair(mockCell, mockCell) }
+val mockNoteItem by lazy { NoteItem(id = "1", noteId = "1") }
+val mockCheckBox by lazy { NoteItem(id = "1", noteId = "1", isChecked = true) }

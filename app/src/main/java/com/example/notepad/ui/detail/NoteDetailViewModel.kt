@@ -1,6 +1,5 @@
 package com.example.notepad.ui.detail
 
-import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.domain.usecase.detail.DeleteNoteItemUseCase
@@ -10,8 +9,8 @@ import com.example.domain.usecase.detail.InsertNoteUseCase
 import com.example.domain.usecase.detail.UpdateNoteUseCase
 import com.example.model.entities.FormatText
 import com.example.model.entities.Note
-import com.example.model.enums.NoteColor
 import com.example.model.entities.NoteItem
+import com.example.model.enums.NoteColor
 import com.example.model.utils.getUUID
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.CoroutineDispatcher
@@ -28,7 +27,7 @@ sealed class NoteDetailUiState {
     data class Success(val note: Note) : NoteDetailUiState()
     data object Error : NoteDetailUiState()
 
-    fun  asSuccess() = this as Success
+    fun asSuccess() = this as Success
 }
 
 @HiltViewModel
@@ -98,7 +97,12 @@ class NoteDetailViewModel @Inject constructor(
     fun changeColor(color: NoteColor) {
         _uiState.getAndUpdate { state ->
             with((state.asSuccess())) {
-                copy(note = note.copy(lightNoteColor = color.lightColor, darkNoteColor = color.darkColor))
+                copy(
+                    note = note.copy(
+                        lightNoteColor = color.lightColor,
+                        darkNoteColor = color.darkColor
+                    )
+                )
             }
         }
     }
@@ -127,7 +131,7 @@ class NoteDetailViewModel @Inject constructor(
         }
     }
 
-    fun addTable(){
+    fun addTable() {
         _uiState.getAndUpdate { state ->
             with((state.asSuccess())) {
                 copy(note = note.addTable())
@@ -185,7 +189,6 @@ class NoteDetailViewModel @Inject constructor(
             action()
         } catch (e: Exception) {
             setErrorState()
-            Log.e("ROOM ERROR", e.toString())
         }
     }
 }

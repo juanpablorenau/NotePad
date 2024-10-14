@@ -5,6 +5,5 @@ import com.example.data.model.db.NoteItemEmbeddedDb
 
 interface NoteItemDataSource {
     suspend fun insertNoteItem(noteItem: NoteItemDb)
-    suspend fun updateNoteItem(noteItem: NoteItemDb)
     suspend fun deleteNoteItem(noteItem: NoteItemEmbeddedDb)
 }

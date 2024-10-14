@@ -5,6 +5,7 @@ import com.example.data.model.db.NoteDb
 import com.example.data.source.local.NoteDataSource
 import com.example.data.source.local.NoteItemDataSource
 import com.example.data.source.local.dao.NoteDao
+import com.example.data.utils.tryRoom
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.invoke
 import javax.inject.Inject
@@ -24,7 +25,7 @@ class NoteDataSourceImpl @Inject constructor(
     @Transaction
     override suspend fun insertNote(note: NoteDb) {
         dispatcher {
-            noteDao.insertNote(note.note)
+            tryRoom(this.toString()) { noteDao.insertNote(note.note) }
             note.items.forEach { currentItem ->
                 noteItemDataSource.insertNoteItem(currentItem)
             }
@@ -34,14 +35,14 @@ class NoteDataSourceImpl @Inject constructor(
     @Transaction
     override suspend fun updateNote(note: NoteDb) {
         dispatcher {
-            noteDao.updateNote(note.note)
+            tryRoom(this.toString()) { noteDao.updateNote(note.note) }
             note.items.forEach { currentItem ->
-                noteItemDataSource.updateNoteItem(currentItem)
+                noteItemDataSource.insertNoteItem(currentItem)
             }
         }
     }
 
     override suspend fun deleteNote(id: String) {
-        dispatcher {  }
+        dispatcher { }
     }
 }

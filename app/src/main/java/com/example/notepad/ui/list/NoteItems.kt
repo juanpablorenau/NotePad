@@ -21,14 +21,15 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.model.entities.NoteItem
 import com.example.model.entities.ParagraphType
-import com.example.model.enums.NoteItemType
 import com.example.notepad.utils.getColor
+import com.example.notepad.utils.mockCheckBox
+import com.example.notepad.utils.mockNoteItem
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Preview(showBackground = true)
 @Composable
 fun CheckBoxItem(
-    noteItem: NoteItem = NoteItem(type = NoteItemType.CHECK_BOX),
+    noteItem: NoteItem = mockCheckBox,
     isDarkTheme: Boolean = false,
 ) {
     val color = getColor(
@@ -94,7 +95,7 @@ fun CheckBoxItem(
 @Preview(showBackground = true)
 @Composable
 fun TextFieldItem(
-    noteItem: NoteItem = NoteItem(text = "Sample Text", type = NoteItemType.TEXT),
+    noteItem: NoteItem = mockNoteItem,
     isDarkTheme: Boolean = false,
 ) {
     val color = getColor(

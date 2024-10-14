@@ -45,22 +45,23 @@ fun NoteDetailBottomBar(
 ) {
     val showBottomSheet = remember { mutableStateOf(false) }
     val changeBottomSheetState = { value: Boolean -> showBottomSheet.value = value }
-    val noteItem = note.items.find { it.isFocused } ?: NoteItem()
 
-    if (showBottomSheet.value) {
-        TextFormatComponent(
-            noteItem = noteItem,
-            isDarkTheme = isDarkTheme,
-            changeBottomSheetState = changeBottomSheetState,
-            applyFormat = applyFormat
-        )
-    } else {
-        BottomOptions(
-            changeBottomSheetState = changeBottomSheetState,
-            addTextField = addTextField,
-            addCheckBox = addCheckBox,
-            addTable = addTable
-        )
+    note.items.find { it.isFocused }?.let { noteItem ->
+        if (showBottomSheet.value) {
+            TextFormatComponent(
+                noteItem = noteItem,
+                isDarkTheme = isDarkTheme,
+                changeBottomSheetState = changeBottomSheetState,
+                applyFormat = applyFormat
+            )
+        } else {
+            BottomOptions(
+                changeBottomSheetState = changeBottomSheetState,
+                addTextField = addTextField,
+                addCheckBox = addCheckBox,
+                addTable = addTable
+            )
+        }
     }
 }
 

@@ -8,5 +8,12 @@ data class Cell(
     val text: String = "",
     val isFocused: Boolean = false,
     val isStartCell: Boolean = false,
-    val formatText: FormatText = FormatText(id = getUUID(), formatTextId = id),
-)
+    val formatText: FormatText,
+) {
+    constructor(id: String, tableId: String, isStartCell: Boolean) : this(
+        id = id,
+        tableId = tableId,
+        isStartCell = isStartCell,
+        formatText = FormatText(id = getUUID(), formatTextId = id)
+    )
+}

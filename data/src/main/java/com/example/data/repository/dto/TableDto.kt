@@ -8,21 +8,25 @@ import javax.inject.Inject
 class TableDto @Inject constructor(
     private val cellDto: CellDto,
 ) {
-    fun toDomain(tableDb: TableDb) =
-        with(tableDb) {
-            Table(
-                id = table.id,
-                noteItemId = table.noteItemId,
-                startCell = cellDto.toDomain(cells[0]),
-                endCell = cellDto.toDomain(cells[1]),
-            )
-        }
+    fun toDomain(tableDb: TableDb?) =
+       tableDb?.let { tableNotNull ->
+           with(tableNotNull) {
+               Table(
+                   id = table.id,
+                   noteItemId = table.noteItemId,
+                   startCell = cellDto.toDomain(cells[0]),
+                   endCell = cellDto.toDomain(cells[1]),
+               )
+           }
+       }
 
-    fun toDb(table: Table) =
-        with(table) {
-            TableDb(
-                table = TableEmbeddedDb(id = id, noteItemId = noteItemId),
-                cells = listOf(cellDto.toDb(startCell), cellDto.toDb(endCell))
-            )
-        }
+    fun toDb(table: Table?) =
+        if (table == null) null
+        else
+            with(table) {
+                TableDb(
+                    table = TableEmbeddedDb(id = id, noteItemId = noteItemId),
+                    cells = listOf(cellDto.toDb(startCell), cellDto.toDb(endCell))
+                )
+            }
 }
