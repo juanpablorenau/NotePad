@@ -20,7 +20,6 @@ class CellDto @Inject constructor(
             )
         }
 
-
     fun toDb(cell: Cell) =
         with(cell) {
             CellDb(

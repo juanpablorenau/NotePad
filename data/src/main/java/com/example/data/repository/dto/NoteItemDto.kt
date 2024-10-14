@@ -36,7 +36,7 @@ class NoteItemDto @Inject constructor(
                     type = type.name,
                 ),
                 formatText = formatTextDto.toDb(formatText),
-                table = tableDto.toDb(table)
+                table = tableDto.toDb(table),
             )
         }
 }

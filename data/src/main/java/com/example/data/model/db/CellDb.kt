@@ -4,12 +4,17 @@ import androidx.room.ColumnInfo
 import androidx.room.Embedded
 import androidx.room.Entity
 import androidx.room.PrimaryKey
+import androidx.room.Relation
 
 data class CellDb(
     @Embedded
     val cell: CellEmbeddedDb,
 
-    @Embedded
+    @Relation(
+        entity = FormatTextDb::class,
+        parentColumn = "id",
+        entityColumn = "formatTextId"
+    )
     val formatText: FormatTextDb,
 )
 

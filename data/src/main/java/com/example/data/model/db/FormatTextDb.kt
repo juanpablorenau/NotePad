@@ -6,8 +6,9 @@ import androidx.room.PrimaryKey
 
 @Entity(tableName = "FormatTexts")
 data class FormatTextDb(
-    @PrimaryKey val formatTextId: String = "",
+    @PrimaryKey val id: String = "",
 
+    @ColumnInfo(name = "formatTextId") val formatTextId: String = "",
     @ColumnInfo(name = "typeText") val typeText: String = "",
     @ColumnInfo(name = "fontSize") val fontSize: Int = 16,
     @ColumnInfo(name = "isBold") val isBold: Boolean = false,

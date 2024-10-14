@@ -8,5 +8,5 @@ data class Cell(
     val text: String = "",
     val isFocused: Boolean = false,
     val isStartCell: Boolean = false,
-    val formatText: FormatText = FormatText(formatTextId = getUUID()),
+    val formatText: FormatText = FormatText(id = getUUID(), formatTextId = id),
 )

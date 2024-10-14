@@ -20,5 +20,9 @@ import com.example.data.model.db.TableEmbeddedDb
     exportSchema = false
 )
 abstract class AppDatabase : RoomDatabase() {
-    abstract fun notePadDao(): NoteDao
+    abstract fun noteDao(): NoteDao
+    abstract fun noteItemDao(): NoteItemDao
+    abstract fun formatTextDao(): FormatTextDao
+    abstract fun tableDao(): TableDao
+    abstract fun cellDao(): CellDao
 }

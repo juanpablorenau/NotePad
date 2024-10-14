@@ -10,8 +10,8 @@ data class NoteItem(
     val isChecked: Boolean = false,
     val type: NoteItemType = NoteItemType.TEXT,
     val isFocused: Boolean = false,
-    val formatText: FormatText = FormatText(formatTextId = getUUID()),
-    val table: Table = Table(),
+    val formatText: FormatText = FormatText(id = getUUID(), formatTextId = id),
+    val table: Table = Table(id = getUUID(), noteItemId = id),
 ) {
     constructor(id: String, noteId: String) : this(
         id = id,

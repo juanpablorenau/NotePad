@@ -2,7 +2,7 @@ package com.example.data.repository.impl
 
 import com.example.data.repository.NoteRepository
 import com.example.data.repository.dto.NoteDto
-import com.example.data.source.local.LocalDataSource
+import com.example.data.source.local.NoteDataSource
 import com.example.model.entities.Note
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.async
@@ -14,45 +14,44 @@ import kotlinx.coroutines.withContext
 import javax.inject.Inject
 
 class NoteRepositoryImpl @Inject constructor(
-    private val localDataSource: LocalDataSource,
+    private val noteDataSource: NoteDataSource,
     private val dispatcher: CoroutineDispatcher,
     private val noteDto: NoteDto,
 ) : NoteRepository {
 
     override fun getNotes(): Flow<List<Note>> = flow {
-        localDataSource.getNotes().map { noteDto.toDomain(it) }.also { emit(it) }
+        noteDataSource.getNotes().map { noteDto.toDomain(it) }.also { emit(it) }
     }.flowOn(dispatcher)
 
     override fun getNoteById(id: String): Flow<Note> = flow {
-        localDataSource.getNoteById(id)?.also { emit(noteDto.toDomain(it)) }
+        noteDataSource.getNoteById(id)?.also { emit(noteDto.toDomain(it)) }
             ?: throw Exception("Note $id not found")
     }.flowOn(dispatcher)
 
     override suspend fun insertNote(note: Note) {
-        withContext(dispatcher) { localDataSource.insertNote(noteDto.toDb(note)) }
+        withContext(dispatcher) { noteDataSource.insertNote(noteDto.toDb(note)) }
     }
 
     override suspend fun updateNote(note: Note) {
-        withContext(dispatcher) { localDataSource.updateNote(noteDto.toDb(note)) }
+        withContext(dispatcher) { noteDataSource.updateNote(noteDto.toDb(note)) }
     }
 
     override suspend fun updateNotes(notes: List<Note>) {
         withContext(dispatcher) {
-            notes.map { async { localDataSource.updateNote(noteDto.toDb(it)) } }.awaitAll()
+            notes.map { async { noteDataSource.updateNote(noteDto.toDb(it)) } }.awaitAll()
         }
     }
 
     override suspend fun deleteNote(id: String) {
-        withContext(dispatcher) { localDataSource.deleteNote(id) }
+        withContext(dispatcher) { noteDataSource.deleteNote(id) }
     }
 
     override suspend fun deleteNotes(ids: List<String>) {
         withContext(dispatcher) {
-            ids.map { async { localDataSource.deleteNote(it) } }.awaitAll()
+            ids.map { async { noteDataSource.deleteNote(it) } }.awaitAll()
         }
     }
 
     override suspend fun deleteNoteItem(id: String) {
-        withContext(dispatcher) { localDataSource.deleteNoteItem(id) }
     }
 }

@@ -50,7 +50,10 @@ class NotesViewModel @Inject constructor(
     fun getNotes() {
         viewModelScope.launch(dispatcher) {
             getNotesUseCase()
-                .catch { setErrorState() }
+                .catch {
+                    Log.e("ROOM ERROR", it.toString())
+                    setErrorState()
+                }
                 .collect { notes -> setSuccessState(getSortedNotes(notes)) }
         }
     }

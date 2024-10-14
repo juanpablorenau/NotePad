@@ -10,7 +10,11 @@ data class NoteItemDb(
     @Embedded
     val noteItem: NoteItemEmbeddedDb,
 
-    @Embedded
+    @Relation(
+        entity = FormatTextDb::class,
+        parentColumn = "id",
+        entityColumn = "formatTextId"
+    )
     val formatText: FormatTextDb,
 
     @Relation(

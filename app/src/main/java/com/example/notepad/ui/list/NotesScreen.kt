@@ -50,7 +50,7 @@ fun NotesScreen(
 
     LifecycleResumeEffect(Unit) {
         viewModel.getNotes()
-        onPauseOrDispose { viewModel.updateNotes() }
+        onPauseOrDispose { if (uiState is NotesUiState.Success) viewModel.updateNotes() }
     }
 
     when (val state = uiState) {
