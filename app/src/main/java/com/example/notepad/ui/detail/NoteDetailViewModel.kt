@@ -171,9 +171,9 @@ class NoteDetailViewModel @Inject constructor(
         }
     }
 
-    fun copyNote() {
+    fun duplicateNote() {
         updateNote()
-        insertNote(getNote().copy(getUUID()))
+        insertNote(getNote().duplicate())
     }
 
     fun applyFormat(formatText: FormatText) {

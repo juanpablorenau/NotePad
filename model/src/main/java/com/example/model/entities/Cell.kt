@@ -20,4 +20,16 @@ data class Cell(
 
     fun containsInCell(query: String) =
         text.normalize().contains(query.normalize(), ignoreCase = true)
+
+    fun duplicate(newTableId: String): Cell {
+        val newCellId = getUUID()
+        return Cell(
+            id = newCellId,
+            tableId = newTableId,
+            text = text,
+            isFocused = isFocused,
+            isStartCell = isStartCell,
+            formatText = formatText.duplicate(newCellId)
+        )
+    }
 }

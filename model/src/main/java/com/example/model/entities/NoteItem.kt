@@ -48,4 +48,18 @@ data class NoteItem(
         table?.let { tab ->
             tab.startCell.containsInCell(query) || tab.endCell.containsInCell(query)
         } ?: false
+
+    fun duplicate(newNoteId: String): NoteItem {
+        val newNoteItemId = getUUID()
+        return NoteItem(
+            id = newNoteItemId,
+            noteId = newNoteId,
+            text = text,
+            isChecked = isChecked,
+            type = type,
+            isFocused = isFocused,
+            formatText = formatText.duplicate(newNoteItemId),
+            table = table?.duplicate(newNoteItemId)
+        )
+    }
 }

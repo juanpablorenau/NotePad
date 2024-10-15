@@ -12,11 +12,11 @@ import androidx.navigation.NavHostController
 import com.example.model.entities.FormatText
 import com.example.model.entities.Note
 import com.example.model.entities.NoteItem
+import com.example.model.enums.NoteColor
 import com.example.notepad.components.screens.ErrorScreen
 import com.example.notepad.components.screens.LoadingScreen
 import com.example.notepad.utils.getViewModel
 import com.example.notepad.utils.mockNote
-import com.example.model.enums.NoteColor
 
 @Composable
 fun NoteDetailScreen(
@@ -57,7 +57,7 @@ fun NoteDetailScreen(
                 updateNoteItem = { textField -> viewModel.updateNoteItem(textField) },
                 deleteTextField = { noteItem -> viewModel.deleteTextField(noteItem) },
                 deleteCheckBox = { noteItem -> viewModel.deleteCheckBox(noteItem) },
-                copyNote = { viewModel.copyNote() },
+                duplicateNote = { viewModel.duplicateNote() },
                 applyFormat = { format -> viewModel.applyFormat(format) }
             )
         }
@@ -80,7 +80,7 @@ fun SuccessScreen(
     updateNoteItem: (NoteItem) -> Unit = {},
     deleteTextField: (NoteItem) -> Unit = {},
     deleteCheckBox: (NoteItem) -> Unit = {},
-    copyNote: () -> Unit = {},
+    duplicateNote: () -> Unit = {},
     applyFormat: (FormatText) -> Unit = {}
 ) {
     Scaffold(
@@ -91,7 +91,7 @@ fun SuccessScreen(
                 changeColor = changeColor,
                 pinUpNote = pinUpNote,
                 deleteNote = deleteNote,
-                copyNote = copyNote,
+                duplicateNote = duplicateNote,
                 isDarkTheme = isDarkTheme
             )
         },

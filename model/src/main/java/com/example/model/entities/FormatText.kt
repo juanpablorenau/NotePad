@@ -1,5 +1,7 @@
 package com.example.model.entities
 
+import com.example.model.utils.getUUID
+
 data class FormatText(
     val id: String = "",
     val formatTextId: String = "",
@@ -12,7 +14,23 @@ data class FormatText(
     val textLightColor: String = TextColor.BASIC.lightColor,
     val textDarkColor: String = TextColor.BASIC.darkColor,
     val paragraphType: ParagraphType = ParagraphType.LEFT,
-)
+){
+
+    fun duplicate(newFormatTextId: String): FormatText =
+        FormatText(
+            id = getUUID(),
+            formatTextId = newFormatTextId,
+            typeText = typeText,
+            fontSize = fontSize,
+            isBold = isBold,
+            isItalic = isItalic,
+            isUnderline = isUnderline,
+            isLineThrough = isLineThrough,
+            textLightColor = textLightColor,
+            textDarkColor = textDarkColor,
+            paragraphType = paragraphType
+        )
+}
 
 enum class TypeText {
     TITLE, HEADER, SUBTITLE, BODY

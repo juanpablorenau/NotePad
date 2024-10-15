@@ -102,21 +102,17 @@ data class Note(
         else currentNoteItem
     })
 
-    fun copy(newNoteId: String) = Note(id = newNoteId,
-        title = title,
-        lightNoteColor = lightNoteColor,
-        darkNoteColor = darkNoteColor,
-        isPinned = isPinned,
-        isChecked = isChecked,
-        index = index,
-        items = items.map {
-            NoteItem(
-                id = getUUID(),
-                noteId = newNoteId,
-                text = it.text,
-                type = it.type,
-                isChecked = it.isChecked,
-                formatText = it.formatText,
-            )
-        })
+    fun duplicate() : Note {
+        val newNoteId = getUUID()
+        return Note(
+            id = newNoteId,
+            title = title,
+            lightNoteColor = lightNoteColor,
+            darkNoteColor = darkNoteColor,
+            isPinned = isPinned,
+            isChecked = isChecked,
+            index = index,
+            items = items.map { noteItem -> noteItem.duplicate(newNoteId) }
+        )
+    }
 }
