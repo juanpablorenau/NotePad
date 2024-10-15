@@ -26,7 +26,7 @@ data class Note(
         title.normalize().contains(query.normalize(), ignoreCase = true)
 
     private fun containsInItems(query: String) =
-        items.any { it.text.normalize().contains(query.normalize(), ignoreCase = true) }
+        items.any { noteItem -> noteItem.containsInItem(query) }
 
     fun addTextField() = this.copy(items = items.toMutableList().apply {
         if (isEmpty()) add(NoteItem(id = getUUID(), noteId = id))

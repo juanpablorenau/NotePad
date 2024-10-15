@@ -2,6 +2,7 @@ package com.example.model.entities
 
 import com.example.model.enums.NoteItemType
 import com.example.model.utils.getUUID
+import com.example.model.utils.normalize
 
 data class NoteItem(
     val id: String = "",
@@ -38,4 +39,13 @@ data class NoteItem(
 
     fun isText() = type == NoteItemType.TEXT
     fun isTable() = type == NoteItemType.TABLE
+
+    fun containsInItem(query: String) =
+        if (isTable()) containsInTable(query)
+        else text.normalize().contains(query.normalize(), ignoreCase = true)
+
+    private fun containsInTable(query: String) =
+        table?.let { tab ->
+            tab.startCell.containsInCell(query) || tab.endCell.containsInCell(query)
+        } ?: false
 }
