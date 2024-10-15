@@ -5,6 +5,7 @@ import com.example.data.model.db.NoteDb
 import com.example.data.source.local.NoteDataSource
 import com.example.data.source.local.NoteItemDataSource
 import com.example.data.source.local.dao.NoteDao
+import com.example.model.entities.Note
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.invoke
 import javax.inject.Inject
@@ -39,7 +40,12 @@ class NoteDataSourceImpl @Inject constructor(
         }
     }
 
-    override suspend fun deleteNote(id: String) {
-        dispatcher { }
+    override suspend fun deleteNote(note: Note) {
+        dispatcher {
+            noteDao.deleteNote(note.id)
+            note.items.forEach { currentItem ->
+                noteItemDataSource.deleteNoteItem(currentItem)
+            }
+        }
     }
 }

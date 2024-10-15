@@ -82,7 +82,7 @@ class NoteDetailViewModel @Inject constructor(
 
     fun deleteNote() {
         viewModelScope.launch(dispatcher) {
-            tryOrError { deleteNoteUseCase(getNote().id) }
+            tryOrError { deleteNoteUseCase(getNote()) }
         }
     }
 
@@ -147,26 +147,26 @@ class NoteDetailViewModel @Inject constructor(
         }
     }
 
-    fun deleteTextField(id: String) {
+    fun deleteTextField(noteItem: NoteItem) {
         _uiState.getAndUpdate { state ->
             with((state.asSuccess())) {
-                deleteNoteItem(id)
-                copy(note = note.deleteTextField(id))
+                deleteNoteItem(noteItem)
+                copy(note = note.deleteTextField(noteItem.id))
             }
         }
     }
 
-    private fun deleteNoteItem(id: String) {
+    private fun deleteNoteItem(noteItem: NoteItem) {
         viewModelScope.launch(dispatcher) {
-            tryOrError { viewModelScope.launch(dispatcher) { deleteNoteItemUseCase(id) } }
+            tryOrError { viewModelScope.launch(dispatcher) { deleteNoteItemUseCase(noteItem) } }
         }
     }
 
-    fun deleteCheckBox(id: String) {
+    fun deleteCheckBox(noteItem: NoteItem) {
         _uiState.getAndUpdate { state ->
             with((state.asSuccess())) {
-                deleteNoteItem(id)
-                copy(note = note.deleteCheckbox(id))
+                deleteNoteItem(noteItem)
+                copy(note = note.deleteCheckbox(noteItem.id))
             }
         }
     }

@@ -59,7 +59,16 @@ data class Note(
     })
 
     fun addTable() = this.copy(items = this.items.toMutableList().apply {
-        add(NoteItem(getUUID(), id, Table(id = getUUID())))
+        if (isEmpty()) add(NoteItem(getUUID(), id, Table(id = getUUID())))
+        else {
+            val focusedIndex = indexOfFirst { it.isFocused }
+            val updatedItems = map { it.copy(isFocused = false) }
+
+            clear()
+            addAll(updatedItems)
+
+            add(focusedIndex + 1, NoteItem(getUUID(), id, Table(id = getUUID())))
+        }
     })
 
     fun updateNoteItem(noteItem: NoteItem) = copy(items = items.map { current ->

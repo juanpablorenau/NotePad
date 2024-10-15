@@ -52,8 +52,8 @@ fun NoteDetailContent(
     isDarkTheme: Boolean = false,
     addCheckBox: (String?) -> Unit = {},
     updateNoteItem: (NoteItem) -> Unit = {},
-    deleteTextField: (String) -> Unit = {},
-    deleteCheckBox: (String) -> Unit = {},
+    deleteTextField: (NoteItem) -> Unit = {},
+    deleteCheckBox: (NoteItem) -> Unit = {},
 ) {
     val color = getColor(if (isDarkTheme) note.darkNoteColor else note.lightNoteColor)
 
@@ -147,8 +147,8 @@ fun NoteBody(
     isDarkTheme: Boolean = false,
     addCheckBox: (String?) -> Unit = {},
     updateNoteItem: (NoteItem) -> Unit = {},
-    deleteTextField: (String) -> Unit = {},
-    deleteCheckBox: (String) -> Unit = {},
+    deleteTextField: (NoteItem) -> Unit = {},
+    deleteCheckBox: (NoteItem) -> Unit = {},
 ) {
     val listState = rememberLazyListState()
     val focusRequesters = remember(notesItems) { notesItems.map { FocusRequester() } }

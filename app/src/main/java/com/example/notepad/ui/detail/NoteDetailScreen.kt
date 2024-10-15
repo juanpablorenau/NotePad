@@ -55,8 +55,8 @@ fun NoteDetailScreen(
                 addCheckBox = { id -> viewModel.addCheckBox(id) },
                 addTable = { viewModel.addTable()},
                 updateNoteItem = { textField -> viewModel.updateNoteItem(textField) },
-                deleteTextField = { id -> viewModel.deleteTextField(id) },
-                deleteCheckBox = { id -> viewModel.deleteCheckBox(id) },
+                deleteTextField = { noteItem -> viewModel.deleteTextField(noteItem) },
+                deleteCheckBox = { noteItem -> viewModel.deleteCheckBox(noteItem) },
                 copyNote = { viewModel.copyNote() },
                 applyFormat = { format -> viewModel.applyFormat(format) }
             )
@@ -78,8 +78,8 @@ fun SuccessScreen(
     addCheckBox: (String?) -> Unit = {},
     addTable: () -> Unit = {},
     updateNoteItem: (NoteItem) -> Unit = {},
-    deleteTextField: (String) -> Unit = {},
-    deleteCheckBox: (String) -> Unit = {},
+    deleteTextField: (NoteItem) -> Unit = {},
+    deleteCheckBox: (NoteItem) -> Unit = {},
     copyNote: () -> Unit = {},
     applyFormat: (FormatText) -> Unit = {}
 ) {

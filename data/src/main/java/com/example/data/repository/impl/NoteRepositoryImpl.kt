@@ -42,16 +42,7 @@ class NoteRepositoryImpl @Inject constructor(
         }
     }
 
-    override suspend fun deleteNote(id: String) {
-        withContext(dispatcher) { noteDataSource.deleteNote(id) }
-    }
-
-    override suspend fun deleteNotes(ids: List<String>) {
-        withContext(dispatcher) {
-            ids.map { async { noteDataSource.deleteNote(it) } }.awaitAll()
-        }
-    }
-
-    override suspend fun deleteNoteItem(id: String) {
+    override suspend fun deleteNote(note: Note) {
+        withContext(dispatcher) { noteDataSource.deleteNote(note) }
     }
 }

@@ -3,6 +3,7 @@ package com.example.data.source.local.impl
 import com.example.data.model.db.FormatTextDb
 import com.example.data.source.local.FormatTextDataSource
 import com.example.data.source.local.dao.FormatTextDao
+import com.example.model.entities.FormatText
 import javax.inject.Inject
 
 class FormatTextDataSourceImpl @Inject constructor(
@@ -13,6 +14,7 @@ class FormatTextDataSourceImpl @Inject constructor(
         formatTextDao.insertFormatText(formatText)
     }
 
-    override suspend fun deleteFormatText(id: String) {
+    override suspend fun deleteFormatText(formatText: FormatText) {
+        formatTextDao.deleteFormatText(formatText.id)
     }
 }

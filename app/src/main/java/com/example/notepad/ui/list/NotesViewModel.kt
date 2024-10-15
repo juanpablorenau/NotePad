@@ -77,15 +77,14 @@ class NotesViewModel @Inject constructor(
         viewModelScope.launch(dispatcher) {
             with(_uiState.value.asSuccess()) {
                 tryOrError {
-                    deleteNotesUseCase(getCheckedIds(notes))
+                    deleteNotesUseCase(getCheckedNotes(notes))
                     getNotes()
                 }
             }
         }
     }
 
-    private fun getCheckedIds(notes: List<Note>) =
-        notes.filter { it.isChecked }.map { it.id }
+    private fun getCheckedNotes(notes: List<Note>) = notes.filter { it.isChecked }
 
     fun searchNotes(query: String) {
         _uiState.getAndUpdate { state ->

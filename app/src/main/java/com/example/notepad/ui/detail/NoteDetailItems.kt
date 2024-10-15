@@ -38,7 +38,7 @@ fun CheckBoxItem(
     previousFocusRequester: FocusRequester? = null,
     addCheckBox: (String) -> Unit = {},
     updateNoteItem: (NoteItem) -> Unit = {},
-    deleteCheckBox: (String) -> Unit = {},
+    deleteCheckBox: (NoteItem) -> Unit = {},
 ) {
     var isChecked by remember { mutableStateOf(noteItem.isChecked) }
     var textFieldValue by remember {
@@ -77,7 +77,7 @@ fun CheckBoxItem(
                     .onKeyEvent {
                         if (it.key == Key.Backspace && textFieldValue.text.isEmpty()) {
                             previousFocusRequester?.requestFocus()
-                            deleteCheckBox(noteItem.id)
+                            deleteCheckBox(noteItem)
                             true
                         } else false
                     },
@@ -97,7 +97,7 @@ fun CheckBoxItem(
                         if (textFieldValue.text.isNotEmpty()) addCheckBox(noteItem.id)
                         else {
                             previousFocusRequester?.requestFocus()
-                            deleteCheckBox(noteItem.id)
+                            deleteCheckBox(noteItem)
                         }
                     },
                 ),
@@ -121,7 +121,7 @@ fun TextFieldItem(
     currentFocusRequester: FocusRequester = FocusRequester(),
     previousFocusRequester: FocusRequester? = null,
     updateNoteItem: (NoteItem) -> Unit = {},
-    deleteTextField: (String) -> Unit = {},
+    deleteTextField: (NoteItem) -> Unit = {},
 ) {
     var textFieldValue by remember {
         mutableStateOf(TextFieldValue(noteItem.text, TextRange(noteItem.text.length)))
@@ -136,7 +136,7 @@ fun TextFieldItem(
             .onKeyEvent {
                 if (it.key == Key.Backspace && textFieldValue.text.isEmpty()) {
                     previousFocusRequester?.requestFocus()
-                    deleteTextField(noteItem.id)
+                    deleteTextField(noteItem)
                     true
                 } else false
             },
@@ -179,6 +179,7 @@ fun TableItem(
             Row(
                 modifier = Modifier
                     .fillMaxWidth()
+                    .onFocusChanged { if (it.isFocused) updateNoteItem(noteItem.copy(isFocused = true)) }
                     .padding(horizontal = 24.dp)
                     .topBorder(if (!isPreviousItemTable) 0.5.dp else 0.dp, color = color)
                     .bottomBorder(color = color)
