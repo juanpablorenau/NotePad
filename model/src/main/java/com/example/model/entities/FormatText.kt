@@ -14,21 +14,12 @@ data class FormatText(
     val textLightColor: String = TextColor.BASIC.lightColor,
     val textDarkColor: String = TextColor.BASIC.darkColor,
     val paragraphType: ParagraphType = ParagraphType.LEFT,
-){
+) {
 
     fun duplicate(newFormatTextId: String): FormatText =
-        FormatText(
+        this.copy(
             id = getUUID(),
-            formatTextId = newFormatTextId,
-            typeText = typeText,
-            fontSize = fontSize,
-            isBold = isBold,
-            isItalic = isItalic,
-            isUnderline = isUnderline,
-            isLineThrough = isLineThrough,
-            textLightColor = textLightColor,
-            textDarkColor = textDarkColor,
-            paragraphType = paragraphType
+            formatTextId = newFormatTextId
         )
 }
 
@@ -42,7 +33,7 @@ enum class ParagraphType {
 
 enum class TextColor(
     val lightColor: String,
-    val darkColor: String
+    val darkColor: String,
 ) {
     BASIC("#000000", "#FFFFFF"),
     PURPLE("#6A1B9A", "#9C27B0"),

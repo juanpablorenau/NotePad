@@ -11,7 +11,7 @@ data class Table(
 
     fun duplicate(newNoteItemId: String): Table {
         val newTableId = getUUID()
-        return Table(
+        return this.copy(
             id = newTableId,
             noteItemId = newNoteItemId,
             startCell = startCell.duplicate(newTableId),

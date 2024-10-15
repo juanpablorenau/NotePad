@@ -51,13 +51,9 @@ data class NoteItem(
 
     fun duplicate(newNoteId: String): NoteItem {
         val newNoteItemId = getUUID()
-        return NoteItem(
+        return this.copy(
             id = newNoteItemId,
             noteId = newNoteId,
-            text = text,
-            isChecked = isChecked,
-            type = type,
-            isFocused = isFocused,
             formatText = formatText.duplicate(newNoteItemId),
             table = table?.duplicate(newNoteItemId)
         )

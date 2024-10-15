@@ -23,12 +23,9 @@ data class Cell(
 
     fun duplicate(newTableId: String): Cell {
         val newCellId = getUUID()
-        return Cell(
+        return this.copy(
             id = newCellId,
             tableId = newTableId,
-            text = text,
-            isFocused = isFocused,
-            isStartCell = isStartCell,
             formatText = formatText.duplicate(newCellId)
         )
     }
