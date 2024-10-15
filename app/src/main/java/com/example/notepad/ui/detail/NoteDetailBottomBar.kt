@@ -30,7 +30,7 @@ import com.example.model.entities.*
 import com.example.notepad.R
 import com.example.notepad.utils.getColor
 import com.example.notepad.utils.mockNote
-import com.example.notepad.utils.mockNoteItem
+import com.example.notepad.utils.mockTextItem
 
 
 @Preview(showBackground = true)
@@ -45,23 +45,22 @@ fun NoteDetailBottomBar(
 ) {
     val showBottomSheet = remember { mutableStateOf(false) }
     val changeBottomSheetState = { value: Boolean -> showBottomSheet.value = value }
+    val noteItem =  note.items.find { it.isFocused } ?: NoteItem("", "")
 
-    note.items.find { it.isFocused }?.let { noteItem ->
-        if (showBottomSheet.value) {
-            TextFormatComponent(
-                noteItem = noteItem,
-                isDarkTheme = isDarkTheme,
-                changeBottomSheetState = changeBottomSheetState,
-                applyFormat = applyFormat
-            )
-        } else {
-            BottomOptions(
-                changeBottomSheetState = changeBottomSheetState,
-                addTextField = addTextField,
-                addCheckBox = addCheckBox,
-                addTable = addTable
-            )
-        }
+    if (showBottomSheet.value) {
+        TextFormatComponent(
+            noteItem = noteItem,
+            isDarkTheme = isDarkTheme,
+            changeBottomSheetState = changeBottomSheetState,
+            applyFormat = applyFormat
+        )
+    } else {
+        BottomOptions(
+            changeBottomSheetState = changeBottomSheetState,
+            addTextField = addTextField,
+            addCheckBox = addCheckBox,
+            addTable = addTable
+        )
     }
 }
 
@@ -128,7 +127,7 @@ fun BottomOptions(
 @Preview(showBackground = true)
 @Composable
 fun TextFormatComponent(
-    noteItem: NoteItem = mockNoteItem,
+    noteItem: NoteItem = mockTextItem,
     isDarkTheme: Boolean = false,
     changeBottomSheetState: (Boolean) -> Unit = {},
     applyFormat: (FormatText) -> Unit = {},
@@ -186,7 +185,7 @@ fun TextFormatHeader(
 @Preview(showBackground = true)
 @Composable
 fun TextFormatContent(
-    noteItem: NoteItem = mockNoteItem,
+    noteItem: NoteItem = mockTextItem,
     isDarkTheme: Boolean = false,
     applyFormat: (FormatText) -> Unit = {},
 ) {
@@ -202,7 +201,7 @@ fun TextFormatContent(
 @Preview(showBackground = true)
 @Composable
 fun TypeTextsSelector(
-    noteItem: NoteItem = mockNoteItem,
+    noteItem: NoteItem = mockTextItem,
     applyFormat: (FormatText) -> Unit = {},
 ) {
     val formatTexts = remember {
@@ -237,7 +236,7 @@ fun TypeTextsSelector(
 @Preview(showBackground = true)
 @Composable
 fun TypeTextsItem(
-    noteItem: NoteItem = mockNoteItem,
+    noteItem: NoteItem = mockTextItem,
     index: Int = -1,
     formatText: FormatText = FormatText(""),
     selectedIndex: MutableState<Int> = mutableIntStateOf(-1),
@@ -288,7 +287,7 @@ fun TypeTextsItem(
 @Preview(showBackground = true)
 @Composable
 fun FormatTextsSelector(
-    noteItem: NoteItem = mockNoteItem,
+    noteItem: NoteItem = mockTextItem,
     applyFormat: (FormatText) -> Unit = {},
 ) {
     with(noteItem.formatText) {
@@ -445,7 +444,7 @@ fun FormatTextsSelector(
 @Preview(showBackground = true)
 @Composable
 fun ParagraphsSelectorAndTextColor(
-    noteItem: NoteItem = mockNoteItem,
+    noteItem: NoteItem = mockTextItem,
     isDarkTheme: Boolean = false,
     applyFormat: (FormatText) -> Unit = {},
 ) {
@@ -636,7 +635,7 @@ fun ParagraphsSelectorAndTextColor(
 @Preview(showBackground = true)
 @Composable
 fun TextColorSelector(
-    noteItem: NoteItem = mockNoteItem,
+    noteItem: NoteItem = mockTextItem,
     isDarkTheme: Boolean = false,
     applyFormat: (FormatText) -> Unit = {},
 ) {
@@ -660,7 +659,7 @@ fun TextColorSelector(
 
 @Composable
 fun TextColorItem(
-    noteItem: NoteItem = mockNoteItem,
+    noteItem: NoteItem = mockTextItem,
     item: TextColor = TextColor.BASIC,
     applyFormat: (FormatText) -> Unit = {},
     isDarkTheme: Boolean = false,

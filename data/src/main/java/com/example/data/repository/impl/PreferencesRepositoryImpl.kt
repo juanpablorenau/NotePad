@@ -16,8 +16,7 @@ class PreferencesRepositoryImpl @Inject constructor(
     private val dataStoreSource: DataStoreSource,
     private val dispatcher: CoroutineDispatcher,
     private val languageDto: LanguageDto,
-) :
-    PreferencesRepository {
+) : PreferencesRepository {
     override fun getIsDarkTheme(): Flow<Boolean> =
         dataStoreSource.getBoolean(Preference.DARK_THEME.key).flowOn(dispatcher)
 

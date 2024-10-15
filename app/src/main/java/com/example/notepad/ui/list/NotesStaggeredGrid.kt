@@ -153,11 +153,13 @@ fun NoteHeader(item: Note) {
 
 @Composable
 fun NoteBody(notesItems: List<NoteItem> = mockNoteItems, isDarkTheme: Boolean = false) {
-    notesItems.forEach { item ->
+    notesItems.forEachIndexed { index, item ->
+        val isPreviousItemTable = notesItems.getOrNull(index - 1)?.isTable() ?: false
+
         when (item.type) {
             NoteItemType.TEXT -> TextFieldItem(item, isDarkTheme)
             NoteItemType.CHECK_BOX -> CheckBoxItem(item, isDarkTheme)
-            NoteItemType.TABLE -> {}
+            NoteItemType.TABLE -> TableItem(item, isDarkTheme, isPreviousItemTable)
         }
     }
 }

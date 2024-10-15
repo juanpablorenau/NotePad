@@ -33,7 +33,7 @@ data class Note(
         else {
             val focusedIndex = indexOfFirst { it.isFocused }
 
-            if (!get(focusedIndex).isText()) {
+            if (getOrNull(focusedIndex)?.isText() != true) {
                 val updatedItems = map { it.copy(isFocused = false) }
                 clear()
                 addAll(updatedItems)

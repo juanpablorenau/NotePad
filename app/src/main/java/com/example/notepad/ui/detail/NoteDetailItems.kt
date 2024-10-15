@@ -32,7 +32,7 @@ import com.example.notepad.utils.*
 @Preview(showBackground = true)
 @Composable
 fun CheckBoxItem(
-    noteItem: NoteItem = mockCheckBox,
+    noteItem: NoteItem = mockCheckBoxItem,
     isDarkTheme: Boolean = false,
     currentFocusRequester: FocusRequester = FocusRequester(),
     previousFocusRequester: FocusRequester? = null,
@@ -116,7 +116,7 @@ fun CheckBoxItem(
 @Preview(showBackground = true)
 @Composable
 fun TextFieldItem(
-    noteItem: NoteItem = mockNoteItem,
+    noteItem: NoteItem = mockTextItem,
     isDarkTheme: Boolean = false,
     currentFocusRequester: FocusRequester = FocusRequester(),
     previousFocusRequester: FocusRequester? = null,
@@ -130,7 +130,7 @@ fun TextFieldItem(
     BasicTextField(
         modifier = Modifier
             .fillMaxWidth()
-            .padding(horizontal = 24.dp)
+            .padding(horizontal = 24.dp, vertical = 8.dp)
             .focusRequester(currentFocusRequester)
             .onFocusChanged { if (it.isFocused) updateNoteItem(noteItem.copy(isFocused = true)) }
             .onKeyEvent {
@@ -158,7 +158,7 @@ fun TextFieldItem(
 @Preview(showBackground = true)
 @Composable
 fun TableItem(
-    noteItem: NoteItem = mockNoteItem,
+    noteItem: NoteItem = mockTableItem,
     isDarkTheme: Boolean = false,
     isPreviousItemTable: Boolean = false,
     updateNoteItem: (NoteItem) -> Unit = {},
