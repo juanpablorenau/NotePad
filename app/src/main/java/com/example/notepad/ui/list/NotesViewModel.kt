@@ -22,7 +22,7 @@ sealed class NotesUiState {
     data class Success(val notes: List<Note>, val itemsView: Int = 2) : NotesUiState()
     data object Error : NotesUiState()
 
-    fun  asSuccess() = this as Success
+    fun asSuccess() = this as Success
 }
 
 @HiltViewModel
@@ -87,9 +87,11 @@ class NotesViewModel @Inject constructor(
     private fun getCheckedNotes(notes: List<Note>) = notes.filter { it.isChecked }
 
     fun searchNotes(query: String) {
-        _uiState.getAndUpdate { state ->
-            with((state.asSuccess())) {
-                copy(notes = notes.filter { note -> note.contains(query) })
+        viewModelScope.launch(dispatcher) {
+            _uiState.getAndUpdate { state ->
+                with((state.asSuccess())) {
+                    copy(notes = notes.filter { note -> note.contains(query) })
+                }
             }
         }
     }
