@@ -124,7 +124,7 @@ fun TextFieldItem(
     updateNoteItem: (NoteItem) -> Unit = {},
     deleteTextField: (NoteItem) -> Unit = {},
 ) {
-    var textFieldValue by remember {
+    var textFieldValue by remember(noteItem.text) {
         mutableStateOf(TextFieldValue(noteItem.text, TextRange(noteItem.text.length)))
     }
 
@@ -152,7 +152,6 @@ fun TextFieldItem(
     LaunchedEffect(noteItem.id, noteItem.isFocused) {
         if (noteItem.isFocused) currentFocusRequester.requestFocus()
         else currentFocusRequester.freeFocus()
-        textFieldValue = textFieldValue.copy(selection = TextRange(textFieldValue.text.length))
     }
 }
 

@@ -13,28 +13,32 @@ data class NoteItem(
     val isFocused: Boolean = true,
     val formatText: FormatText,
     val table: Table? = null,
+    val index: Int = 0,
 ) {
-    constructor(id: String, noteId: String) : this(
+    constructor(id: String, noteId: String, index: Int) : this(
         id = id,
         noteId = noteId,
         type = NoteItemType.TEXT,
-        formatText = FormatText(id = getUUID(), formatTextId = id)
+        formatText = FormatText(id = getUUID(), formatTextId = id),
+        index = index
     )
 
-    constructor(id: String, noteId: String, isChecked: Boolean) : this(
+    constructor(id: String, noteId: String, isChecked: Boolean, index: Int) : this(
         id = id,
         noteId = noteId,
         type = NoteItemType.CHECK_BOX,
         formatText = FormatText(id = getUUID(), formatTextId = id),
         isChecked = isChecked,
+        index = index
     )
 
-    constructor(id: String, noteId: String, table: Table) : this(
+    constructor(id: String, noteId: String, table: Table, index: Int) : this(
         id = id,
         noteId = noteId,
         type = NoteItemType.TABLE,
         formatText = FormatText(id = getUUID(), formatTextId = id),
-        table = table.copy(noteItemId = id)
+        table = table.copy(noteItemId = id),
+        index = index
     )
 
     fun isText() = type == NoteItemType.TEXT

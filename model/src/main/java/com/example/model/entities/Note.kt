@@ -17,7 +17,7 @@ data class Note(
     constructor(id: String, index: Int) : this(
         id = id,
         index = index,
-        items = listOf(NoteItem(id = getUUID(), noteId = id))
+        items = listOf(NoteItem(id = getUUID(), noteId = id, index = 0))
     )
 
     fun contains(query: String) = containsInTitle(query) || containsInItems(query)
@@ -28,46 +28,69 @@ data class Note(
     private fun containsInItems(query: String) =
         items.any { noteItem -> noteItem.containsInItem(query) }
 
-    fun addTextField() = this.copy(items = items.toMutableList().apply {
-        if (isEmpty()) add(NoteItem(id = getUUID(), noteId = id))
+    fun addTextField() = copy(items = items.toMutableList().apply {
+        if (isEmpty()) add(NoteItem(id = getUUID(), noteId = id, index = 0))
         else {
             val focusedIndex = indexOfFirst { it.isFocused }
 
             if (getOrNull(focusedIndex)?.isText() != true) {
-                val updatedItems = map { it.copy(isFocused = false) }
+                val updatedItems = map { noteItem ->
+                    val newIndex =
+                        if (noteItem.index > focusedIndex) noteItem.index + 1
+                        else noteItem.index
+                    noteItem.copy(isFocused = false, index = newIndex)
+                }
+
                 clear()
                 addAll(updatedItems)
-                add(focusedIndex + 1, NoteItem(id = getUUID(), noteId = id))
+
+                val newItemIndex = focusedIndex + 1
+                add(newItemIndex, NoteItem(id = getUUID(), noteId = id, newItemIndex))
             }
         }
     })
 
-    fun addCheckbox(noteItemId: String?) = this.copy(items = this.items.toMutableList().apply {
-        if (isEmpty()) add(NoteItem(id = getUUID(), noteId = id, isChecked = false))
+    fun addCheckbox(noteItemId: String?) = copy(items = this.items.toMutableList().apply {
+        if (isEmpty()) add(NoteItem(id = getUUID(), noteId = id, isChecked = false, index = 0))
         else {
             val focusedIndex = indexOfFirst { it.isFocused }
-            val updatedItems = map { it.copy(isFocused = false) }
+            val updatedItems = map { noteItem ->
+                val newIndex =
+                    if (noteItem.index > focusedIndex) noteItem.index + 1
+                    else noteItem.index
+                noteItem.copy(isFocused = false, index = newIndex)
+            }
 
             clear()
             addAll(updatedItems)
 
-            val index = if (noteItemId != null) indexOfFirst { item -> item.id == noteItemId } + 1
-            else focusedIndex + 1
+            val newItemIndex =
+                if (noteItemId != null) indexOfFirst { item -> item.id == noteItemId } + 1
+                else focusedIndex + 1
 
-            add(index, NoteItem(id = getUUID(), noteId = id, isChecked = false))
+            add(
+                newItemIndex,
+                NoteItem(id = getUUID(), noteId = id, isChecked = false, newItemIndex)
+            )
         }
     })
 
-    fun addTable() = this.copy(items = this.items.toMutableList().apply {
-        if (isEmpty()) add(NoteItem(getUUID(), id, Table(id = getUUID())))
+    fun addTable() = copy(items = items.toMutableList().apply {
+        if (isEmpty()) add(NoteItem(getUUID(), id, Table(id = getUUID()), index = 0))
         else {
             val focusedIndex = indexOfFirst { it.isFocused }
-            val updatedItems = map { it.copy(isFocused = false) }
+            val updatedItems = map { noteItem ->
+                val newIndex =
+                    if (noteItem.index > focusedIndex) noteItem.index + 1
+                    else noteItem.index
+                noteItem.copy(isFocused = false, index = newIndex)
+            }
 
             clear()
             addAll(updatedItems)
 
-            add(focusedIndex + 1, NoteItem(getUUID(), id, Table(id = getUUID())))
+            val newItemIndex = focusedIndex + 1
+            add(newItemIndex, NoteItem(getUUID(), id, Table(id = getUUID()), newItemIndex))
         }
     })
 
@@ -76,8 +99,10 @@ data class Note(
         else current.copy(isFocused = false)
     })
 
-    fun deleteTextField(noteItemId: String) =
-        copy(items = items.filter { item -> item.id != noteItemId })
+    fun deleteTextField(noteItemId: String) = copy(items = items
+        .filter { item -> item.id != noteItemId }
+        .mapIndexed { index, noteItem -> noteItem.copy(index = index) }
+    )
 
     fun deleteCheckbox(noteItemId: String) = copy(items = items.toMutableList().apply {
         val index = indexOfFirst { noteItem -> noteItem.id == noteItemId }
@@ -93,6 +118,13 @@ data class Note(
                     removeAt(index - 1)
                     add(index - 1, prev.copy(text = "${prev.text}\n${next.text}"))
                 }
+
+                val updatedItems = mapIndexed { newIndex, noteItem ->
+                    noteItem.copy(index = newIndex)
+                }
+
+                clear()
+                addAll(updatedItems)
             }
         }
     })

@@ -37,8 +37,8 @@ fun NoteDetailScreen(
     }
 
     when (val state = uiState) {
-        is NoteDetailUiState.Loading -> LoadingScreen()
-        is NoteDetailUiState.Error -> ErrorScreen { navController.popBackStack() }
+         NoteDetailUiState.Loading -> LoadingScreen()
+         NoteDetailUiState.Error -> ErrorScreen { navController.popBackStack() }
         is NoteDetailUiState.Success -> {
             SuccessScreen(
                 note = state.note,

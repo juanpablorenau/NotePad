@@ -45,7 +45,7 @@ fun NoteDetailBottomBar(
 ) {
     val showBottomSheet = remember { mutableStateOf(false) }
     val changeBottomSheetState = { value: Boolean -> showBottomSheet.value = value }
-    val noteItem =  note.items.find { it.isFocused } ?: NoteItem("", "")
+    val noteItem =  note.items.find { it.isFocused } ?: NoteItem("", "", 0)
 
     if (showBottomSheet.value) {
         TextFormatComponent(

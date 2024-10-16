@@ -20,11 +20,11 @@ val mockNote by lazy {
 
 val mockNoteItems by lazy { listOf(mockTextItem, mockCheckBoxItem, mockTableItem) }
 
-val mockTextItem by lazy { NoteItem(id = "1", noteId = "1") }
+val mockTextItem by lazy { NoteItem(id = "1", noteId = "1", 0) }
 
-val mockCheckBoxItem by lazy { NoteItem(id = "1", noteId = "1", isChecked = true) }
+val mockCheckBoxItem by lazy { NoteItem(id = "1", noteId = "1", isChecked = true, 0) }
 
-val mockTableItem by lazy { NoteItem(id = "1", noteId = "1", mockTable) }
+val mockTableItem by lazy { NoteItem(id = "1", noteId = "1", mockTable, 0) }
 
 val mockTable by lazy {
     Table(

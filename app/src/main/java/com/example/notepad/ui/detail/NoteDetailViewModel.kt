@@ -26,9 +26,9 @@ sealed class NoteDetailUiState {
     data object Loading : NoteDetailUiState()
     data class Success(val note: Note) : NoteDetailUiState()
     data object Error : NoteDetailUiState()
-
-    fun asSuccess() = this as Success
 }
+
+fun NoteDetailUiState.asSuccess() = this as NoteDetailUiState.Success
 
 @HiltViewModel
 class NoteDetailViewModel @Inject constructor(
