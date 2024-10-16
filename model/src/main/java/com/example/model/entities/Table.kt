@@ -18,4 +18,17 @@ data class Table(
             endCell = endCell.duplicate(newTableId)
         )
     }
+
+    fun applyInTable(cell: Cell) =
+        if (cell.isStartCell) {
+            copy(
+                startCell = cell.copy(isFocused = true),
+                endCell = endCell.copy(isFocused = false)
+            )
+        } else {
+            copy(
+                startCell = startCell.copy(isFocused = false),
+                endCell = cell.copy(isFocused = true)
+            )
+        }
 }

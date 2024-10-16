@@ -62,4 +62,6 @@ data class NoteItem(
             table = table?.duplicate(newNoteItemId)
         )
     }
+
+    fun applyInTable(cell: Cell) = copy(table = table?.applyInTable(cell))
 }

@@ -146,9 +146,11 @@ class NoteDetailViewModel @Inject constructor(
     }
 
     fun updateNoteItem(noteItem: NoteItem) {
-        _uiState.getAndUpdate { state ->
-            with((state.asSuccess())) {
-                copy(note = note.updateNoteItem(noteItem))
+        viewModelScope.launch(dispatcher) {
+            _uiState.getAndUpdate { state ->
+                with((state.asSuccess())) {
+                    copy(note = note.updateNoteItem(noteItem))
+                }
             }
         }
     }

@@ -96,7 +96,17 @@ data class Note(
 
     fun updateNoteItem(noteItem: NoteItem) = copy(items = items.map { current ->
         if (current.id == noteItem.id) noteItem
-        else current.copy(isFocused = false)
+        else {
+            current.table?.let { table ->
+                current.copy(
+                    isFocused = false,
+                    table = table.copy(
+                        startCell = table.startCell.copy(isFocused = false),
+                        endCell = table.endCell.copy(isFocused = false)
+                    )
+                )
+            } ?: current.copy(isFocused = false)
+        }
     })
 
     fun deleteTextField(noteItemId: String) = copy(items = items
