@@ -116,25 +116,31 @@ class NoteDetailViewModel @Inject constructor(
     }
 
     fun addTextField() {
-        _uiState.getAndUpdate { state ->
-            with((state.asSuccess())) {
-                copy(note = note.addTextField())
+        viewModelScope.launch(dispatcher) {
+            _uiState.getAndUpdate { state ->
+                with((state.asSuccess())) {
+                    copy(note = note.addTextField())
+                }
             }
         }
     }
 
     fun addCheckBox(noteItemId: String?) {
-        _uiState.getAndUpdate { state ->
-            with((state.asSuccess())) {
-                copy(note = note.addCheckbox(noteItemId))
+        viewModelScope.launch(dispatcher) {
+            _uiState.getAndUpdate { state ->
+                with((state.asSuccess())) {
+                    copy(note = note.addCheckbox(noteItemId))
+                }
             }
         }
     }
 
     fun addTable() {
-        _uiState.getAndUpdate { state ->
-            with((state.asSuccess())) {
-                copy(note = note.addTable())
+        viewModelScope.launch(dispatcher) {
+            _uiState.getAndUpdate { state ->
+                with((state.asSuccess())) {
+                    copy(note = note.addTable())
+                }
             }
         }
     }
