@@ -26,6 +26,7 @@ import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.TextFieldValue
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import com.example.model.entities.Cell
 import com.example.model.entities.NoteItem
 import com.example.notepad.utils.*
 
@@ -168,71 +169,73 @@ fun TableItem(
             val color = MaterialTheme.colorScheme.onBackground
             val isStartCellTextLonger = startCell.text.length >= endCell.text.length
 
-            var startCellTextField by remember {
-                mutableStateOf(TextFieldValue(startCell.text, TextRange(startCell.text.length)))
-            }
-
-            var endCellTextField by remember {
-                mutableStateOf(TextFieldValue(endCell.text, TextRange(endCell.text.length)))
-            }
-
-            Row(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .onFocusChanged { if (it.isFocused) updateNoteItem(noteItem.copy(isFocused = true)) }
-                    .padding(horizontal = 24.dp)
-                    .topBorder(if (!isPreviousItemTable) 0.5.dp else 0.dp, color = color)
-                    .bottomBorder(color = color)
-                    .startBorder(color = color)
-                    .endBorder(color = color)
-            ) {
-                Box(
+            Row(modifier = Modifier
+                .fillMaxWidth()
+                .onFocusChanged { if (it.isFocused) updateNoteItem(noteItem.copy(isFocused = true)) }
+                .padding(horizontal = 24.dp)
+                .topBorder(if (!isPreviousItemTable) 0.5.dp else 0.dp, color = color)
+                .bottomBorder(color = color)
+                .startBorder(color = color)
+                .endBorder(color = color)) {
+                val endBorderColor = if (isStartCellTextLonger) color else Color.Transparent
+                CellItem(
                     modifier = Modifier
-                        .endBorder(color = if (isStartCellTextLonger) color else Color.Transparent)
+                        .endBorder(color = endBorderColor)
                         .padding(8.dp)
                         .weight(1f),
-                ) {
-                    BasicTextField(
-                        textStyle = startCell.formatText.toTextStyle(isDarkTheme),
-                        value = startCellTextField,
-                        onValueChange = { newTextFieldValue ->
-                            startCellTextField =
-                                newTextFieldValue.copy(text = newTextFieldValue.text)
-                            updateNoteItem(
-                                noteItem.copy(
-                                    table = table.copy(
-                                        startCell = startCell.copy(text = startCellTextField.text),
-                                        endCell = endCell.copy(text = endCellTextField.text)
-                                    ),
-                                )
-                            )
-                        },
-                    )
-                }
+                    isDarkTheme = isDarkTheme,
+                    noteItem = noteItem,
+                    cell = startCell,
+                    updateNoteItem = updateNoteItem,
+                )
 
-                Box(
+                val startBorderColor = if (!isStartCellTextLonger) color else Color.Transparent
+
+                CellItem(
                     modifier = Modifier
-                        .startBorder(color = if (!isStartCellTextLonger) color else Color.Transparent)
+                        .startBorder(color = startBorderColor)
                         .padding(8.dp)
                         .weight(1f),
-                ) {
-                    BasicTextField(
-                        textStyle = endCell.formatText.toTextStyle(isDarkTheme),
-                        value = endCellTextField,
-                        onValueChange = { newTextFieldValue ->
-                            endCellTextField = newTextFieldValue.copy(text = newTextFieldValue.text)
-                            updateNoteItem(
-                                noteItem.copy(
-                                    table = table.copy(
-                                        startCell = startCell.copy(text = startCellTextField.text),
-                                        endCell = endCell.copy(text = endCellTextField.text)
-                                    ),
-                                )
-                            )
-                        },
-                    )
-                }
+                    isDarkTheme = isDarkTheme,
+                    noteItem = noteItem,
+                    cell = endCell,
+                    updateNoteItem = updateNoteItem,
+                )
             }
         }
+    }
+}
+
+@Preview(showBackground = true)
+@Composable
+fun CellItem(
+    modifier: Modifier = Modifier,
+    isDarkTheme: Boolean = false,
+    noteItem: NoteItem = mockTableItem,
+    cell: Cell = mockCell,
+    updateNoteItem: (NoteItem) -> Unit = {},
+) {
+    var cellTextField by remember {
+        mutableStateOf(TextFieldValue(cell.text, TextRange(cell.text.length)))
+    }
+
+    Box(modifier = modifier) {
+        BasicTextField(
+            textStyle = cell.formatText.toTextStyle(isDarkTheme),
+            value = TextFieldValue(cell.text, TextRange(cell.text.length)),
+            onValueChange = { newTextFieldValue ->
+                cellTextField = newTextFieldValue.copy(text = newTextFieldValue.text)
+                updateNoteItem(
+                    noteItem.copy(table = noteItem.table?.let { table ->
+                        table.copy(
+                            startCell = if (cell.isStartCell) cell.copy(text = cellTextField.text)
+                            else table.startCell,
+                            endCell = if (!cell.isStartCell) cell.copy(text = cellTextField.text)
+                            else table.endCell
+                        )
+                    })
+                )
+            },
+        )
     }
 }
