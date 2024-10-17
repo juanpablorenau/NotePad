@@ -7,7 +7,7 @@ import androidx.navigation.NavType
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.navArgument
-import com.example.model.entities.Language
+import com.example.model.enums.Language
 import com.example.notepad.ui.detail.NoteDetailScreen
 import com.example.notepad.ui.list.NotesScreen
 import com.example.notepad.ui.settings.SettingsScreen

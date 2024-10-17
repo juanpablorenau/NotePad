@@ -11,7 +11,8 @@ import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material3.Checkbox
 import androidx.compose.material3.CheckboxDefaults
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.runtime.*
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.focus.FocusRequester
@@ -26,26 +27,21 @@ import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.TextFieldValue
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import com.example.model.entities.Cell
 import com.example.model.entities.NoteItem
-import com.example.model.entities.NoteItemType
 import com.example.notepad.utils.*
 
 @Preview(showBackground = true)
 @Composable
 fun CheckBoxItem(
-    noteItem: NoteItem = NoteItem(type = NoteItemType.CHECK_BOX),
+    noteItem: NoteItem = mockCheckBoxItem,
     isDarkTheme: Boolean = false,
     currentFocusRequester: FocusRequester = FocusRequester(),
     previousFocusRequester: FocusRequester? = null,
     addCheckBox: (String) -> Unit = {},
     updateNoteItem: (NoteItem) -> Unit = {},
-    deleteCheckBox: (String) -> Unit = {},
+    deleteNoteItemField: (NoteItem) -> Unit = {},
 ) {
-    var isChecked by remember { mutableStateOf(noteItem.isChecked) }
-    var textFieldValue by remember {
-        mutableStateOf(TextFieldValue(noteItem.text, TextRange(noteItem.text.length)))
-    }
-
     Row(
         modifier = Modifier
             .fillMaxWidth()
@@ -58,13 +54,9 @@ fun CheckBoxItem(
             horizontalArrangement = Arrangement.Absolute.Left
         ) {
             Checkbox(
-                checked = isChecked, onCheckedChange = { newChecked ->
-                    isChecked = newChecked
-                    updateNoteItem(
-                        noteItem.copy(
-                            text = textFieldValue.text, isChecked = isChecked, isFocused = true
-                        )
-                    )
+                checked = noteItem.isChecked,
+                onCheckedChange = { newChecked ->
+                    updateNoteItem(noteItem.copy(isChecked = newChecked, isFocused = true))
                 }, colors = CheckboxDefaults.colors(
                     checkedColor = MaterialTheme.colorScheme.primary, checkmarkColor = Color.White
                 )
@@ -76,29 +68,24 @@ fun CheckBoxItem(
                     .focusRequester(currentFocusRequester)
                     .onFocusChanged { if (it.isFocused) updateNoteItem(noteItem.copy(isFocused = true)) }
                     .onKeyEvent {
-                        if (it.key == Key.Backspace && textFieldValue.text.isEmpty()) {
+                        if (it.key == Key.Backspace && noteItem.text.isEmpty()) {
                             previousFocusRequester?.requestFocus()
-                            deleteCheckBox(noteItem.id)
+                            deleteNoteItemField(noteItem)
                             true
                         } else false
                     },
-                value = textFieldValue,
+                value = TextFieldValue(noteItem.text, TextRange(noteItem.text.length)),
                 singleLine = true,
                 onValueChange = { newTextFieldValue ->
-                    textFieldValue = newTextFieldValue.copy(text = newTextFieldValue.text)
-                    updateNoteItem(
-                        noteItem.copy(
-                            text = textFieldValue.text, isChecked = isChecked, isFocused = true
-                        )
-                    )
+                    updateNoteItem(noteItem.copy(text = newTextFieldValue.text, isFocused = true))
                 },
                 keyboardOptions = KeyboardOptions.Default.copy(imeAction = ImeAction.Done),
                 keyboardActions = KeyboardActions(
                     onDone = {
-                        if (textFieldValue.text.isNotEmpty()) addCheckBox(noteItem.id)
+                        if (noteItem.text.isNotEmpty()) addCheckBox(noteItem.id)
                         else {
                             previousFocusRequester?.requestFocus()
-                            deleteCheckBox(noteItem.id)
+                            deleteNoteItemField(noteItem)
                         }
                     },
                 ),
@@ -110,127 +97,153 @@ fun CheckBoxItem(
     LaunchedEffect(noteItem.id, noteItem.isFocused) {
         if (noteItem.isFocused) currentFocusRequester.requestFocus()
         else currentFocusRequester.freeFocus()
-        textFieldValue = textFieldValue.copy(selection = TextRange(textFieldValue.text.length))
     }
 }
 
 @Preview(showBackground = true)
 @Composable
 fun TextFieldItem(
-    noteItem: NoteItem = NoteItem(text = "Sample Text", type = NoteItemType.TEXT),
+    noteItem: NoteItem = mockTextItem,
     isDarkTheme: Boolean = false,
     currentFocusRequester: FocusRequester = FocusRequester(),
     previousFocusRequester: FocusRequester? = null,
     updateNoteItem: (NoteItem) -> Unit = {},
-    deleteTextField: (String) -> Unit = {},
+    deleteTextField: (NoteItem) -> Unit = {},
 ) {
-    var textFieldValue by remember {
-        mutableStateOf(TextFieldValue(noteItem.text, TextRange(noteItem.text.length)))
-    }
-
     BasicTextField(
         modifier = Modifier
             .fillMaxWidth()
-            .padding(horizontal = 24.dp)
+            .padding(horizontal = 24.dp, vertical = 8.dp)
             .focusRequester(currentFocusRequester)
             .onFocusChanged { if (it.isFocused) updateNoteItem(noteItem.copy(isFocused = true)) }
             .onKeyEvent {
-                if (it.key == Key.Backspace && textFieldValue.text.isEmpty()) {
+                if (it.key == Key.Backspace && noteItem.text.isEmpty()) {
                     previousFocusRequester?.requestFocus()
-                    deleteTextField(noteItem.id)
+                    deleteTextField(noteItem)
                     true
                 } else false
             },
         textStyle = noteItem.formatText.toTextStyle(isDarkTheme),
-        value = textFieldValue,
+        value = TextFieldValue(noteItem.text, TextRange(noteItem.text.length)),
         onValueChange = { newTextFieldValue ->
-            textFieldValue = newTextFieldValue.copy(text = newTextFieldValue.text)
-            updateNoteItem(noteItem.copy(text = textFieldValue.text, isFocused = true))
+            updateNoteItem(noteItem.copy(text = newTextFieldValue.text, isFocused = true))
         },
     )
 
     LaunchedEffect(noteItem.id, noteItem.isFocused) {
         if (noteItem.isFocused) currentFocusRequester.requestFocus()
         else currentFocusRequester.freeFocus()
-        textFieldValue = textFieldValue.copy(selection = TextRange(textFieldValue.text.length))
     }
 }
 
 @Preview(showBackground = true)
 @Composable
 fun TableItem(
-    noteItem: NoteItem = mockNoteItem,
+    noteItem: NoteItem = mockTableItem,
     isDarkTheme: Boolean = false,
     isPreviousItemTable: Boolean = false,
+    currentFocusRequester: FocusRequester = FocusRequester(),
+    previousFocusRequester: FocusRequester? = null,
     updateNoteItem: (NoteItem) -> Unit = {},
+    deleteNoteItemField: (NoteItem) -> Unit = {},
 ) {
-    with(noteItem.table) {
+    noteItem.table?.let { table ->
+        with(table) {
+            val color = MaterialTheme.colorScheme.onBackground
+            val isStartCellTextLonger = startCell.text.length >= endCell.text.length
 
-        val color = MaterialTheme.colorScheme.onBackground
-        val hasFirstLongerText = first.text.length >= second.text.length
-
-        var firstCellTextField by remember {
-            mutableStateOf(TextFieldValue(first.text, TextRange(first.text.length)))
-        }
-
-        var secondCellTextField by remember {
-            mutableStateOf(TextFieldValue(second.text, TextRange(second.text.length)))
-        }
-
-        Row(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(horizontal = 24.dp)
-                .topBorder(if (!isPreviousItemTable) 0.5.dp else 0.dp, color = color)
-                .bottomBorder(color = color)
-                .startBorder(color = color)
-                .endBorder(color = color)
-        ) {
-            Box(
+            Row(
                 modifier = Modifier
-                    .endBorder(color = if (hasFirstLongerText) color else Color.Transparent)
-                    .padding(8.dp)
-                    .weight(1f),
+                    .fillMaxWidth()
+                    .padding(horizontal = 24.dp)
+                    .topBorder(if (!isPreviousItemTable) 0.5.dp else 0.dp, color = color)
+                    .bottomBorder(color = color)
+                    .startBorder(color = color)
+                    .endBorder(color = color)
             ) {
-                BasicTextField(
-                    textStyle = first.formatText.toTextStyle(isDarkTheme),
-                    value = firstCellTextField,
-                    onValueChange = { newTextFieldValue ->
-                        firstCellTextField = newTextFieldValue.copy(text = newTextFieldValue.text)
-                        updateNoteItem(
-                            noteItem.copy(
-                                table = noteItem.table.copy(
-                                    first = first.copy(text = firstCellTextField.text),
-                                    second = second.copy(text = secondCellTextField.text)
-                                )
-                            )
-                        )
-                    },
+                val endBorderColor = if (isStartCellTextLonger) color else Color.Transparent
+                CellItem(
+                    modifier = Modifier
+                        .endBorder(color = endBorderColor)
+                        .padding(8.dp)
+                        .weight(1f),
+                    isDarkTheme = isDarkTheme,
+                    noteItem = noteItem,
+                    cell = startCell,
+                    currentFocusRequester = currentFocusRequester,
+                    previousFocusRequester = previousFocusRequester,
+                    updateNoteItem = updateNoteItem,
+                    deleteNoteItemField = deleteNoteItemField,
+                )
+
+                val startBorderColor = if (!isStartCellTextLonger) color else Color.Transparent
+
+                CellItem(
+                    modifier = Modifier
+                        .startBorder(color = startBorderColor)
+                        .padding(8.dp)
+                        .weight(1f),
+                    isDarkTheme = isDarkTheme,
+                    noteItem = noteItem,
+                    cell = endCell,
+                    updateNoteItem = updateNoteItem,
                 )
             }
-
-            Box(
-                modifier = Modifier
-                    .startBorder(color = if (!hasFirstLongerText) color else Color.Transparent)
-                    .padding(8.dp)
-                    .weight(1f),
-            ) {
-            BasicTextField(
-                textStyle = second.formatText.toTextStyle(isDarkTheme),
-                value = secondCellTextField,
-                onValueChange = { newTextFieldValue ->
-                    secondCellTextField = newTextFieldValue.copy(text = newTextFieldValue.text)
-                    updateNoteItem(
-                        noteItem.copy(
-                            table = noteItem.table.copy(
-                                first = first.copy(text = firstCellTextField.text),
-                                second = second.copy(text = secondCellTextField.text)
-                            )
-                        )
-                    )
-                },
-            )
         }
-            }
+    }
+}
+
+@Preview(showBackground = true)
+@Composable
+fun CellItem(
+    modifier: Modifier = Modifier,
+    isDarkTheme: Boolean = false,
+    noteItem: NoteItem = mockTableItem,
+    cell: Cell = mockCell,
+    currentFocusRequester: FocusRequester = FocusRequester(),
+    previousFocusRequester: FocusRequester? = null,
+    updateNoteItem: (NoteItem) -> Unit = {},
+    deleteNoteItemField: (NoteItem) -> Unit = {},
+) {
+    Box(modifier = modifier) {
+        BasicTextField(
+            modifier = Modifier
+                .focusRequester(currentFocusRequester)
+                .onFocusChanged {
+                    if (it.isFocused) {
+                        updateNoteItem(noteItem.copy(isFocused = true).applyInTable(cell))
+                    }
+                }
+                .onKeyEvent {
+                    val isBackspace = it.key == Key.Backspace
+                    when {
+                        cell.isStartCell && isBackspace && noteItem.table?.isEmpty() == true -> {
+                            previousFocusRequester?.requestFocus()
+                            deleteNoteItemField(noteItem)
+                            true
+                        }
+
+                        !cell.isStartCell && isBackspace && cell.isEmpty() -> {
+                            previousFocusRequester?.requestFocus()
+                            true
+                        }
+
+                        else -> false
+                    }
+                },
+            textStyle = cell.formatText.toTextStyle(isDarkTheme),
+            value = TextFieldValue(cell.text, TextRange(cell.text.length)),
+            onValueChange = { newTextFieldValue ->
+                updateNoteItem(
+                    noteItem.copy(isFocused = true)
+                        .applyInTable(cell.copy(text = newTextFieldValue.text))
+                )
+            },
+        )
+    }
+
+    LaunchedEffect(cell.id, cell.isFocused) {
+        if (cell.isFocused) currentFocusRequester.requestFocus()
+        else currentFocusRequester.freeFocus()
     }
 }

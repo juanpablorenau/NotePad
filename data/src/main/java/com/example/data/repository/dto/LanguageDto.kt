@@ -1,6 +1,6 @@
 package com.example.data.repository.dto
 
-import com.example.model.entities.Language
+import com.example.model.enums.Language
 import javax.inject.Inject
 
 class LanguageDto @Inject constructor() {

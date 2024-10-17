@@ -1,4 +1,4 @@
-package com.example.model.entities
+package com.example.model.enums
 
 enum class NoteColor(
     val lightColor: String,

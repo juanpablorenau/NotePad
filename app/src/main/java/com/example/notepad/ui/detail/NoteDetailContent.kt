@@ -36,7 +36,7 @@ import androidx.compose.ui.unit.sp
 import androidx.lifecycle.compose.LifecycleResumeEffect
 import com.example.model.entities.Note
 import com.example.model.entities.NoteItem
-import com.example.model.entities.NoteItemType
+import com.example.model.enums.NoteItemType
 import com.example.notepad.R
 import com.example.notepad.utils.getColor
 import com.example.notepad.utils.mockNote
@@ -52,8 +52,8 @@ fun NoteDetailContent(
     isDarkTheme: Boolean = false,
     addCheckBox: (String?) -> Unit = {},
     updateNoteItem: (NoteItem) -> Unit = {},
-    deleteTextField: (String) -> Unit = {},
-    deleteCheckBox: (String) -> Unit = {},
+    deleteTextField: (NoteItem) -> Unit = {},
+    deleteNoteItemField: (NoteItem) -> Unit = {},
 ) {
     val color = getColor(if (isDarkTheme) note.darkNoteColor else note.lightNoteColor)
 
@@ -83,7 +83,7 @@ fun NoteDetailContent(
                 addCheckBox = addCheckBox,
                 updateNoteItem = updateNoteItem,
                 deleteTextField = deleteTextField,
-                deleteCheckBox = deleteCheckBox
+                deleteNoteItemField = deleteNoteItemField
             )
         }
     }
@@ -147,8 +147,8 @@ fun NoteBody(
     isDarkTheme: Boolean = false,
     addCheckBox: (String?) -> Unit = {},
     updateNoteItem: (NoteItem) -> Unit = {},
-    deleteTextField: (String) -> Unit = {},
-    deleteCheckBox: (String) -> Unit = {},
+    deleteTextField: (NoteItem) -> Unit = {},
+    deleteNoteItemField: (NoteItem) -> Unit = {},
 ) {
     val listState = rememberLazyListState()
     val focusRequesters = remember(notesItems) { notesItems.map { FocusRequester() } }
@@ -187,14 +187,17 @@ fun NoteBody(
                     previousFocusRequester = previousFocusRequester,
                     addCheckBox = addCheckBox,
                     updateNoteItem = updateNoteItem,
-                    deleteCheckBox = deleteCheckBox
+                    deleteNoteItemField = deleteNoteItemField
                 )
 
                 NoteItemType.TABLE -> TableItem(
                     noteItem = item,
                     isDarkTheme = isDarkTheme,
                     isPreviousItemTable = isPreviousItemTable,
-                    updateNoteItem = updateNoteItem
+                    currentFocusRequester = currentFocusRequester,
+                    previousFocusRequester = previousFocusRequester,
+                    updateNoteItem = updateNoteItem,
+                    deleteNoteItemField = deleteNoteItemField
                 )
             }
         }

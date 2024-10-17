@@ -1,6 +1,5 @@
 package com.example.notepad.ui.detail
 
-import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.domain.usecase.detail.DeleteNoteItemUseCase
@@ -10,8 +9,8 @@ import com.example.domain.usecase.detail.InsertNoteUseCase
 import com.example.domain.usecase.detail.UpdateNoteUseCase
 import com.example.model.entities.FormatText
 import com.example.model.entities.Note
-import com.example.model.entities.NoteColor
 import com.example.model.entities.NoteItem
+import com.example.model.enums.NoteColor
 import com.example.model.utils.getUUID
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.CoroutineDispatcher
@@ -27,9 +26,9 @@ sealed class NoteDetailUiState {
     data object Loading : NoteDetailUiState()
     data class Success(val note: Note) : NoteDetailUiState()
     data object Error : NoteDetailUiState()
-
-    fun  asSuccess() = this as Success
 }
+
+fun NoteDetailUiState.asSuccess() = this as NoteDetailUiState.Success
 
 @HiltViewModel
 class NoteDetailViewModel @Inject constructor(
@@ -61,16 +60,15 @@ class NoteDetailViewModel @Inject constructor(
 
     private fun insertNote(note: Note) {
         viewModelScope.launch(dispatcher) {
-            tryOrError {
-                insertNoteUseCase(note)
-                setSuccessState(note)
-            }
+            tryOrError { insertNoteUseCase(note) }
+            setSuccessState(note)
         }
     }
 
     private fun getNoteById(id: String) {
         viewModelScope.launch(dispatcher) {
-            getNoteDetailUseCase(id).catch { setErrorState() }
+            getNoteDetailUseCase(id)
+                .catch { setErrorState() }
                 .collect { note -> setSuccessState(note) }
         }
     }
@@ -83,7 +81,7 @@ class NoteDetailViewModel @Inject constructor(
 
     fun deleteNote() {
         viewModelScope.launch(dispatcher) {
-            tryOrError { deleteNoteUseCase(getNote().id) }
+            tryOrError { deleteNoteUseCase(getNote()) }
         }
     }
 
@@ -98,7 +96,12 @@ class NoteDetailViewModel @Inject constructor(
     fun changeColor(color: NoteColor) {
         _uiState.getAndUpdate { state ->
             with((state.asSuccess())) {
-                copy(note = note.copy(lightNoteColor = color.lightColor, darkNoteColor = color.darkColor))
+                copy(
+                    note = note.copy(
+                        lightNoteColor = color.lightColor,
+                        darkNoteColor = color.darkColor
+                    )
+                )
             }
         }
     }
@@ -112,64 +115,72 @@ class NoteDetailViewModel @Inject constructor(
     }
 
     fun addTextField() {
-        _uiState.getAndUpdate { state ->
-            with((state.asSuccess())) {
-                copy(note = note.addTextField())
+        viewModelScope.launch(dispatcher) {
+            _uiState.getAndUpdate { state ->
+                with((state.asSuccess())) {
+                    copy(note = note.addTextField())
+                }
             }
         }
     }
 
     fun addCheckBox(noteItemId: String?) {
-        _uiState.getAndUpdate { state ->
-            with((state.asSuccess())) {
-                copy(note = note.addCheckbox(noteItemId))
+        viewModelScope.launch(dispatcher) {
+            _uiState.getAndUpdate { state ->
+                with((state.asSuccess())) {
+                    copy(note = note.addCheckbox(noteItemId))
+                }
             }
         }
     }
 
-    fun addTable(){
-        _uiState.getAndUpdate { state ->
-            with((state.asSuccess())) {
-                copy(note = note.addTable())
+    fun addTable() {
+        viewModelScope.launch(dispatcher) {
+            _uiState.getAndUpdate { state ->
+                with((state.asSuccess())) {
+                    copy(note = note.addTable())
+                }
             }
         }
     }
 
     fun updateNoteItem(noteItem: NoteItem) {
-        _uiState.getAndUpdate { state ->
-            with((state.asSuccess())) {
-                copy(note = note.updateNoteItem(noteItem))
-            }
-        }
-    }
-
-    fun deleteTextField(id: String) {
-        _uiState.getAndUpdate { state ->
-            with((state.asSuccess())) {
-                deleteNoteItem(id)
-                copy(note = note.deleteTextField(id))
-            }
-        }
-    }
-
-    private fun deleteNoteItem(id: String) {
         viewModelScope.launch(dispatcher) {
-            tryOrError { viewModelScope.launch(dispatcher) { deleteNoteItemUseCase(id) } }
-        }
-    }
-
-    fun deleteCheckBox(id: String) {
-        _uiState.getAndUpdate { state ->
-            with((state.asSuccess())) {
-                deleteNoteItem(id)
-                copy(note = note.deleteCheckbox(id))
+            _uiState.getAndUpdate { state ->
+                with((state.asSuccess())) {
+                    copy(note = note.updateNoteItem(noteItem))
+                }
             }
         }
     }
 
-    fun copyNote() {
+    private fun deleteNoteItem(noteItem: NoteItem) {
+        viewModelScope.launch(dispatcher) {
+            tryOrError { deleteNoteItemUseCase(noteItem) }
+        }
+    }
+
+    fun deleteTextField(noteItem: NoteItem) {
+        _uiState.getAndUpdate { state ->
+            with((state.asSuccess())) {
+                deleteNoteItem(noteItem)
+                copy(note = note.deleteTextField(noteItem.id))
+            }
+        }
+    }
+
+    fun deleteNoteItemField(noteItem: NoteItem) {
+        _uiState.getAndUpdate { state ->
+            with((state.asSuccess())) {
+                deleteNoteItem(noteItem)
+                copy(note = note.deleteCheckbox(noteItem.id))
+            }
+        }
+    }
+
+    fun duplicateNote() {
         updateNote()
-        insertNote(getNote().copy(getUUID()))
+        insertNote(getNote().duplicate())
     }
 
     fun applyFormat(formatText: FormatText) {
@@ -185,7 +196,6 @@ class NoteDetailViewModel @Inject constructor(
             action()
         } catch (e: Exception) {
             setErrorState()
-            Log.e("ROOM ERROR", e.toString())
         }
     }
 }

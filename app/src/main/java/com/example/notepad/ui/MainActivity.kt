@@ -8,7 +8,7 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.core.os.LocaleListCompat
-import com.example.model.entities.Language
+import com.example.model.enums.Language
 import com.example.notepad.theme.NotePadTheme
 import com.example.notepad.ui.drawer.DrawerNotes
 import com.example.notepad.utils.getViewModel

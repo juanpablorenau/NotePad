@@ -13,6 +13,7 @@ class FormatTextDto @Inject constructor(
 
     fun toDomain(formatTextDb: FormatTextDb) =
         FormatText(
+            id = formatTextDb.id,
             formatTextId = formatTextDb.formatTextId,
             typeText = typeTextDto.toDomain(formatTextDb.typeText),
             fontSize = formatTextDb.fontSize,
@@ -27,6 +28,7 @@ class FormatTextDto @Inject constructor(
 
     fun toDb(formatText: FormatText) =
         FormatTextDb(
+            id = formatText.id,
             formatTextId = formatText.formatTextId,
             typeText = formatText.typeText.name,
             fontSize = formatText.fontSize,

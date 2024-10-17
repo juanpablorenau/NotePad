@@ -1,4 +1,4 @@
-package com.example.model.entities
+package com.example.model.enums
 
 enum class Language(val key: String, val fullName: String) {
     EN("en", "English"),

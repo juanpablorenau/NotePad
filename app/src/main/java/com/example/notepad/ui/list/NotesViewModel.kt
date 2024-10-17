@@ -22,7 +22,7 @@ sealed class NotesUiState {
     data class Success(val notes: List<Note>, val itemsView: Int = 2) : NotesUiState()
     data object Error : NotesUiState()
 
-    fun  asSuccess() = this as Success
+    fun asSuccess() = this as Success
 }
 
 @HiltViewModel
@@ -50,7 +50,10 @@ class NotesViewModel @Inject constructor(
     fun getNotes() {
         viewModelScope.launch(dispatcher) {
             getNotesUseCase()
-                .catch { setErrorState() }
+                .catch {
+                    Log.e("ROOM ERROR", it.toString())
+                    setErrorState()
+                }
                 .collect { notes -> setSuccessState(getSortedNotes(notes)) }
         }
     }
@@ -74,20 +77,21 @@ class NotesViewModel @Inject constructor(
         viewModelScope.launch(dispatcher) {
             with(_uiState.value.asSuccess()) {
                 tryOrError {
-                    deleteNotesUseCase(getCheckedIds(notes))
+                    deleteNotesUseCase(getCheckedNotes(notes))
                     getNotes()
                 }
             }
         }
     }
 
-    private fun getCheckedIds(notes: List<Note>) =
-        notes.filter { it.isChecked }.map { it.id }
+    private fun getCheckedNotes(notes: List<Note>) = notes.filter { it.isChecked }
 
     fun searchNotes(query: String) {
-        _uiState.getAndUpdate { state ->
-            with((state.asSuccess())) {
-                copy(notes = notes.filter { note -> note.contains(query) })
+        viewModelScope.launch(dispatcher) {
+            _uiState.getAndUpdate { state ->
+                with((state.asSuccess())) {
+                    copy(notes = notes.filter { note -> note.contains(query) })
+                }
             }
         }
     }
@@ -154,7 +158,6 @@ class NotesViewModel @Inject constructor(
             action()
         } catch (e: Exception) {
             setErrorState()
-            Log.e("ROOM ERROR", e.toString())
         }
     }
 }

@@ -18,7 +18,7 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.model.entities.Note
-import com.example.model.entities.NoteColor
+import com.example.model.enums.NoteColor
 import com.example.notepad.R
 import com.example.notepad.components.Dialog
 import com.example.notepad.components.MenuItem
@@ -35,7 +35,7 @@ fun NoteDetailTopBar(
     pinUpNote: () -> Unit = {},
     deleteNote: () -> Unit = {},
     changeColor: (NoteColor) -> Unit = {},
-    copyNote: () -> Unit = {},
+    duplicateNote: () -> Unit = {},
     isDarkTheme: Boolean = false,
 ) {
     var showMenu by remember { mutableStateOf(false) }
@@ -101,10 +101,10 @@ fun NoteDetailTopBar(
                 )
 
                 DropdownMenuItem(
-                    text = { MenuItem(R.drawable.ic_copy, stringResource(R.string.copy)) },
+                    text = { MenuItem(R.drawable.ic_duplicate, stringResource(R.string.duplicate)) },
                     onClick = {
                         showMenu = false
-                        copyNote()
+                        duplicateNote()
                     },
                 )
 
