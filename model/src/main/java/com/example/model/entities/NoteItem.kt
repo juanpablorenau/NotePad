@@ -20,7 +20,8 @@ data class NoteItem(
         noteId = noteId,
         type = NoteItemType.TEXT,
         formatText = FormatText(id = getUUID(), formatTextId = id),
-        index = index
+        index = index,
+        isFocused = true,
     )
 
     constructor(id: String, noteId: String, isChecked: Boolean, index: Int) : this(
@@ -29,7 +30,8 @@ data class NoteItem(
         type = NoteItemType.CHECK_BOX,
         formatText = FormatText(id = getUUID(), formatTextId = id),
         isChecked = isChecked,
-        index = index
+        index = index,
+        isFocused = true,
     )
 
     constructor(id: String, noteId: String, table: Table, index: Int) : this(
@@ -38,7 +40,8 @@ data class NoteItem(
         type = NoteItemType.TABLE,
         formatText = FormatText(id = getUUID(), formatTextId = id),
         table = table.copy(noteItemId = id),
-        index = index
+        index = index,
+        isFocused = true,
     )
 
     fun isText() = type == NoteItemType.TEXT
