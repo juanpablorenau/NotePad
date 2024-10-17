@@ -8,9 +8,6 @@ data class Table(
     val startCell: Cell = Cell(id = getUUID(), tableId = id, isStartCell = true),
     val endCell: Cell = Cell(id = getUUID(), tableId = id, isStartCell = false),
 ) {
-
-    fun isEmpty() = startCell.isEmpty() && endCell.isEmpty()
-
     fun duplicate(newNoteItemId: String): Table {
         val newTableId = getUUID()
         return this.copy(
