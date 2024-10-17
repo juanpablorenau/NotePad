@@ -60,16 +60,15 @@ class NoteDetailViewModel @Inject constructor(
 
     private fun insertNote(note: Note) {
         viewModelScope.launch(dispatcher) {
-            tryOrError {
-                insertNoteUseCase(note)
-                setSuccessState(note)
-            }
+            tryOrError { insertNoteUseCase(note) }
+            setSuccessState(note)
         }
     }
 
     private fun getNoteById(id: String) {
         viewModelScope.launch(dispatcher) {
-            getNoteDetailUseCase(id).catch { setErrorState() }
+            getNoteDetailUseCase(id)
+                .catch { setErrorState() }
                 .collect { note -> setSuccessState(note) }
         }
     }
@@ -155,6 +154,12 @@ class NoteDetailViewModel @Inject constructor(
         }
     }
 
+    private fun deleteNoteItem(noteItem: NoteItem) {
+        viewModelScope.launch(dispatcher) {
+            tryOrError { deleteNoteItemUseCase(noteItem) }
+        }
+    }
+
     fun deleteTextField(noteItem: NoteItem) {
         _uiState.getAndUpdate { state ->
             with((state.asSuccess())) {
@@ -164,13 +169,7 @@ class NoteDetailViewModel @Inject constructor(
         }
     }
 
-    private fun deleteNoteItem(noteItem: NoteItem) {
-        viewModelScope.launch(dispatcher) {
-            tryOrError { viewModelScope.launch(dispatcher) { deleteNoteItemUseCase(noteItem) } }
-        }
-    }
-
-    fun deleteCheckBox(noteItem: NoteItem) {
+    fun deleteNoteItemField(noteItem: NoteItem) {
         _uiState.getAndUpdate { state ->
             with((state.asSuccess())) {
                 deleteNoteItem(noteItem)
