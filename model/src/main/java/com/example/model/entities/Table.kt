@@ -19,15 +19,24 @@ data class Table(
     }
 
     fun applyInTable(cell: Cell) =
-        if (cell.isStartCell) {
+        if (cell.isStartCell) copy(startCell = cell)
+        else copy(endCell = cell)
+
+    fun initFocus() =
+        with(endCell.text.isNotEmpty()) {
             copy(
-                startCell = cell.copy(isFocused = true),
-                endCell = endCell.copy(isFocused = false)
-            )
-        } else {
-            copy(
-                startCell = startCell.copy(isFocused = false),
-                endCell = cell.copy(isFocused = true)
+                startCell = startCell.copy(isFocused = !this),
+                endCell = endCell.copy(isFocused = this)
             )
         }
+
+    fun removeFocus() = copy(
+        startCell = startCell.copy(isFocused = false),
+        endCell = endCell.copy(isFocused = false)
+    )
+
+    fun changeFocus(isStartCell: Boolean) = copy(
+        startCell = startCell.copy(isFocused = isStartCell),
+        endCell = endCell.copy(isFocused = !isStartCell)
+    )
 }

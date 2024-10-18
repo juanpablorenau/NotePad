@@ -55,6 +55,7 @@ fun NoteDetailScreen(
                 addCheckBox = { id -> viewModel.addCheckBox(id) },
                 addTable = { viewModel.addTable()},
                 updateNoteItem = { textField -> viewModel.updateNoteItem(textField) },
+                changeFocusIn = { noteItem -> viewModel.changeFocusIn(noteItem) },
                 deleteTextField = { noteItem -> viewModel.deleteTextField(noteItem) },
                 deleteNoteItemField = { noteItem -> viewModel.deleteNoteItemField(noteItem) },
                 duplicateNote = { viewModel.duplicateNote() },
@@ -78,6 +79,7 @@ fun SuccessScreen(
     addCheckBox: (String?) -> Unit = {},
     addTable: () -> Unit = {},
     updateNoteItem: (NoteItem) -> Unit = {},
+    changeFocusIn: (NoteItem) -> Unit = {},
     deleteTextField: (NoteItem) -> Unit = {},
     deleteNoteItemField: (NoteItem) -> Unit = {},
     duplicateNote: () -> Unit = {},
@@ -103,6 +105,7 @@ fun SuccessScreen(
                 isDarkTheme = isDarkTheme,
                 addCheckBox = addCheckBox,
                 updateNoteItem = updateNoteItem,
+                changeFocusIn = changeFocusIn,
                 deleteTextField = deleteTextField,
                 deleteNoteItemField = deleteNoteItemField
             )
