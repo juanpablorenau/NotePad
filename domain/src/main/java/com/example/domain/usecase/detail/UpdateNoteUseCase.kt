@@ -10,5 +10,6 @@ class UpdateNoteUseCase @Inject constructor(
     private val repository: NoteRepository,
     private val dispatcher: CoroutineDispatcher,
 ) {
-    suspend operator fun invoke(note: Note) = withContext(dispatcher) { repository.updateNote(note) }
+    suspend operator fun invoke(note: Note) =
+        withContext(dispatcher) { repository.updateNote(note.setFocusOnLastItem()) }
 }

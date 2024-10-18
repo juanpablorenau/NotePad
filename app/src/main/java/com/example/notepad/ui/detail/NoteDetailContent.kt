@@ -52,6 +52,7 @@ fun NoteDetailContent(
     isDarkTheme: Boolean = false,
     addCheckBox: (String?) -> Unit = {},
     updateNoteItem: (NoteItem) -> Unit = {},
+    changeFocusIn: (NoteItem) -> Unit = {},
     deleteTextField: (NoteItem) -> Unit = {},
     deleteNoteItemField: (NoteItem) -> Unit = {},
 ) {
@@ -82,6 +83,7 @@ fun NoteDetailContent(
                 isDarkTheme = isDarkTheme,
                 addCheckBox = addCheckBox,
                 updateNoteItem = updateNoteItem,
+                changeFocusIn = changeFocusIn,
                 deleteTextField = deleteTextField,
                 deleteNoteItemField = deleteNoteItemField
             )
@@ -147,6 +149,7 @@ fun NoteBody(
     isDarkTheme: Boolean = false,
     addCheckBox: (String?) -> Unit = {},
     updateNoteItem: (NoteItem) -> Unit = {},
+    changeFocusIn: (NoteItem) -> Unit = {},
     deleteTextField: (NoteItem) -> Unit = {},
     deleteNoteItemField: (NoteItem) -> Unit = {},
 ) {
@@ -177,6 +180,7 @@ fun NoteBody(
                     currentFocusRequester = currentFocusRequester,
                     previousFocusRequester = previousFocusRequester,
                     updateNoteItem = updateNoteItem,
+                    changeFocusIn = changeFocusIn,
                     deleteTextField = deleteTextField
                 )
 
@@ -187,6 +191,7 @@ fun NoteBody(
                     previousFocusRequester = previousFocusRequester,
                     addCheckBox = addCheckBox,
                     updateNoteItem = updateNoteItem,
+                    changeFocusIn = changeFocusIn,
                     deleteNoteItemField = deleteNoteItemField
                 )
 
@@ -197,6 +202,7 @@ fun NoteBody(
                     currentFocusRequester = currentFocusRequester,
                     previousFocusRequester = previousFocusRequester,
                     updateNoteItem = updateNoteItem,
+                    changeFocusIn = changeFocusIn,
                     deleteNoteItemField = deleteNoteItemField
                 )
             }

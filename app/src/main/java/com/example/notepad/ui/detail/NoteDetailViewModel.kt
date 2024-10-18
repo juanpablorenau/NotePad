@@ -154,6 +154,16 @@ class NoteDetailViewModel @Inject constructor(
         }
     }
 
+    fun changeFocusIn(noteItem: NoteItem) {
+        viewModelScope.launch(dispatcher) {
+            _uiState.getAndUpdate { state ->
+                with((state.asSuccess())) {
+                    copy(note = note.changeFocusIn(noteItem))
+                }
+            }
+        }
+    }
+
     private fun deleteNoteItem(noteItem: NoteItem) {
         viewModelScope.launch(dispatcher) {
             tryOrError { deleteNoteItemUseCase(noteItem) }

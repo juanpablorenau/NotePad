@@ -11,8 +11,7 @@ import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material3.Checkbox
 import androidx.compose.material3.CheckboxDefaults
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.focus.FocusRequester
@@ -27,7 +26,7 @@ import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.TextFieldValue
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
-import com.example.model.entities.Cell
+import androidx.lifecycle.compose.LifecycleResumeEffect
 import com.example.model.entities.NoteItem
 import com.example.notepad.utils.*
 
@@ -40,8 +39,14 @@ fun CheckBoxItem(
     previousFocusRequester: FocusRequester? = null,
     addCheckBox: (String) -> Unit = {},
     updateNoteItem: (NoteItem) -> Unit = {},
+    changeFocusIn: (NoteItem) -> Unit = {},
     deleteNoteItemField: (NoteItem) -> Unit = {},
 ) {
+    var isChecked by remember(noteItem.id) { mutableStateOf(noteItem.isChecked) }
+    var textField by remember(noteItem.id) {
+        mutableStateOf(TextFieldValue(noteItem.text, TextRange(noteItem.text.length)))
+    }
+
     Row(
         modifier = Modifier
             .fillMaxWidth()
@@ -54,11 +59,11 @@ fun CheckBoxItem(
             horizontalArrangement = Arrangement.Absolute.Left
         ) {
             Checkbox(
-                checked = noteItem.isChecked,
-                onCheckedChange = { newChecked ->
-                    updateNoteItem(noteItem.copy(isChecked = newChecked, isFocused = true))
-                }, colors = CheckboxDefaults.colors(
-                    checkedColor = MaterialTheme.colorScheme.primary, checkmarkColor = Color.White
+                checked = isChecked,
+                onCheckedChange = { newChecked -> isChecked = newChecked },
+                colors = CheckboxDefaults.colors(
+                    checkedColor = MaterialTheme.colorScheme.primary,
+                    checkmarkColor = Color.White
                 )
             )
 
@@ -66,23 +71,21 @@ fun CheckBoxItem(
                 modifier = Modifier
                     .fillMaxWidth()
                     .focusRequester(currentFocusRequester)
-                    .onFocusChanged { if (it.isFocused) updateNoteItem(noteItem.copy(isFocused = true)) }
+                    .onFocusChanged { if (it.isFocused) changeFocusIn(noteItem) }
                     .onKeyEvent {
-                        if (it.key == Key.Backspace && noteItem.text.isEmpty()) {
+                        if (it.key == Key.Backspace && textField.text.isEmpty()) {
                             previousFocusRequester?.requestFocus()
                             deleteNoteItemField(noteItem)
                             true
                         } else false
                     },
-                value = TextFieldValue(noteItem.text, TextRange(noteItem.text.length)),
+                value = textField,
                 singleLine = true,
-                onValueChange = { newTextFieldValue ->
-                    updateNoteItem(noteItem.copy(text = newTextFieldValue.text, isFocused = true))
-                },
+                onValueChange = { newTextFieldValue -> textField = newTextFieldValue },
                 keyboardOptions = KeyboardOptions.Default.copy(imeAction = ImeAction.Done),
                 keyboardActions = KeyboardActions(
                     onDone = {
-                        if (noteItem.text.isNotEmpty()) addCheckBox(noteItem.id)
+                        if (textField.text.isNotEmpty()) addCheckBox(noteItem.id)
                         else {
                             previousFocusRequester?.requestFocus()
                             deleteNoteItemField(noteItem)
@@ -98,6 +101,12 @@ fun CheckBoxItem(
         if (noteItem.isFocused) currentFocusRequester.requestFocus()
         else currentFocusRequester.freeFocus()
     }
+
+    LifecycleResumeEffect(noteItem.id, textField.text, isChecked) {
+        onPauseOrDispose {
+            updateNoteItem(noteItem.copy(text = textField.text, isChecked = isChecked))
+        }
+    }
 }
 
 @Preview(showBackground = true)
@@ -108,31 +117,38 @@ fun TextFieldItem(
     currentFocusRequester: FocusRequester = FocusRequester(),
     previousFocusRequester: FocusRequester? = null,
     updateNoteItem: (NoteItem) -> Unit = {},
+    changeFocusIn: (NoteItem) -> Unit = {},
     deleteTextField: (NoteItem) -> Unit = {},
 ) {
+    var textField by remember(noteItem.id) {
+        mutableStateOf(TextFieldValue(noteItem.text, TextRange(noteItem.text.length)))
+    }
+
     BasicTextField(
         modifier = Modifier
             .fillMaxWidth()
             .padding(horizontal = 24.dp, vertical = 8.dp)
             .focusRequester(currentFocusRequester)
-            .onFocusChanged { if (it.isFocused) updateNoteItem(noteItem.copy(isFocused = true)) }
+            .onFocusChanged { if (it.isFocused) changeFocusIn(noteItem) }
             .onKeyEvent {
-                if (it.key == Key.Backspace && noteItem.text.isEmpty()) {
+                if (it.key == Key.Backspace && textField.text.isEmpty()) {
                     previousFocusRequester?.requestFocus()
                     deleteTextField(noteItem)
                     true
                 } else false
             },
         textStyle = noteItem.formatText.toTextStyle(isDarkTheme),
-        value = TextFieldValue(noteItem.text, TextRange(noteItem.text.length)),
-        onValueChange = { newTextFieldValue ->
-            updateNoteItem(noteItem.copy(text = newTextFieldValue.text, isFocused = true))
-        },
+        value = textField,
+        onValueChange = { newTextFieldValue -> textField = newTextFieldValue },
     )
 
     LaunchedEffect(noteItem.id, noteItem.isFocused) {
         if (noteItem.isFocused) currentFocusRequester.requestFocus()
         else currentFocusRequester.freeFocus()
+    }
+
+    LifecycleResumeEffect(noteItem.id, textField.text) {
+        onPauseOrDispose { updateNoteItem(noteItem.copy(text = textField.text)) }
     }
 }
 
@@ -145,12 +161,16 @@ fun TableItem(
     currentFocusRequester: FocusRequester = FocusRequester(),
     previousFocusRequester: FocusRequester? = null,
     updateNoteItem: (NoteItem) -> Unit = {},
+    changeFocusIn: (NoteItem) -> Unit = {},
     deleteNoteItemField: (NoteItem) -> Unit = {},
 ) {
     noteItem.table?.let { table ->
         with(table) {
+            val endCellFocus = remember(endCell.id) { FocusRequester() }
             val color = MaterialTheme.colorScheme.onBackground
             val isStartCellTextLonger = startCell.text.length >= endCell.text.length
+            val endBorderColor = if (isStartCellTextLonger) color else Color.Transparent
+            val startBorderColor = if (!isStartCellTextLonger) color else Color.Transparent
 
             Row(
                 modifier = Modifier
@@ -161,7 +181,6 @@ fun TableItem(
                     .startBorder(color = color)
                     .endBorder(color = color)
             ) {
-                val endBorderColor = if (isStartCellTextLonger) color else Color.Transparent
                 CellItem(
                     modifier = Modifier
                         .endBorder(color = endBorderColor)
@@ -169,15 +188,13 @@ fun TableItem(
                         .weight(1f),
                     isDarkTheme = isDarkTheme,
                     noteItem = noteItem,
-                    cell = startCell,
+                    isStartCell = true,
                     currentFocusRequester = currentFocusRequester,
                     previousFocusRequester = previousFocusRequester,
                     updateNoteItem = updateNoteItem,
+                    changeFocusIn = changeFocusIn,
                     deleteNoteItemField = deleteNoteItemField,
                 )
-
-                val startBorderColor = if (!isStartCellTextLonger) color else Color.Transparent
-
                 CellItem(
                     modifier = Modifier
                         .startBorder(color = startBorderColor)
@@ -185,8 +202,11 @@ fun TableItem(
                         .weight(1f),
                     isDarkTheme = isDarkTheme,
                     noteItem = noteItem,
-                    cell = endCell,
+                    isStartCell = false,
+                    currentFocusRequester = endCellFocus,
+                    previousFocusRequester = currentFocusRequester,
                     updateNoteItem = updateNoteItem,
+                    changeFocusIn = changeFocusIn,
                 )
             }
         }
@@ -199,31 +219,37 @@ fun CellItem(
     modifier: Modifier = Modifier,
     isDarkTheme: Boolean = false,
     noteItem: NoteItem = mockTableItem,
-    cell: Cell = mockCell,
+    isStartCell: Boolean = true,
     currentFocusRequester: FocusRequester = FocusRequester(),
     previousFocusRequester: FocusRequester? = null,
     updateNoteItem: (NoteItem) -> Unit = {},
+    changeFocusIn: (NoteItem) -> Unit = {},
     deleteNoteItemField: (NoteItem) -> Unit = {},
 ) {
+    val cell = if (isStartCell) noteItem.table?.startCell else noteItem.table?.endCell
+    cell ?: return
+
+    var textField by remember(cell.id) {
+        mutableStateOf(TextFieldValue(cell.text, TextRange(cell.text.length)))
+    }
+
     Box(modifier = modifier) {
         BasicTextField(
             modifier = Modifier
                 .focusRequester(currentFocusRequester)
                 .onFocusChanged {
-                    if (it.isFocused) {
-                        updateNoteItem(noteItem.copy(isFocused = true).applyInTable(cell))
-                    }
+                    if (it.isFocused) changeFocusIn(noteItem.changeFocusInTable(isStartCell))
                 }
                 .onKeyEvent {
                     val isBackspace = it.key == Key.Backspace
                     when {
-                        cell.isStartCell && isBackspace && noteItem.table?.isEmpty() == true -> {
+                        isStartCell && isBackspace && textField.text.isEmpty() -> {
                             previousFocusRequester?.requestFocus()
                             deleteNoteItemField(noteItem)
                             true
                         }
 
-                        !cell.isStartCell && isBackspace && cell.isEmpty() -> {
+                        !isStartCell && isBackspace && textField.text.isEmpty() -> {
                             previousFocusRequester?.requestFocus()
                             true
                         }
@@ -232,15 +258,16 @@ fun CellItem(
                     }
                 },
             textStyle = cell.formatText.toTextStyle(isDarkTheme),
-            value = TextFieldValue(cell.text, TextRange(cell.text.length)),
+            value = textField,
             onValueChange = { newTextFieldValue ->
-                updateNoteItem(
-                    noteItem.copy(isFocused = true)
-                        .applyInTable(cell.copy(text = newTextFieldValue.text))
-                )
+                textField = newTextFieldValue
+                updateNoteItem(noteItem.applyInTable(cell.copy(text = textField.text)))
             },
         )
     }
+
+    println("cell text: ${cell.text}, isFocused: ${cell.isFocused}")
+    println("")
 
     LaunchedEffect(cell.id, cell.isFocused) {
         if (cell.isFocused) currentFocusRequester.requestFocus()

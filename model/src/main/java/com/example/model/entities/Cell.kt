@@ -19,8 +19,6 @@ data class Cell(
         formatText = FormatText(id = getUUID(), formatTextId = id)
     )
 
-    fun isEmpty() = text.isEmpty()
-
     fun containsInCell(query: String) =
         text.normalize().contains(query.normalize(), ignoreCase = true)
 

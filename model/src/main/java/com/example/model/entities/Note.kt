@@ -96,17 +96,7 @@ data class Note(
 
     fun updateNoteItem(noteItem: NoteItem) = copy(items = items.map { current ->
         if (current.id == noteItem.id) noteItem
-        else {
-            current.table?.let { table ->
-                current.copy(
-                    isFocused = false,
-                    table = table.copy(
-                        startCell = table.startCell.copy(isFocused = false),
-                        endCell = table.endCell.copy(isFocused = false)
-                    )
-                )
-            } ?: current.copy(isFocused = false)
-        }
+        else current
     })
 
     fun deleteTextField(noteItemId: String) = copy(items = items
@@ -151,4 +141,17 @@ data class Note(
             items = items.map { noteItem -> noteItem.duplicate(newNoteId) }
         )
     }
+
+    fun setFocusOnLastItem() = copy(items = items
+        .mapIndexed { index, noteItem ->
+            if (index == items.lastIndex) noteItem.initFocus()
+            else noteItem.removeFocus()
+        }
+    )
+
+    fun changeFocusIn(noteItem: NoteItem) =
+        copy(items = items.map { current ->
+            if (current.id == noteItem.id) noteItem.copy(isFocused = true)
+            else current.removeFocus()
+        })
 }
