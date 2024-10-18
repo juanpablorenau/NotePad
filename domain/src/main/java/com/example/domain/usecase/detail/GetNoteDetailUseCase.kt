@@ -11,10 +11,6 @@ class GetNoteDetailUseCase @Inject constructor(
     private val dispatcher: CoroutineDispatcher,
 ) {
     operator fun invoke(id: String) = repository.getNoteById(id).map { note ->
-        val updatedItems = when (note.items.size) {
-            1 -> listOf(note.items.first().copy(isFocused = true, index = 0))
-            else -> note.items.sortedBy { it.index }
-        }
-        note.copy(items = updatedItems)
+        note.copy(items = note.items.sortedBy { it.index })
     }.flowOn(dispatcher)
 }
