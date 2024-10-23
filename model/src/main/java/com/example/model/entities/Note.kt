@@ -90,7 +90,11 @@ data class Note(
             addAll(updatedItems)
 
             val newItemIndex = focusedIndex + 1
-            add(newItemIndex, NoteItem(getUUID(), id, Table(id = getUUID()), newItemIndex))
+            val noteItemId = getUUID()
+            add(
+                newItemIndex,
+                NoteItem(noteItemId, id, Table(id = getUUID(), noteItemId), newItemIndex)
+            )
         }
     })
 

@@ -19,7 +19,6 @@ class TableDataSourceImpl @Inject constructor(
 
     override suspend fun deleteTable(table: Table) {
         tableDao.deleteTable(table.id)
-        cellDataSource.deleteCell(table.startCell)
-        cellDataSource.deleteCell(table.endCell)
+        table.cells.forEach { currentCell -> cellDataSource.deleteCell(currentCell) }
     }
 }
