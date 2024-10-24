@@ -12,15 +12,8 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.text.BasicTextField
 import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
-import androidx.compose.material3.Checkbox
-import androidx.compose.material3.CheckboxDefaults
-import androidx.compose.material3.MaterialTheme
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
+import androidx.compose.material3.*
+import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.focus.FocusRequester
@@ -38,17 +31,9 @@ import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.LifecycleResumeEffect
 import com.example.model.entities.Cell
 import com.example.model.entities.NoteItem
-import com.example.notepad.utils.bottomBorder
-import com.example.notepad.utils.endBorder
-import com.example.notepad.utils.mockCell
-import com.example.notepad.utils.mockCheckBoxItem
-import com.example.notepad.utils.mockFocusRequesters
-import com.example.notepad.utils.mockTableItem
-import com.example.notepad.utils.mockTextItem
-import com.example.notepad.utils.startBorder
-import com.example.notepad.utils.toTextStyle
-import com.example.notepad.utils.topBorder
+import com.example.notepad.utils.*
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Preview(showBackground = true)
 @Composable
 fun CheckBoxItem(
@@ -67,9 +52,7 @@ fun CheckBoxItem(
     }
 
     Row(
-        modifier = Modifier
-            .fillMaxWidth()
-            .padding(start = 12.dp, end = 24.dp),
+        modifier = Modifier.fillMaxWidth(),
         horizontalArrangement = Arrangement.SpaceBetween,
         verticalAlignment = Alignment.CenterVertically
     ) {
@@ -77,18 +60,21 @@ fun CheckBoxItem(
             verticalAlignment = Alignment.CenterVertically,
             horizontalArrangement = Arrangement.Absolute.Left
         ) {
-            Checkbox(
-                checked = isChecked,
-                onCheckedChange = { newChecked -> isChecked = newChecked },
-                colors = CheckboxDefaults.colors(
-                    checkedColor = MaterialTheme.colorScheme.primary,
-                    checkmarkColor = Color.White
+            CompositionLocalProvider(LocalMinimumInteractiveComponentEnforcement provides false) {
+                Checkbox(
+                    checked = isChecked,
+                    onCheckedChange = { newChecked -> isChecked = newChecked },
+                    colors = CheckboxDefaults.colors(
+                        checkedColor = MaterialTheme.colorScheme.primary,
+                        checkmarkColor = Color.White
+                    )
                 )
-            )
+            }
 
             BasicTextField(
                 modifier = Modifier
                     .fillMaxWidth()
+                    .padding(start = 8.dp)
                     .focusRequester(currentFocus)
                     .onFocusChanged { if (it.isFocused) changeFocusIn(noteItem) }
                     .onKeyEvent {
@@ -146,7 +132,6 @@ fun TextFieldItem(
     BasicTextField(
         modifier = Modifier
             .fillMaxWidth()
-            .padding(horizontal = 24.dp, vertical = 8.dp)
             .focusRequester(currentFocus)
             .onFocusChanged { if (it.isFocused) changeFocusIn(noteItem) }
             .onKeyEvent {
@@ -190,7 +175,6 @@ fun TableItem(
             modifier = Modifier
                 .fillMaxWidth()
                 .height(intrinsicSize = IntrinsicSize.Max)
-                .padding(horizontal = 24.dp)
                 .topBorder(if (!isPreviousItemTable) 0.5.dp else 0.dp, color = color)
                 .bottomBorder(color = color)
                 .startBorder(color = color)

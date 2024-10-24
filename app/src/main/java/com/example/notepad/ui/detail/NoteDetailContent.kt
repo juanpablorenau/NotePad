@@ -1,15 +1,7 @@
 package com.example.notepad.ui.detail
 
 import androidx.compose.foundation.background
-import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.PaddingValues
-import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.fillMaxHeight
-import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.lazy.rememberLazyListState
@@ -174,6 +166,7 @@ fun NoteBody(
     LazyColumn(
         modifier = Modifier
             .fillMaxWidth()
+            .padding(horizontal = 24.dp)
             .fillMaxHeight(0.95f),
         state = listState,
     ) {
@@ -182,6 +175,10 @@ fun NoteBody(
             val currentFocus = focusList[focusIndex]
             val previousFocus = focusList.getOrNull(focusIndex - 1)
             val isPreviousItemTable = noteItems.getOrNull(index - 1)?.isTable().orFalse()
+
+            if (!(item.isTable() && isPreviousItemTable) && index != 0) {
+                Spacer(modifier = Modifier.fillMaxWidth().height(8.dp))
+            }
 
             when (item.type) {
                 NoteItemType.TEXT -> TextFieldItem(

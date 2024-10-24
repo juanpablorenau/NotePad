@@ -34,14 +34,14 @@ val mockTextItem by lazy { NoteItem(id = "1", noteId = "1", 0).copy(text = "Text
 
 val mockCheckBoxItem by lazy {
     NoteItem(
-        id = "1",
+        id = "2",
         noteId = "1",
         isChecked = true,
         index = 0
     ).copy(text = "Checkbox Item")
 }
 
-val mockTableItem by lazy { NoteItem(id = "1", noteId = "1", mockTable, 0) }
+val mockTableItem by lazy { NoteItem(id = "3", noteId = "1", mockTable, 0) }
 
 val mockTable by lazy {
     Table(
@@ -50,8 +50,8 @@ val mockTable by lazy {
         cells =
         listOf(
             mockCell,
-            mockCell,
-            mockCell.copy(text = "Very large text in the cell")
+            mockCell.copy(id = "2"),
+            mockCell.copy(id = "3", text = "Very large text in the cell")
         )
     )
 }

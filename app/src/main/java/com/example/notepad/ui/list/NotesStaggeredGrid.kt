@@ -154,16 +154,14 @@ fun NoteBody(notesItems: List<NoteItem> = mockNoteItems, isDarkTheme: Boolean = 
     notesItems.forEachIndexed { index, item ->
         val isPreviousItemTable = notesItems.getOrNull(index - 1)?.isTable() ?: false
 
+        if (!(item.isTable() && isPreviousItemTable) && index != 0) {
+            Spacer(modifier = Modifier.fillMaxWidth().height(8.dp))
+        }
+
         when (item.type) {
             NoteItemType.TEXT -> TextFieldItem(item, isDarkTheme)
             NoteItemType.CHECK_BOX -> CheckBoxItem(item, isDarkTheme)
             NoteItemType.TABLE -> TableItem(item, isDarkTheme, isPreviousItemTable)
-        }
-
-        if (!isPreviousItemTable && index != notesItems.lastIndex) {
-            Spacer(modifier = Modifier
-                .fillMaxWidth()
-                .height(4.dp))
         }
     }
 }
