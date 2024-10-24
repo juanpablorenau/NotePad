@@ -160,9 +160,8 @@ fun NoteBody(notesItems: List<NoteItem> = mockNoteItems, isDarkTheme: Boolean = 
             NoteItemType.TABLE -> TableItem(item, isDarkTheme, isPreviousItemTable)
         }
 
-        HorizontalDivider(
-            modifier = Modifier.height(8.dp),
-            color = Color.Transparent
-        )
+        if (!isPreviousItemTable && index != notesItems.lastIndex) {
+            Spacer(modifier = Modifier.height(8.dp))
+        }
     }
 }
