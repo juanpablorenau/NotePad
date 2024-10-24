@@ -38,7 +38,6 @@ import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.LifecycleResumeEffect
 import com.example.model.entities.Cell
 import com.example.model.entities.NoteItem
-import com.example.model.utils.orFalse
 import com.example.notepad.utils.bottomBorder
 import com.example.notepad.utils.endBorder
 import com.example.notepad.utils.mockCell
@@ -55,8 +54,8 @@ import com.example.notepad.utils.topBorder
 fun CheckBoxItem(
     noteItem: NoteItem = mockCheckBoxItem,
     isDarkTheme: Boolean = false,
-    currentFocusRequester: FocusRequester = FocusRequester(),
-    previousFocusRequester: FocusRequester? = null,
+    currentFocus: FocusRequester = FocusRequester(),
+    previousFocus: FocusRequester? = null,
     addCheckBox: (String) -> Unit = {},
     updateNoteItem: (NoteItem) -> Unit = {},
     changeFocusIn: (NoteItem) -> Unit = {},
@@ -90,11 +89,11 @@ fun CheckBoxItem(
             BasicTextField(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .focusRequester(currentFocusRequester)
+                    .focusRequester(currentFocus)
                     .onFocusChanged { if (it.isFocused) changeFocusIn(noteItem) }
                     .onKeyEvent {
                         if (it.key == Key.Backspace && textField.text.isEmpty()) {
-                            previousFocusRequester?.requestFocus()
+                            previousFocus?.requestFocus()
                             deleteNoteItemField(noteItem)
                             true
                         } else false
@@ -107,7 +106,7 @@ fun CheckBoxItem(
                     onDone = {
                         if (textField.text.isNotEmpty()) addCheckBox(noteItem.id)
                         else {
-                            previousFocusRequester?.requestFocus()
+                            previousFocus?.requestFocus()
                             deleteNoteItemField(noteItem)
                         }
                     },
@@ -118,8 +117,8 @@ fun CheckBoxItem(
     }
 
     LaunchedEffect(noteItem.id) {
-        if (noteItem.isFocused) currentFocusRequester.requestFocus()
-        else currentFocusRequester.freeFocus()
+        if (noteItem.isFocused) currentFocus.requestFocus()
+        else currentFocus.freeFocus()
     }
 
     LifecycleResumeEffect(noteItem.id, textField.text, isChecked) {
@@ -134,8 +133,8 @@ fun CheckBoxItem(
 fun TextFieldItem(
     noteItem: NoteItem = mockTextItem,
     isDarkTheme: Boolean = false,
-    currentFocusRequester: FocusRequester = FocusRequester(),
-    previousFocusRequester: FocusRequester? = null,
+    currentFocus: FocusRequester = FocusRequester(),
+    previousFocus: FocusRequester? = null,
     updateNoteItem: (NoteItem) -> Unit = {},
     changeFocusIn: (NoteItem) -> Unit = {},
     deleteTextField: (NoteItem) -> Unit = {},
@@ -148,11 +147,11 @@ fun TextFieldItem(
         modifier = Modifier
             .fillMaxWidth()
             .padding(horizontal = 24.dp, vertical = 8.dp)
-            .focusRequester(currentFocusRequester)
+            .focusRequester(currentFocus)
             .onFocusChanged { if (it.isFocused) changeFocusIn(noteItem) }
             .onKeyEvent {
                 if (it.key == Key.Backspace && textField.text.isEmpty()) {
-                    previousFocusRequester?.requestFocus()
+                    previousFocus?.requestFocus()
                     deleteTextField(noteItem)
                     true
                 } else false
@@ -163,8 +162,8 @@ fun TextFieldItem(
     )
 
     LaunchedEffect(noteItem.id) {
-        if (noteItem.isFocused) currentFocusRequester.requestFocus()
-        else currentFocusRequester.freeFocus()
+        if (noteItem.isFocused) currentFocus.requestFocus()
+        else currentFocus.freeFocus()
     }
 
     LifecycleResumeEffect(noteItem.id, textField.text) {
@@ -178,8 +177,8 @@ fun TableItem(
     noteItem: NoteItem = mockTableItem,
     isDarkTheme: Boolean = false,
     isPreviousItemTable: Boolean = false,
-    currentFocusRequesters: List<FocusRequester> = mockFocusRequesters,
-    previousFocusRequester: FocusRequester? = null,
+    cellFocusList: List<FocusRequester> = mockFocusRequesters,
+    previousFocus: FocusRequester? = null,
     updateNoteItem: (NoteItem) -> Unit = {},
     changeFocusIn: (NoteItem) -> Unit = {},
     deleteNoteItemField: (NoteItem) -> Unit = {},
@@ -198,8 +197,7 @@ fun TableItem(
                 .endBorder(color = color),
         ) {
             table.cells.forEachIndexed { index, cell ->
-                val previousRequester =
-                    currentFocusRequesters.getOrNull(index - 1) ?: previousFocusRequester
+                val previousCellFocus = cellFocusList.getOrNull(index - 1) ?: previousFocus
 
                 CellItem(
                     modifier = Modifier
@@ -211,8 +209,8 @@ fun TableItem(
                     noteItem = noteItem,
                     cell = cell,
                     isFirstCell = index == 0,
-                    currentFocusRequester = currentFocusRequesters[index],
-                    previousFocusRequester = previousRequester,
+                    currentFocusRequester = cellFocusList[index],
+                    previousFocusRequester = previousCellFocus,
                     updateNoteItem = updateNoteItem,
                     changeFocusIn = changeFocusIn,
                     deleteNoteItemField = deleteNoteItemField,
@@ -250,7 +248,7 @@ fun CellItem(
                 .onKeyEvent {
                     val isBackspace = it.key == Key.Backspace
                     when {
-                        isFirstCell && isBackspace && noteItem.table?.isEmpty().orFalse() -> {
+                        isFirstCell && isBackspace && noteItem.isTableEmpty() -> {
                             previousFocusRequester?.requestFocus()
                             deleteNoteItemField(noteItem)
                             true

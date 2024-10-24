@@ -11,11 +11,11 @@ data class Cell(
     val index: Int = 0,
     val formatText: FormatText,
 ) {
-    constructor(id: String, tableId: String, index: Int) : this(
+    constructor(id: String, tableId: String, index: Int, isFocused: Boolean) : this(
         id = id,
         tableId = tableId,
         index = index,
-        isFocused = false,
+        isFocused = isFocused,
         formatText = FormatText(id = getUUID(), formatTextId = id)
     )
 

@@ -3,6 +3,7 @@ package com.example.model.entities
 import com.example.model.enums.NoteItemType
 import com.example.model.utils.getUUID
 import com.example.model.utils.normalize
+import com.example.model.utils.orFalse
 
 data class NoteItem(
     val id: String = "",
@@ -70,4 +71,6 @@ data class NoteItem(
     fun initFocus() = copy(isFocused = true, table = table?.initFocus())
 
     fun removeFocus() = copy(isFocused = false, table = table?.removeFocus())
+
+    fun isTableEmpty() = table?.isEmpty().orFalse()
 }

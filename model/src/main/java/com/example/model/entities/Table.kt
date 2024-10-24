@@ -11,8 +11,8 @@ data class Table(
         id = id,
         noteItemId = noteItemId,
         cells = listOf(
-            Cell(id = getUUID(), tableId = id, index = 0),
-            Cell(id = getUUID(), tableId = id, index = 1),
+            Cell(id = getUUID(), tableId = id, index = 0, isFocused = true),
+            Cell(id = getUUID(), tableId = id, index = 1, isFocused = false),
         )
     )
 

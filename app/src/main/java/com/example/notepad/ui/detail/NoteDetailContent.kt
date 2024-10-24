@@ -45,6 +45,7 @@ import androidx.lifecycle.compose.LifecycleResumeEffect
 import com.example.model.entities.Note
 import com.example.model.entities.NoteItem
 import com.example.model.enums.NoteItemType
+import com.example.model.utils.orFalse
 import com.example.notepad.R
 import com.example.notepad.utils.getColor
 import com.example.notepad.utils.mockNote
@@ -162,12 +163,12 @@ fun NoteBody(
     deleteNoteItemField: (NoteItem) -> Unit = {},
 ) {
     val listState = rememberLazyListState()
-    val focusRequesters = remember(noteItems) { getFocusRequesters(noteItems) }
+    val focusList = remember(noteItems) { getFocusRequesters(noteItems) }
     val focusedItem = noteItems.find { it.isFocused }
-    val index = noteItems.indexOf(focusedItem).takeIf { it != -1 } ?: 0
+    val focusedIndex = noteItems.indexOf(focusedItem).takeIf { it != -1 } ?: 0
 
     LaunchedEffect(noteItems.size) {
-        if (noteItems.isNotEmpty()) listState.scrollToItem(index)
+        if (noteItems.isNotEmpty()) listState.scrollToItem(focusedIndex)
     }
 
     LazyColumn(
@@ -176,17 +177,18 @@ fun NoteBody(
             .fillMaxHeight(0.95f),
         state = listState,
     ) {
+        var focusIndex = 0
         itemsIndexed(noteItems, key = { _, item -> item.id }) { index, item ->
-            val currentFocusRequester = focusRequesters[index]
-            val previousFocusRequester = focusRequesters.getOrNull(index - 1)
-            val isPreviousItemTable = noteItems.getOrNull(index - 1)?.isTable() ?: false
+            val currentFocus = focusList[focusIndex]
+            val previousFocus = focusList.getOrNull(focusIndex - 1)
+            val isPreviousItemTable = noteItems.getOrNull(index - 1)?.isTable().orFalse()
 
             when (item.type) {
                 NoteItemType.TEXT -> TextFieldItem(
                     noteItem = item,
                     isDarkTheme = isDarkTheme,
-                    currentFocusRequester = currentFocusRequester,
-                    previousFocusRequester = previousFocusRequester,
+                    currentFocus = currentFocus,
+                    previousFocus = previousFocus,
                     updateNoteItem = updateNoteItem,
                     changeFocusIn = changeFocusIn,
                     deleteTextField = deleteTextField
@@ -195,8 +197,8 @@ fun NoteBody(
                 NoteItemType.CHECK_BOX -> CheckBoxItem(
                     noteItem = item,
                     isDarkTheme = isDarkTheme,
-                    currentFocusRequester = currentFocusRequester,
-                    previousFocusRequester = previousFocusRequester,
+                    currentFocus = currentFocus,
+                    previousFocus = previousFocus,
                     addCheckBox = addCheckBox,
                     updateNoteItem = updateNoteItem,
                     changeFocusIn = changeFocusIn,
@@ -204,27 +206,28 @@ fun NoteBody(
                 )
 
                 NoteItemType.TABLE -> {
-                    val endIndex = item.table?.cellsCount()?.plus(index) ?: index
-                    val currentFocusRequesters = focusRequesters.subList(index, endIndex)
+                    val cellCount = item.table?.cellsCount() ?: 0
+                    val cellFocusList = focusList.subList(focusIndex, focusIndex + cellCount)
+                    focusIndex += cellCount - 1
 
                     TableItem(
                         noteItem = item,
                         isDarkTheme = isDarkTheme,
                         isPreviousItemTable = isPreviousItemTable,
-                        currentFocusRequesters = currentFocusRequesters,
-                        previousFocusRequester = previousFocusRequester,
+                        cellFocusList = cellFocusList,
+                        previousFocus = previousFocus,
                         updateNoteItem = updateNoteItem,
                         changeFocusIn = changeFocusIn,
                         deleteNoteItemField = deleteNoteItemField
                     )
                 }
             }
+            focusIndex++
         }
     }
 }
 
-private fun getFocusRequesters(noteItems: List<NoteItem>) =
-    noteItems.flatMap { noteItem ->
-        if (noteItem.isTable()) noteItem.table?.cells?.map { FocusRequester() }.orEmpty()
-        else listOf(FocusRequester())
-    }
+private fun getFocusRequesters(noteItems: List<NoteItem>) = noteItems.flatMap { noteItem ->
+    if (noteItem.isTable()) noteItem.table?.cells?.map { FocusRequester() }.orEmpty()
+    else listOf(FocusRequester())
+}
