@@ -161,7 +161,9 @@ fun NoteBody(notesItems: List<NoteItem> = mockNoteItems, isDarkTheme: Boolean = 
         }
 
         if (!isPreviousItemTable && index != notesItems.lastIndex) {
-            Spacer(modifier = Modifier.height(8.dp))
+            Spacer(modifier = Modifier
+                .fillMaxWidth()
+                .height(4.dp))
         }
     }
 }
