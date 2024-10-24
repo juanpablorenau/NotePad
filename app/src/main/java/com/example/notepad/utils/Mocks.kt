@@ -1,11 +1,7 @@
 package com.example.notepad.utils
 
 import androidx.compose.ui.focus.FocusRequester
-import com.example.model.entities.Cell
-import com.example.model.entities.FormatText
-import com.example.model.entities.Note
-import com.example.model.entities.NoteItem
-import com.example.model.entities.Table
+import com.example.model.entities.*
 import com.example.model.enums.NoteColor as AppColor
 
 val mockNoteList by lazy {
@@ -28,15 +24,22 @@ val mockNote by lazy {
 
 val mockNoteItems by lazy {
     listOf(
-        mockTableItem,
-        mockTableItem,
+        mockCheckBoxItem,
+        mockTextItem,
         mockTableItem
     )
 }
 
-val mockTextItem by lazy { NoteItem(id = "1", noteId = "1", 0) }
+val mockTextItem by lazy { NoteItem(id = "1", noteId = "1", 0).copy(text = "Text Item") }
 
-val mockCheckBoxItem by lazy { NoteItem(id = "1", noteId = "1", isChecked = true, 0) }
+val mockCheckBoxItem by lazy {
+    NoteItem(
+        id = "1",
+        noteId = "1",
+        isChecked = true,
+        index = 0
+    ).copy(text = "Checkbox Item")
+}
 
 val mockTableItem by lazy { NoteItem(id = "1", noteId = "1", mockTable, 0) }
 

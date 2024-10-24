@@ -1,17 +1,7 @@
 package com.example.notepad.ui.list
 
-import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.fillMaxHeight
-import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.padding
-import androidx.compose.material3.Checkbox
-import androidx.compose.material3.CheckboxDefaults
-import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.LocalMinimumInteractiveComponentEnforcement
-import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Text
+import androidx.compose.foundation.layout.*
+import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.ui.Alignment
@@ -30,15 +20,7 @@ import com.example.model.entities.Cell
 import com.example.model.entities.FormatText
 import com.example.model.entities.NoteItem
 import com.example.model.entities.ParagraphType
-import com.example.notepad.utils.bottomBorder
-import com.example.notepad.utils.endBorder
-import com.example.notepad.utils.getColor
-import com.example.notepad.utils.mockCell
-import com.example.notepad.utils.mockCheckBoxItem
-import com.example.notepad.utils.mockTableItem
-import com.example.notepad.utils.mockTextItem
-import com.example.notepad.utils.startBorder
-import com.example.notepad.utils.topBorder
+import com.example.notepad.utils.*
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Preview(showBackground = true)
@@ -53,7 +35,6 @@ fun CheckBoxItem(
     )
 
     Row(
-        modifier = Modifier.fillMaxWidth(),
         horizontalArrangement = Arrangement.SpaceBetween,
         verticalAlignment = Alignment.CenterVertically
     ) {
@@ -63,7 +44,10 @@ fun CheckBoxItem(
         ) {
             CompositionLocalProvider(LocalMinimumInteractiveComponentEnforcement provides false) {
                 Checkbox(
-                    modifier = Modifier.scale(0.75f),
+                    modifier = Modifier
+                        .size(18.dp)
+                        .scale(0.75f)
+                        .padding(end = 4.dp),
                     enabled = false,
                     checked = noteItem.isChecked,
                     onCheckedChange = { _ -> },
@@ -73,6 +57,11 @@ fun CheckBoxItem(
                     )
                 )
             }
+
+            HorizontalDivider(
+                modifier = Modifier.width(4.dp),
+                color = Color.Transparent
+            )
 
             TextItem(
                 text = noteItem.text,
@@ -125,7 +114,7 @@ fun TableItem(
                 CellItem(
                     modifier = Modifier
                         .startBorder(color = color)
-                        .padding(4.dp)
+                        .padding(horizontal = 4.dp)
                         .weight(1f),
                     cell = cell,
                 )
