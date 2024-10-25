@@ -25,5 +25,5 @@ data class CellEmbeddedDb(
     @ColumnInfo(name = "tableId") val tableId: String,
     @ColumnInfo(name = "text") val text: String,
     @ColumnInfo(name = "isFocused") val isFocused: Boolean = false,
-    @ColumnInfo(name = "isStartCell") val isStartCell: Boolean = false,
+    @ColumnInfo(name = "index") val index: Int
 )

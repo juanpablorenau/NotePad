@@ -3,6 +3,7 @@ package com.example.model.entities
 import com.example.model.enums.NoteItemType
 import com.example.model.utils.getUUID
 import com.example.model.utils.normalize
+import com.example.model.utils.orFalse
 
 data class NoteItem(
     val id: String = "",
@@ -51,10 +52,7 @@ data class NoteItem(
         if (isTable()) containsInTable(query)
         else text.normalize().contains(query.normalize(), ignoreCase = true)
 
-    private fun containsInTable(query: String) =
-        table?.let { tab ->
-            tab.startCell.containsInCell(query) || tab.endCell.containsInCell(query)
-        } ?: false
+    private fun containsInTable(query: String) = table?.contains(query) ?: false
 
     fun duplicate(newNoteId: String): NoteItem {
         val newNoteItemId = getUUID()
@@ -68,13 +66,17 @@ data class NoteItem(
 
     fun applyInTable(cell: Cell) = copy(table = table?.applyInTable(cell))
 
-    fun changeFocusInTable(isStartCell: Boolean) =
-        copy(table = table?.changeFocus(isStartCell))
+    fun changeFocusInTable(cellId: String, isFocused: Boolean) =
+        copy(
+            isFocused = isFocused,
+            table = table?.changeFocus(cellId, isFocused)
+        )
 
-    fun initFocus() = copy(
-        isFocused = true,
-        table = table?.initFocus()
-    )
+    fun initFocus() = copy(isFocused = true, table = table?.initFocus())
 
     fun removeFocus() = copy(isFocused = false, table = table?.removeFocus())
+
+    fun restoreFocus() = copy(isFocused = true, table = table?.restoreFocus())
+
+    fun isTableEmpty() = table?.isEmpty().orFalse()
 }

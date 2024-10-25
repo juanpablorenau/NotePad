@@ -10,11 +10,7 @@ import androidx.compose.foundation.lazy.staggeredgrid.LazyVerticalStaggeredGrid
 import androidx.compose.foundation.lazy.staggeredgrid.StaggeredGridCells
 import androidx.compose.foundation.lazy.staggeredgrid.itemsIndexed
 import androidx.compose.foundation.lazy.staggeredgrid.rememberLazyStaggeredGridState
-import androidx.compose.material3.Card
-import androidx.compose.material3.CardDefaults
-import androidx.compose.material3.Icon
-import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Text
+import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
@@ -27,6 +23,7 @@ import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.model.entities.Note
@@ -41,6 +38,7 @@ import com.example.notepad.utils.mockNoteItems
 import com.example.notepad.utils.mockNoteList
 
 @OptIn(ExperimentalFoundationApi::class)
+@Preview(showBackground = true)
 @Composable
 fun NotesStaggeredGrid(
     notes: List<Note> = mockNoteList,
@@ -155,6 +153,10 @@ fun NoteHeader(item: Note) {
 fun NoteBody(notesItems: List<NoteItem> = mockNoteItems, isDarkTheme: Boolean = false) {
     notesItems.forEachIndexed { index, item ->
         val isPreviousItemTable = notesItems.getOrNull(index - 1)?.isTable() ?: false
+
+        if (!(item.isTable() && isPreviousItemTable) && index != 0) {
+            Spacer(modifier = Modifier.fillMaxWidth().height(8.dp))
+        }
 
         when (item.type) {
             NoteItemType.TEXT -> TextFieldItem(item, isDarkTheme)

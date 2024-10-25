@@ -8,18 +8,18 @@ data class Cell(
     val tableId: String = "",
     val text: String = "",
     val isFocused: Boolean = false,
-    val isStartCell: Boolean = false,
+    val index: Int = 0,
     val formatText: FormatText,
 ) {
-    constructor(id: String, tableId: String, isStartCell: Boolean) : this(
+    constructor(id: String, tableId: String, index: Int, isFocused: Boolean) : this(
         id = id,
         tableId = tableId,
-        isStartCell = isStartCell,
-        isFocused = isStartCell,
+        index = index,
+        isFocused = isFocused,
         formatText = FormatText(id = getUUID(), formatTextId = id)
     )
 
-    fun containsInCell(query: String) =
+    fun contains(query: String) =
         text.normalize().contains(query.normalize(), ignoreCase = true)
 
     fun duplicate(newTableId: String): Cell {
@@ -30,4 +30,8 @@ data class Cell(
             formatText = formatText.duplicate(newCellId)
         )
     }
+
+    fun initFocus() = copy(isFocused = true)
+
+    fun removeFocus() = copy(isFocused = false)
 }

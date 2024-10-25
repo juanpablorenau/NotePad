@@ -14,8 +14,7 @@ class TableDto @Inject constructor(
                Table(
                    id = table.id,
                    noteItemId = table.noteItemId,
-                   startCell = cellDto.toDomain(cells[0]),
-                   endCell = cellDto.toDomain(cells[1]),
+                   cells = tableDb.cells.map { cellDto.toDomain(it) }
                )
            }
        }
@@ -26,7 +25,7 @@ class TableDto @Inject constructor(
             with(table) {
                 TableDb(
                     table = TableEmbeddedDb(id = id, noteItemId = noteItemId),
-                    cells = listOf(cellDto.toDb(startCell), cellDto.toDb(endCell))
+                    cells = cells.map { cellDto.toDb(it) }
                 )
             }
 }

@@ -15,7 +15,7 @@ class CellDto @Inject constructor(
                 tableId = cell.tableId,
                 text = cell.text,
                 isFocused = cell.isFocused,
-                isStartCell = cell.isStartCell,
+                index = cell.index,
                 formatText = formatTextDto.toDomain(formatText)
             )
         }
@@ -28,7 +28,7 @@ class CellDto @Inject constructor(
                     tableId = tableId,
                     text = text,
                     isFocused = isFocused,
-                    isStartCell = isStartCell
+                    index = index
                 ),
                 formatText = formatTextDto.toDb(formatText),
             )

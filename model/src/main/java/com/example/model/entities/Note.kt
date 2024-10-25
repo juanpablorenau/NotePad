@@ -90,7 +90,11 @@ data class Note(
             addAll(updatedItems)
 
             val newItemIndex = focusedIndex + 1
-            add(newItemIndex, NoteItem(getUUID(), id, Table(id = getUUID()), newItemIndex))
+            val noteItemId = getUUID()
+            add(
+                newItemIndex,
+                NoteItem(noteItemId, id, Table(id = getUUID(), noteItemId), newItemIndex)
+            )
         }
     })
 
@@ -99,34 +103,43 @@ data class Note(
         else current
     })
 
-    fun deleteTextField(noteItemId: String) = copy(items = items
-        .filter { item -> item.id != noteItemId }
-        .mapIndexed { index, noteItem -> noteItem.copy(index = index) }
-    )
+    fun deleteTextField(noteItemId: String) =
+        copy(items = items.mapIndexedNotNull { index, noteItem ->
+            val targetIndex = items.indexOfFirst { it.id == noteItemId }
 
-    fun deleteCheckbox(noteItemId: String) = copy(items = items.toMutableList().apply {
-        val index = indexOfFirst { noteItem -> noteItem.id == noteItemId }
-        when (index) {
-            -1 -> return@apply
-            size - 1 -> removeLast()
-            else -> {
-                val prev = getOrNull(index - 1)
-                val next = getOrNull(index + 1)
-                removeAt(index)
-                if (prev?.isText() == true && next?.isText() == true) {
-                    removeAt(index)
-                    removeAt(index - 1)
-                    add(index - 1, prev.copy(text = "${prev.text}\n${next.text}"))
-                }
-
-                val updatedItems = mapIndexed { newIndex, noteItem ->
-                    noteItem.copy(index = newIndex)
-                }
-
-                clear()
-                addAll(updatedItems)
+            when {
+                index == targetIndex -> null
+                index == targetIndex - 1 -> noteItem.restoreFocus().copy(index = index)
+                index > targetIndex -> noteItem.copy(index = index - 1)
+                else -> noteItem.copy(index = index)
             }
+        })
+
+    fun deleteNoteItemField(noteItemId: String) = copy(items = items.toMutableList().apply {
+        val index = items.indexOfFirst { it.id == noteItemId }
+        if (index == -1) return@apply
+
+        //Delete the text field
+        val previous = getOrNull(index - 1)
+        val next = getOrNull(index + 1)
+        removeAt(index)
+
+        //Move the focus to the previous text field
+        previous?.let { prev ->
+            removeAt(index - 1)
+
+            //Merge the text fields if they are next to each other
+            if (prev.isText() && next?.isText() == true) {
+                removeAt(index - 1)
+                val mergeText = "${prev.text}\n${next.text}"
+                add(index - 1, prev.copy(text = mergeText).restoreFocus())
+            } else add(index - 1, prev.restoreFocus())
         }
+
+        //Update the indexes
+        val updatedItems = mapIndexed { newIndex, noteItem -> noteItem.copy(index = newIndex) }
+        clear()
+        addAll(updatedItems)
     })
 
     fun applyFormat(formatText: FormatText) = copy(items = items.map { currentNoteItem ->
@@ -151,7 +164,7 @@ data class Note(
 
     fun changeFocusIn(noteItem: NoteItem) =
         copy(items = items.map { current ->
-            if (current.id == noteItem.id) noteItem.copy(isFocused = true)
-            else current.removeFocus()
+            if (current.id == noteItem.id) noteItem
+            else current
         })
 }

@@ -1,10 +1,6 @@
 package com.example.notepad.ui.list
 
-import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.*
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
@@ -39,7 +35,6 @@ fun CheckBoxItem(
     )
 
     Row(
-        modifier = Modifier.fillMaxWidth(),
         horizontalArrangement = Arrangement.SpaceBetween,
         verticalAlignment = Alignment.CenterVertically
     ) {
@@ -49,7 +44,10 @@ fun CheckBoxItem(
         ) {
             CompositionLocalProvider(LocalMinimumInteractiveComponentEnforcement provides false) {
                 Checkbox(
-                    modifier = Modifier.scale(0.75f),
+                    modifier = Modifier
+                        .size(18.dp)
+                        .scale(0.75f)
+                        .padding(end = 4.dp),
                     enabled = false,
                     checked = noteItem.isChecked,
                     onCheckedChange = { _ -> },
@@ -59,6 +57,11 @@ fun CheckBoxItem(
                     )
                 )
             }
+
+            HorizontalDivider(
+                modifier = Modifier.width(4.dp),
+                color = Color.Transparent
+            )
 
             TextItem(
                 text = noteItem.text,
@@ -98,30 +101,24 @@ fun TableItem(
 ) {
     noteItem.table?.let { table ->
         val color = MaterialTheme.colorScheme.onBackground
-        val isStartCellTextLonger = table.startCell.text.length >= table.endCell.text.length
 
         Row(
             modifier = Modifier
                 .fillMaxWidth()
+                .fillMaxHeight()
                 .topBorder(if (!isPreviousItemTable) 0.5.dp else 0.dp, color = color)
-                .bottomBorder(color = color)
-                .startBorder(color = color)
                 .endBorder(color = color)
+                .bottomBorder(color = color)
         ) {
-            CellItem(
-                modifier = Modifier
-                    .endBorder(color = if (isStartCellTextLonger) color else Color.Transparent)
-                    .padding(horizontal = 4.dp)
-                    .weight(1f),
-                cell = table.startCell,
-            )
-            CellItem(
-                modifier = Modifier
-                    .startBorder(color = if (!isStartCellTextLonger) color else Color.Transparent)
-                    .padding(horizontal = 4.dp)
-                    .weight(1f),
-                cell = table.endCell,
-            )
+            table.cells.forEach { cell ->
+                CellItem(
+                    modifier = Modifier
+                        .startBorder(color = color)
+                        .padding(horizontal = 4.dp)
+                        .weight(1f),
+                    cell = cell,
+                )
+            }
         }
     }
 }

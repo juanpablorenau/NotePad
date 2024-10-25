@@ -22,7 +22,6 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.focus.FocusDirection
-import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
@@ -37,6 +36,7 @@ import androidx.lifecycle.compose.LifecycleResumeEffect
 import com.example.model.entities.Note
 import com.example.model.entities.NoteItem
 import com.example.model.enums.NoteItemType
+import com.example.model.utils.orFalse
 import com.example.notepad.R
 import com.example.notepad.utils.getColor
 import com.example.notepad.utils.mockNote
@@ -79,7 +79,7 @@ fun NoteDetailContent(
             NoteHeader(note, saveText)
 
             NoteBody(
-                notesItems = note.items,
+                noteItems = note.items,
                 isDarkTheme = isDarkTheme,
                 addCheckBox = addCheckBox,
                 updateNoteItem = updateNoteItem,
@@ -145,7 +145,7 @@ fun NoteHeader(
 
 @Composable
 fun NoteBody(
-    notesItems: List<NoteItem> = mockNoteItems,
+    noteItems: List<NoteItem> = mockNoteItems,
     isDarkTheme: Boolean = false,
     addCheckBox: (String?) -> Unit = {},
     updateNoteItem: (NoteItem) -> Unit = {},
@@ -154,31 +154,33 @@ fun NoteBody(
     deleteNoteItemField: (NoteItem) -> Unit = {},
 ) {
     val listState = rememberLazyListState()
-    val focusRequesters = remember(notesItems) { notesItems.map { FocusRequester() } }
-    val focusedItem = notesItems.find { it.isFocused }
-    val index = notesItems.indexOf(focusedItem).takeIf { it != -1 } ?: 0
+    val focusedItem = noteItems.find { it.isFocused }
+    val focusedIndex = noteItems.indexOf(focusedItem).takeIf { it != -1 } ?: 0
 
-    LaunchedEffect(notesItems.size) {
-        if (notesItems.isNotEmpty()) listState.scrollToItem(index)
+    LaunchedEffect(noteItems.size) {
+        if (noteItems.isNotEmpty()) listState.scrollToItem(focusedIndex)
     }
 
     LazyColumn(
         modifier = Modifier
             .fillMaxWidth()
+            .padding(horizontal = 24.dp)
             .fillMaxHeight(0.95f),
         state = listState,
     ) {
-        itemsIndexed(notesItems, key = { _, item -> item.id }) { index, item ->
-            val currentFocusRequester = focusRequesters[index]
-            val previousFocusRequester = focusRequesters.getOrNull(index - 1)
-            val isPreviousItemTable = notesItems.getOrNull(index - 1)?.isTable() ?: false
+        itemsIndexed(noteItems, key = { _, item -> item.id }) { index, item ->
+            val isPreviousItemTable = noteItems.getOrNull(index - 1)?.isTable().orFalse()
+
+            if (!(item.isTable() && isPreviousItemTable) && index != 0) {
+                Spacer(modifier = Modifier
+                    .fillMaxWidth()
+                    .height(8.dp))
+            }
 
             when (item.type) {
                 NoteItemType.TEXT -> TextFieldItem(
                     noteItem = item,
                     isDarkTheme = isDarkTheme,
-                    currentFocusRequester = currentFocusRequester,
-                    previousFocusRequester = previousFocusRequester,
                     updateNoteItem = updateNoteItem,
                     changeFocusIn = changeFocusIn,
                     deleteTextField = deleteTextField
@@ -187,8 +189,6 @@ fun NoteBody(
                 NoteItemType.CHECK_BOX -> CheckBoxItem(
                     noteItem = item,
                     isDarkTheme = isDarkTheme,
-                    currentFocusRequester = currentFocusRequester,
-                    previousFocusRequester = previousFocusRequester,
                     addCheckBox = addCheckBox,
                     updateNoteItem = updateNoteItem,
                     changeFocusIn = changeFocusIn,
@@ -199,8 +199,6 @@ fun NoteBody(
                     noteItem = item,
                     isDarkTheme = isDarkTheme,
                     isPreviousItemTable = isPreviousItemTable,
-                    currentFocusRequester = currentFocusRequester,
-                    previousFocusRequester = previousFocusRequester,
                     updateNoteItem = updateNoteItem,
                     changeFocusIn = changeFocusIn,
                     deleteNoteItemField = deleteNoteItemField
