@@ -32,5 +32,6 @@ data class Cell(
     }
 
     fun initFocus() = copy(isFocused = true)
+
     fun removeFocus() = copy(isFocused = false)
 }

@@ -33,16 +33,23 @@ data class Table(
             else currentCell
         })
 
-    fun initFocus() = copy(cells = cells.map { it.initFocus() })
+    fun initFocus() = copy(cells = cells.mapIndexed { index, cell ->
+        if (index == 0) cell.initFocus()
+        else cell.removeFocus()
+    })
 
     fun removeFocus() = copy(cells = cells.map { it.removeFocus() })
 
-    fun changeFocus(cellId: String) = copy(cells = cells.map { current ->
-        if (current.id == cellId) current.initFocus()
-        else current.removeFocus()
+    fun restoreFocus() = copy(cells = cells.mapIndexed { index, cell ->
+        if (index == cells.lastIndex) cell.initFocus()
+        else cell.removeFocus()
     })
 
-    fun cellsCount() = cells.size
+    fun changeFocus(cellId: String, isFocused: Boolean) =
+        copy(cells = cells.map { current ->
+            if (current.id == cellId) current.copy(isFocused = isFocused)
+            else current
+        })
 
     fun isEmpty() = cells.all { it.text.isEmpty() }
 }

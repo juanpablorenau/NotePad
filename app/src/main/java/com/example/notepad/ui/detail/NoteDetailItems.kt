@@ -12,8 +12,18 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.text.BasicTextField
 import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
-import androidx.compose.material3.*
-import androidx.compose.runtime.*
+import androidx.compose.material3.Checkbox
+import androidx.compose.material3.CheckboxDefaults
+import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.LocalMinimumInteractiveComponentEnforcement
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.CompositionLocalProvider
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.focus.FocusRequester
@@ -31,7 +41,15 @@ import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.LifecycleResumeEffect
 import com.example.model.entities.Cell
 import com.example.model.entities.NoteItem
-import com.example.notepad.utils.*
+import com.example.notepad.utils.bottomBorder
+import com.example.notepad.utils.endBorder
+import com.example.notepad.utils.mockCell
+import com.example.notepad.utils.mockCheckBoxItem
+import com.example.notepad.utils.mockTableItem
+import com.example.notepad.utils.mockTextItem
+import com.example.notepad.utils.startBorder
+import com.example.notepad.utils.toTextStyle
+import com.example.notepad.utils.topBorder
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Preview(showBackground = true)
@@ -39,15 +57,14 @@ import com.example.notepad.utils.*
 fun CheckBoxItem(
     noteItem: NoteItem = mockCheckBoxItem,
     isDarkTheme: Boolean = false,
-    currentFocus: FocusRequester = FocusRequester(),
-    previousFocus: FocusRequester? = null,
     addCheckBox: (String) -> Unit = {},
     updateNoteItem: (NoteItem) -> Unit = {},
     changeFocusIn: (NoteItem) -> Unit = {},
     deleteNoteItemField: (NoteItem) -> Unit = {},
 ) {
+    val focusRequester = remember(noteItem.id) { FocusRequester() }
     var isChecked by remember(noteItem.id) { mutableStateOf(noteItem.isChecked) }
-    var textField by remember(noteItem.id) {
+    var textField by remember(noteItem.id, noteItem.text) {
         mutableStateOf(TextFieldValue(noteItem.text, TextRange(noteItem.text.length)))
     }
 
@@ -75,11 +92,10 @@ fun CheckBoxItem(
                 modifier = Modifier
                     .fillMaxWidth()
                     .padding(start = 8.dp)
-                    .focusRequester(currentFocus)
-                    .onFocusChanged { if (it.isFocused) changeFocusIn(noteItem) }
+                    .focusRequester(focusRequester)
+                    .onFocusChanged { changeFocusIn(noteItem.copy(isFocused = it.isFocused)) }
                     .onKeyEvent {
                         if (it.key == Key.Backspace && textField.text.isEmpty()) {
-                            previousFocus?.requestFocus()
                             deleteNoteItemField(noteItem)
                             true
                         } else false
@@ -91,10 +107,7 @@ fun CheckBoxItem(
                 keyboardActions = KeyboardActions(
                     onDone = {
                         if (textField.text.isNotEmpty()) addCheckBox(noteItem.id)
-                        else {
-                            previousFocus?.requestFocus()
-                            deleteNoteItemField(noteItem)
-                        }
+                        else deleteNoteItemField(noteItem)
                     },
                 ),
                 textStyle = noteItem.formatText.toTextStyle(isDarkTheme),
@@ -102,9 +115,9 @@ fun CheckBoxItem(
         }
     }
 
-    LaunchedEffect(noteItem.id) {
-        if (noteItem.isFocused) currentFocus.requestFocus()
-        else currentFocus.freeFocus()
+    LaunchedEffect(noteItem.id, noteItem.isFocused) {
+        if (noteItem.isFocused) focusRequester.requestFocus()
+        else focusRequester.freeFocus()
     }
 
     LifecycleResumeEffect(noteItem.id, textField.text, isChecked) {
@@ -119,24 +132,22 @@ fun CheckBoxItem(
 fun TextFieldItem(
     noteItem: NoteItem = mockTextItem,
     isDarkTheme: Boolean = false,
-    currentFocus: FocusRequester = FocusRequester(),
-    previousFocus: FocusRequester? = null,
     updateNoteItem: (NoteItem) -> Unit = {},
     changeFocusIn: (NoteItem) -> Unit = {},
     deleteTextField: (NoteItem) -> Unit = {},
 ) {
-    var textField by remember(noteItem.id) {
+    val focusRequester = remember(noteItem.id) { FocusRequester() }
+    var textField by remember(noteItem.id, noteItem.text) {
         mutableStateOf(TextFieldValue(noteItem.text, TextRange(noteItem.text.length)))
     }
 
     BasicTextField(
         modifier = Modifier
             .fillMaxWidth()
-            .focusRequester(currentFocus)
-            .onFocusChanged { if (it.isFocused) changeFocusIn(noteItem) }
+            .focusRequester(focusRequester)
+            .onFocusChanged { changeFocusIn(noteItem.copy(isFocused = it.isFocused)) }
             .onKeyEvent {
                 if (it.key == Key.Backspace && textField.text.isEmpty()) {
-                    previousFocus?.requestFocus()
                     deleteTextField(noteItem)
                     true
                 } else false
@@ -146,9 +157,9 @@ fun TextFieldItem(
         onValueChange = { newTextFieldValue -> textField = newTextFieldValue },
     )
 
-    LaunchedEffect(noteItem.id) {
-        if (noteItem.isFocused) currentFocus.requestFocus()
-        else currentFocus.freeFocus()
+    LaunchedEffect(noteItem.id, noteItem.isFocused) {
+        if (noteItem.isFocused) focusRequester.requestFocus()
+        else focusRequester.freeFocus()
     }
 
     LifecycleResumeEffect(noteItem.id, textField.text) {
@@ -162,14 +173,13 @@ fun TableItem(
     noteItem: NoteItem = mockTableItem,
     isDarkTheme: Boolean = false,
     isPreviousItemTable: Boolean = false,
-    cellFocusList: List<FocusRequester> = mockFocusRequesters,
-    previousFocus: FocusRequester? = null,
     updateNoteItem: (NoteItem) -> Unit = {},
     changeFocusIn: (NoteItem) -> Unit = {},
     deleteNoteItemField: (NoteItem) -> Unit = {},
 ) {
     noteItem.table?.let { table ->
         val color = MaterialTheme.colorScheme.onBackground
+        val focusRequesters = remember(noteItem.id) { List(table.cells.size) { FocusRequester() } }
 
         Row(
             modifier = Modifier
@@ -181,8 +191,6 @@ fun TableItem(
                 .endBorder(color = color),
         ) {
             table.cells.forEachIndexed { index, cell ->
-                val previousCellFocus = cellFocusList.getOrNull(index - 1) ?: previousFocus
-
                 CellItem(
                     modifier = Modifier
                         .fillMaxHeight()
@@ -193,8 +201,8 @@ fun TableItem(
                     noteItem = noteItem,
                     cell = cell,
                     isFirstCell = index == 0,
-                    currentFocusRequester = cellFocusList[index],
-                    previousFocusRequester = previousCellFocus,
+                    currentFocusRequester = focusRequesters[index],
+                    previousFocusRequester = focusRequesters.getOrNull(index - 1),
                     updateNoteItem = updateNoteItem,
                     changeFocusIn = changeFocusIn,
                     deleteNoteItemField = deleteNoteItemField,
@@ -227,7 +235,7 @@ fun CellItem(
             modifier = Modifier
                 .focusRequester(currentFocusRequester)
                 .onFocusChanged {
-                    if (it.isFocused) changeFocusIn(noteItem.changeFocusInTable(cell.id))
+                    changeFocusIn(noteItem.changeFocusInTable(cell.id, it.isFocused))
                 }
                 .onKeyEvent {
                     val isBackspace = it.key == Key.Backspace
@@ -255,7 +263,7 @@ fun CellItem(
         )
     }
 
-    LaunchedEffect(cell.id) {
+    LaunchedEffect(cell.id, cell.isFocused) {
         if (cell.isFocused) currentFocusRequester.requestFocus()
         else currentFocusRequester.freeFocus()
     }

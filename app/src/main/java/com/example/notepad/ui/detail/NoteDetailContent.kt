@@ -22,7 +22,6 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.focus.FocusDirection
-import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
@@ -155,7 +154,6 @@ fun NoteBody(
     deleteNoteItemField: (NoteItem) -> Unit = {},
 ) {
     val listState = rememberLazyListState()
-    val focusList = remember(noteItems) { getFocusRequesters(noteItems) }
     val focusedItem = noteItems.find { it.isFocused }
     val focusedIndex = noteItems.indexOf(focusedItem).takeIf { it != -1 } ?: 0
 
@@ -170,22 +168,19 @@ fun NoteBody(
             .fillMaxHeight(0.95f),
         state = listState,
     ) {
-        var focusIndex = 0
         itemsIndexed(noteItems, key = { _, item -> item.id }) { index, item ->
-            val currentFocus = focusList[focusIndex]
-            val previousFocus = focusList.getOrNull(focusIndex - 1)
             val isPreviousItemTable = noteItems.getOrNull(index - 1)?.isTable().orFalse()
 
             if (!(item.isTable() && isPreviousItemTable) && index != 0) {
-                Spacer(modifier = Modifier.fillMaxWidth().height(8.dp))
+                Spacer(modifier = Modifier
+                    .fillMaxWidth()
+                    .height(8.dp))
             }
 
             when (item.type) {
                 NoteItemType.TEXT -> TextFieldItem(
                     noteItem = item,
                     isDarkTheme = isDarkTheme,
-                    currentFocus = currentFocus,
-                    previousFocus = previousFocus,
                     updateNoteItem = updateNoteItem,
                     changeFocusIn = changeFocusIn,
                     deleteTextField = deleteTextField
@@ -194,37 +189,21 @@ fun NoteBody(
                 NoteItemType.CHECK_BOX -> CheckBoxItem(
                     noteItem = item,
                     isDarkTheme = isDarkTheme,
-                    currentFocus = currentFocus,
-                    previousFocus = previousFocus,
                     addCheckBox = addCheckBox,
                     updateNoteItem = updateNoteItem,
                     changeFocusIn = changeFocusIn,
                     deleteNoteItemField = deleteNoteItemField
                 )
 
-                NoteItemType.TABLE -> {
-                    val cellCount = item.table?.cellsCount() ?: 0
-                    val cellFocusList = focusList.subList(focusIndex, focusIndex + cellCount)
-                    focusIndex += cellCount - 1
-
-                    TableItem(
-                        noteItem = item,
-                        isDarkTheme = isDarkTheme,
-                        isPreviousItemTable = isPreviousItemTable,
-                        cellFocusList = cellFocusList,
-                        previousFocus = previousFocus,
-                        updateNoteItem = updateNoteItem,
-                        changeFocusIn = changeFocusIn,
-                        deleteNoteItemField = deleteNoteItemField
-                    )
-                }
+                NoteItemType.TABLE -> TableItem(
+                    noteItem = item,
+                    isDarkTheme = isDarkTheme,
+                    isPreviousItemTable = isPreviousItemTable,
+                    updateNoteItem = updateNoteItem,
+                    changeFocusIn = changeFocusIn,
+                    deleteNoteItemField = deleteNoteItemField
+                )
             }
-            focusIndex++
         }
     }
-}
-
-private fun getFocusRequesters(noteItems: List<NoteItem>) = noteItems.flatMap { noteItem ->
-    if (noteItem.isTable()) noteItem.table?.cells?.map { FocusRequester() }.orEmpty()
-    else listOf(FocusRequester())
 }

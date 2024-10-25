@@ -183,7 +183,7 @@ class NoteDetailViewModel @Inject constructor(
         _uiState.getAndUpdate { state ->
             with((state.asSuccess())) {
                 deleteNoteItem(noteItem)
-                copy(note = note.deleteCheckbox(noteItem.id))
+                copy(note = note.deleteNoteItemField(noteItem.id))
             }
         }
     }
