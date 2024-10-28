@@ -27,4 +27,13 @@
     <string name="header">Intestazione</string>
     <string name="subtitle">sottotitolo</string>
     <string name="body">corpo</string>
+    <string name="options">Opzioni</string>
+    <string name="grid">Griglia</string>
+    <string name="list">Elenco</string>
+    <string name="create_new_note">Crea una nuova nota</string>
+    <string name="back">Indietro</string>
+    <string name="add_text">Aggiungi testo</string>
+    <string name="add_checkbox">Aggiungi casella di controllo</string>
+    <string name="add_table">Aggiungi tabella</string>
+    <string name="add_image">Aggiungi immagine</string>
 </resources>

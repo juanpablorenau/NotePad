@@ -2,9 +2,24 @@ package com.example.notepad.ui.detail
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
-import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.CircleShape
-import androidx.compose.material3.*
+import androidx.compose.material3.Card
+import androidx.compose.material3.DropdownMenu
+import androidx.compose.material3.DropdownMenuItem
+import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Text
+import androidx.compose.material3.TopAppBar
+import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -21,6 +36,7 @@ import com.example.model.entities.Note
 import com.example.model.enums.NoteColor
 import com.example.notepad.R
 import com.example.notepad.components.Dialog
+import com.example.notepad.components.DisplayText
 import com.example.notepad.components.MenuItem
 import com.example.notepad.utils.getColor
 import com.example.notepad.utils.mockNote
@@ -66,20 +82,24 @@ fun NoteDetailTopBar(
                 )
             }
         }, actions = {
-            IconButton(onClick = { showColor = !showColor }) {
-                Icon(
-                    painter = painterResource(id = R.drawable.ic_color_lens),
-                    contentDescription = "More icon",
-                    tint = MaterialTheme.colorScheme.primary
-                )
+            DisplayText(description = R.string.change_color) {
+                IconButton(onClick = { showColor = !showColor }) {
+                    Icon(
+                        painter = painterResource(id = R.drawable.ic_color_lens),
+                        contentDescription = "More icon",
+                        tint = MaterialTheme.colorScheme.primary
+                    )
+                }
             }
 
-            IconButton(onClick = { showMenu = !showMenu }) {
-                Icon(
-                    painter = painterResource(id = R.drawable.ic_more_vert),
-                    contentDescription = "More icon",
-                    tint = MaterialTheme.colorScheme.primary
-                )
+            DisplayText(description = R.string.options) {
+                IconButton(onClick = { showMenu = !showMenu }) {
+                    Icon(
+                        painter = painterResource(id = R.drawable.ic_more_vert),
+                        contentDescription = "More icon",
+                        tint = MaterialTheme.colorScheme.primary
+                    )
+                }
             }
 
             DropdownMenu(
@@ -101,7 +121,12 @@ fun NoteDetailTopBar(
                 )
 
                 DropdownMenuItem(
-                    text = { MenuItem(R.drawable.ic_duplicate, stringResource(R.string.duplicate)) },
+                    text = {
+                        MenuItem(
+                            R.drawable.ic_duplicate,
+                            stringResource(R.string.duplicate)
+                        )
+                    },
                     onClick = {
                         showMenu = false
                         duplicateNote()
@@ -167,7 +192,7 @@ fun ChangeColorMenu(
         ) {
             for (j in 0 until 4) {
                 ColorItem(item = colors[i * 4 + j], changeColor, isDarkTheme)
-                if(j != 3) Spacer(modifier = Modifier.width(8.dp))
+                if (j != 3) Spacer(modifier = Modifier.width(8.dp))
             }
         }
     }
