@@ -1,7 +1,11 @@
 package com.example.notepad.utils
 
-import androidx.compose.ui.focus.FocusRequester
-import com.example.model.entities.*
+import com.example.model.entities.Cell
+import com.example.model.entities.FormatText
+import com.example.model.entities.Note
+import com.example.model.entities.NoteItem
+import com.example.model.entities.Table
+import com.example.model.entities.TypeText
 import com.example.model.enums.NoteColor as AppColor
 
 val mockNoteList by lazy {
@@ -62,8 +66,8 @@ val mockCell by lazy {
         tableId = "1",
         index = 0,
         text = "Cell Text",
-        formatText = FormatText()
+        formatText = mockBodyFormat
     )
 }
 
-val mockFocusRequesters by lazy { mockTable.cells.map { FocusRequester() } }
+val mockBodyFormat by lazy { FormatText(TypeText.BODY) }

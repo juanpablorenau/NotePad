@@ -50,6 +50,7 @@ import com.example.model.entities.TypeText
 import com.example.notepad.R
 import com.example.notepad.components.DisplayText
 import com.example.notepad.utils.getColor
+import com.example.notepad.utils.mockBodyFormat
 import com.example.notepad.utils.mockNote
 import com.example.notepad.utils.mockTextItem
 
@@ -236,10 +237,10 @@ fun TypeTextsSelector(
 ) {
     val formatTexts = remember {
         listOf(
-            FormatText("0", "", TypeText.TITLE, 24, true),
-            FormatText("1", "", TypeText.HEADER, 20, false),
-            FormatText("2", "", TypeText.SUBTITLE, 16, true),
-            FormatText("3", "", TypeText.BODY, 16, false)
+            FormatText(TypeText.TITLE),
+            FormatText(TypeText.HEADER),
+            FormatText(TypeText.SUBTITLE),
+            FormatText(TypeText.BODY)
         )
     }
     val selectedIndex = remember { mutableIntStateOf(-1) }
@@ -268,7 +269,7 @@ fun TypeTextsSelector(
 fun TypeTextsItem(
     noteItem: NoteItem = mockTextItem,
     index: Int = -1,
-    formatText: FormatText = FormatText(""),
+    formatText: FormatText = mockBodyFormat,
     selectedIndex: MutableState<Int> = mutableIntStateOf(-1),
     applyFormat: (FormatText) -> Unit = {},
 ) {

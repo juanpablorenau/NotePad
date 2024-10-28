@@ -16,6 +16,13 @@ data class FormatText(
     val paragraphType: ParagraphType = ParagraphType.LEFT,
 ) {
 
+    constructor(typeText: TypeText) : this(
+        id = getUUID(),
+        typeText = typeText,
+        fontSize = typeText.fontSize,
+        isBold = typeText.isBold
+    )
+
     fun duplicate(newFormatTextId: String): FormatText =
         this.copy(
             id = getUUID(),
@@ -23,8 +30,14 @@ data class FormatText(
         )
 }
 
-enum class TypeText {
-    TITLE, HEADER, SUBTITLE, BODY
+enum class TypeText(
+    val fontSize: Int,
+    val isBold: Boolean
+) {
+    TITLE(24, true),
+    HEADER(20, false),
+    SUBTITLE(16, true),
+    BODY(16, false)
 }
 
 enum class ParagraphType {
