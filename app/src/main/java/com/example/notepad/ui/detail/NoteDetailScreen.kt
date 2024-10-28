@@ -103,6 +103,7 @@ fun SuccessScreen(
                 note = note,
                 saveText = saveText,
                 isDarkTheme = isDarkTheme,
+                addTextField = addTextField,
                 addCheckBox = addCheckBox,
                 updateNoteItem = updateNoteItem,
                 changeFocusIn = changeFocusIn,

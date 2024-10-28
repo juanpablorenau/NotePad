@@ -1,7 +1,19 @@
 package com.example.notepad.ui.detail
 
 import androidx.compose.foundation.background
-import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.clickable
+import androidx.compose.foundation.interaction.MutableInteractionSource
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxHeight
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.lazy.rememberLazyListState
@@ -50,6 +62,7 @@ fun NoteDetailContent(
     note: Note = mockNote,
     saveText: (String) -> Unit = { },
     isDarkTheme: Boolean = false,
+    addTextField: () -> Unit = {},
     addCheckBox: (String?) -> Unit = {},
     updateNoteItem: (NoteItem) -> Unit = {},
     changeFocusIn: (NoteItem) -> Unit = {},
@@ -81,6 +94,7 @@ fun NoteDetailContent(
             NoteBody(
                 noteItems = note.items,
                 isDarkTheme = isDarkTheme,
+                addTextField = addTextField,
                 addCheckBox = addCheckBox,
                 updateNoteItem = updateNoteItem,
                 changeFocusIn = changeFocusIn,
@@ -147,6 +161,7 @@ fun NoteHeader(
 fun NoteBody(
     noteItems: List<NoteItem> = mockNoteItems,
     isDarkTheme: Boolean = false,
+    addTextField: () -> Unit = {},
     addCheckBox: (String?) -> Unit = {},
     updateNoteItem: (NoteItem) -> Unit = {},
     changeFocusIn: (NoteItem) -> Unit = {},
@@ -165,16 +180,22 @@ fun NoteBody(
         modifier = Modifier
             .fillMaxWidth()
             .padding(horizontal = 24.dp)
-            .fillMaxHeight(0.95f),
+            .fillMaxHeight(0.95f)
+            .clickable(
+                indication = null,
+                interactionSource = remember { MutableInteractionSource() }
+            ) { if (noteItems.isEmpty()) addTextField() },
         state = listState,
     ) {
         itemsIndexed(noteItems, key = { _, item -> item.id }) { index, item ->
             val isPreviousItemTable = noteItems.getOrNull(index - 1)?.isTable().orFalse()
 
             if (!(item.isTable() && isPreviousItemTable) && index != 0) {
-                Spacer(modifier = Modifier
-                    .fillMaxWidth()
-                    .height(8.dp))
+                Spacer(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .height(8.dp)
+                )
             }
 
             when (item.type) {
