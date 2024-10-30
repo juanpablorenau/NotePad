@@ -13,9 +13,9 @@ data class NoteItemDb(
     @Relation(
         entity = FormatTextDb::class,
         parentColumn = "id",
-        entityColumn = "formatTextId"
+        entityColumn = "itemId"
     )
-    val formatText: FormatTextDb,
+    val formatTexts: List<FormatTextDb>,
 
     @Relation(
         entity = TableEmbeddedDb::class,

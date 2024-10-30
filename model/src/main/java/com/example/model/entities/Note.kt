@@ -1,5 +1,6 @@
 package com.example.model.entities
 
+import com.example.model.enums.FormatType
 import com.example.model.enums.NoteColor
 import com.example.model.utils.getUUID
 import com.example.model.utils.normalize
@@ -142,18 +143,40 @@ data class Note(
         addAll(updatedItems)
     })
 
-    fun applyFormat(formatText: FormatText) = copy(items = items.map { currentNoteItem ->
-        if (currentNoteItem.isFocused) currentNoteItem.copy(formatText = formatText)
-        else currentNoteItem
-    })
+    fun applyFormat(formatType: FormatType, formatText: FormatText) =
+        copy(items = items.map { currentNoteItem ->
+            with(currentNoteItem) {
+                if (isFocused) {
+                    getFormatTextWithSameIndexes()?.let { sameFormatIndexes ->
+                        removeFormatText(sameFormatIndexes)
+                        addFormatText(mergedFormat(formatType, formatText, sameFormatIndexes))
+                    } ?: addFormatText(formatText)
+                } else this
+            }
+        })
+
+    private fun mergedFormat(
+        formatType: FormatType, newFormat: FormatText, oldFormat: FormatText
+    ) = with(newFormat) {
+        when (formatType) {
+            FormatType.BOLD -> oldFormat.copy(isBold = isBold)
+            FormatType.ITALIC -> oldFormat.copy(isItalic = isItalic)
+            FormatType.UNDERLINE -> oldFormat.copy(isUnderline = isUnderline)
+            FormatType.LINE_THROUGH -> oldFormat.copy(isLineThrough = isLineThrough)
+            FormatType.PARAGRAPH_TYPE -> oldFormat.copy(paragraphType = paragraphType)
+            FormatType.TEXT_COLOR -> oldFormat.copy(color = color)
+            FormatType.TYPE_TEXT -> oldFormat.copy(typeText = typeText, isBold = typeText.isBold)
+        }
+    }
 
     fun duplicate(): Note {
         val newNoteId = getUUID()
         return this.copy(
             id = newNoteId,
-            items = items.map { noteItem -> noteItem.duplicate(newNoteId) }
-        )
+            items = items.map { noteItem -> noteItem.duplicate(newNoteId) })
     }
+
+    fun getFocusedItem() = items.firstOrNull { it.isFocused }
 
     fun setFocusOnLastItem() = copy(items = items
         .mapIndexed { index, noteItem ->

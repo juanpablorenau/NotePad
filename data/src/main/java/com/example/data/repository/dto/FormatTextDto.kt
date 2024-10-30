@@ -2,62 +2,40 @@ package com.example.data.repository.dto
 
 import com.example.data.model.db.FormatTextDb
 import com.example.model.entities.FormatText
-import com.example.model.entities.ParagraphType
-import com.example.model.entities.TypeText
+import com.example.model.enums.ParagraphType
+import com.example.model.enums.TextColor
+import com.example.model.enums.TypeText
 import javax.inject.Inject
 
-class FormatTextDto @Inject constructor(
-    private val typeTextDto: TypeTextDto,
-    private val paragraphTypeDto: ParagraphTypeDto,
-) {
+class FormatTextDto @Inject constructor() {
 
     fun toDomain(formatTextDb: FormatTextDb) =
         FormatText(
             id = formatTextDb.id,
-            formatTextId = formatTextDb.formatTextId,
-            typeText = typeTextDto.toDomain(formatTextDb.typeText),
-            fontSize = formatTextDb.fontSize,
+            itemId = formatTextDb.itemId,
+            startIndex = formatTextDb.startIndex,
+            endIndex = formatTextDb.endIndex,
+            typeText = TypeText.valueOf(formatTextDb.typeText),
             isBold = formatTextDb.isBold,
             isItalic = formatTextDb.isItalic,
             isUnderline = formatTextDb.isUnderline,
             isLineThrough = formatTextDb.isLineThrough,
-            textLightColor = formatTextDb.textLightColor,
-            textDarkColor = formatTextDb.textDarkColor,
-            paragraphType = paragraphTypeDto.toDomain(formatTextDb.paragraphType)
+            color = TextColor.valueOf(formatTextDb.color),
+            paragraphType = ParagraphType.valueOf(formatTextDb.paragraphType)
         )
 
     fun toDb(formatText: FormatText) =
         FormatTextDb(
             id = formatText.id,
-            formatTextId = formatText.formatTextId,
+            itemId = formatText.itemId,
+            startIndex = formatText.startIndex,
+            endIndex = formatText.endIndex,
             typeText = formatText.typeText.name,
-            fontSize = formatText.fontSize,
             isBold = formatText.isBold,
             isItalic = formatText.isItalic,
             isUnderline = formatText.isUnderline,
             isLineThrough = formatText.isLineThrough,
-            textLightColor = formatText.textLightColor,
-            textDarkColor = formatText.textDarkColor,
+            color = formatText.color.name,
             paragraphType = formatText.paragraphType.name
         )
-}
-
-class TypeTextDto @Inject constructor() {
-    fun toDomain(type: String): TypeText =
-        when (type) {
-            TypeText.TITLE.name -> TypeText.TITLE
-            TypeText.HEADER.name -> TypeText.HEADER
-            TypeText.SUBTITLE.name -> TypeText.SUBTITLE
-            else -> TypeText.BODY
-        }
-}
-
-class ParagraphTypeDto @Inject constructor() {
-    fun toDomain(type: String): ParagraphType =
-        when (type) {
-            ParagraphType.LEFT.name -> ParagraphType.LEFT
-            ParagraphType.CENTER.name -> ParagraphType.CENTER
-            ParagraphType.RIGHT.name -> ParagraphType.RIGHT
-            else -> ParagraphType.JUSTIFY
-        }
 }

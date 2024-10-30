@@ -9,14 +9,14 @@ data class Cell(
     val text: String = "",
     val isFocused: Boolean = false,
     val index: Int = 0,
-    val formatText: FormatText,
+    val formatTexts: List<FormatText>,
 ) {
     constructor(id: String, tableId: String, index: Int, isFocused: Boolean) : this(
         id = id,
         tableId = tableId,
         index = index,
         isFocused = isFocused,
-        formatText = FormatText(id = getUUID(), formatTextId = id)
+        formatTexts = listOf(FormatText(id = getUUID(), itemId = id))
     )
 
     fun contains(query: String) =
@@ -27,7 +27,7 @@ data class Cell(
         return this.copy(
             id = newCellId,
             tableId = newTableId,
-            formatText = formatText.duplicate(newCellId)
+            formatTexts = formatTexts.map { it.duplicate(newCellId) }
         )
     }
 

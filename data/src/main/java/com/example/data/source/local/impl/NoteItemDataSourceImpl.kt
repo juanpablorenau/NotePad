@@ -16,13 +16,13 @@ class NoteItemDataSourceImpl @Inject constructor(
 
     override suspend fun insertNoteItem(noteItem: NoteItemDb) {
         noteItemDao.insertNoteItem(noteItem.noteItem)
-        formatTextDataSource.insertFormatText(noteItem.formatText)
+        noteItem.formatTexts.forEach { formatTextDataSource.insertFormatText(it) }
         noteItem.table?.let { table -> tableDataSource.insertTable(table) }
     }
 
     override suspend fun deleteNoteItem(noteItem: NoteItem) {
         noteItemDao.deleteNoteItem(noteItem.id)
-        formatTextDataSource.deleteFormatText(noteItem.formatText)
+        noteItem.formatTexts.forEach { formatTextDataSource.deleteFormatText(it) }
         noteItem.table?.let { table -> tableDataSource.deleteTable(table) }
     }
 }

@@ -30,6 +30,7 @@ import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.focus.onFocusChanged
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.SolidColor
 import androidx.compose.ui.input.key.Key
 import androidx.compose.ui.input.key.key
 import androidx.compose.ui.input.key.onKeyEvent
@@ -43,13 +44,59 @@ import com.example.model.entities.Cell
 import com.example.model.entities.NoteItem
 import com.example.notepad.utils.bottomBorder
 import com.example.notepad.utils.endBorder
+import com.example.notepad.utils.getAnnotatedString
 import com.example.notepad.utils.mockCell
 import com.example.notepad.utils.mockCheckBoxItem
 import com.example.notepad.utils.mockTableItem
 import com.example.notepad.utils.mockTextItem
 import com.example.notepad.utils.startBorder
-import com.example.notepad.utils.toTextStyle
 import com.example.notepad.utils.topBorder
+
+@Preview(showBackground = true)
+@Composable
+fun TextFieldItem(
+    noteItem: NoteItem = mockTextItem,
+    isDarkTheme: Boolean = false,
+    updateNoteItem: (NoteItem) -> Unit = {},
+    changeFocusIn: (NoteItem) -> Unit = {},
+    deleteTextField: (NoteItem) -> Unit = {},
+) {
+    val focusRequester = remember(noteItem.id) { FocusRequester() }
+    val annotatedString = getAnnotatedString(noteItem.text, noteItem.formatTexts, isDarkTheme)
+    var textField by remember(noteItem.id, annotatedString) {
+        mutableStateOf(TextFieldValue(annotatedString, TextRange(annotatedString.length)))
+    }
+
+    BasicTextField(
+        modifier = Modifier
+            .fillMaxWidth()
+            .focusRequester(focusRequester)
+            .onFocusChanged { changeFocusIn(noteItem.copy(isFocused = it.isFocused)) }
+            .onKeyEvent {
+                if (it.key == Key.Backspace && textField.text.isEmpty()) {
+                    deleteTextField(noteItem)
+                    true
+                } else false
+            },
+        cursorBrush = SolidColor(MaterialTheme.colorScheme.secondary),
+        value = textField,
+        onValueChange = { newTextFieldValue ->
+            if (newTextFieldValue.selection != textField.selection) {
+                updateNoteItem(noteItem.copy(
+                    text = newTextFieldValue.text,
+                    cursorStartIndex = newTextFieldValue.selection.start,
+                    cursorEndIndex = newTextFieldValue.selection.end
+                ))
+                textField = newTextFieldValue
+            }
+        },
+    )
+
+    LaunchedEffect(noteItem.id, noteItem.isFocused) {
+        if (noteItem.isFocused) focusRequester.requestFocus()
+        else focusRequester.freeFocus()
+    }
+}
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Preview(showBackground = true)
@@ -110,7 +157,7 @@ fun CheckBoxItem(
                         else deleteNoteItemField(noteItem)
                     },
                 ),
-                textStyle = noteItem.formatText.toTextStyle(isDarkTheme),
+                cursorBrush = SolidColor(MaterialTheme.colorScheme.secondary),
             )
         }
     }
@@ -124,46 +171,6 @@ fun CheckBoxItem(
         onPauseOrDispose {
             updateNoteItem(noteItem.copy(text = textField.text, isChecked = isChecked))
         }
-    }
-}
-
-@Preview(showBackground = true)
-@Composable
-fun TextFieldItem(
-    noteItem: NoteItem = mockTextItem,
-    isDarkTheme: Boolean = false,
-    updateNoteItem: (NoteItem) -> Unit = {},
-    changeFocusIn: (NoteItem) -> Unit = {},
-    deleteTextField: (NoteItem) -> Unit = {},
-) {
-    val focusRequester = remember(noteItem.id) { FocusRequester() }
-    var textField by remember(noteItem.id, noteItem.text) {
-        mutableStateOf(TextFieldValue(noteItem.text, TextRange(noteItem.text.length)))
-    }
-
-    BasicTextField(
-        modifier = Modifier
-            .fillMaxWidth()
-            .focusRequester(focusRequester)
-            .onFocusChanged { changeFocusIn(noteItem.copy(isFocused = it.isFocused)) }
-            .onKeyEvent {
-                if (it.key == Key.Backspace && textField.text.isEmpty()) {
-                    deleteTextField(noteItem)
-                    true
-                } else false
-            },
-        textStyle = noteItem.formatText.toTextStyle(isDarkTheme),
-        value = textField,
-        onValueChange = { newTextFieldValue -> textField = newTextFieldValue },
-    )
-
-    LaunchedEffect(noteItem.id, noteItem.isFocused) {
-        if (noteItem.isFocused) focusRequester.requestFocus()
-        else focusRequester.freeFocus()
-    }
-
-    LifecycleResumeEffect(noteItem.id, textField.text) {
-        onPauseOrDispose { updateNoteItem(noteItem.copy(text = textField.text)) }
     }
 }
 
@@ -254,12 +261,12 @@ fun CellItem(
                         else -> false
                     }
                 },
-            textStyle = cell.formatText.toTextStyle(isDarkTheme),
             value = textField,
             onValueChange = { newTextFieldValue ->
                 textField = newTextFieldValue
                 updateNoteItem(noteItem.applyInTable(cell.copy(text = textField.text)))
             },
+            cursorBrush = SolidColor(MaterialTheme.colorScheme.secondary),
         )
     }
 

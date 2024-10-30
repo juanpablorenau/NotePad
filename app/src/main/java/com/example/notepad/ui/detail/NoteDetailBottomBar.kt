@@ -43,19 +43,16 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.model.entities.FormatText
 import com.example.model.entities.Note
-import com.example.model.entities.NoteItem
-import com.example.model.entities.ParagraphType
-import com.example.model.entities.TextColor
-import com.example.model.entities.TypeText
+import com.example.model.enums.FormatType
+import com.example.model.enums.ParagraphType
+import com.example.model.enums.TextColor
+import com.example.model.enums.TypeText
 import com.example.notepad.R
 import com.example.notepad.components.DisplayText
 import com.example.notepad.utils.getColor
 import com.example.notepad.utils.mockBodyFormat
 import com.example.notepad.utils.mockNote
-import com.example.notepad.utils.mockTextItem
 
-
-@Preview(showBackground = true)
 @Composable
 fun NoteDetailBottomBar(
     isDarkTheme: Boolean = false,
@@ -63,15 +60,15 @@ fun NoteDetailBottomBar(
     addTextField: () -> Unit = {},
     addCheckBox: (String?) -> Unit = {},
     addTable: () -> Unit = {},
-    applyFormat: (FormatText) -> Unit = {},
+    applyFormat: (FormatType, FormatText) -> Unit = { _, _ -> },
 ) {
     val showBottomSheet = remember { mutableStateOf(false) }
     val changeBottomSheetState = { value: Boolean -> showBottomSheet.value = value }
-    val noteItem = note.items.find { it.isFocused } ?: NoteItem("", "", 0)
+    val formatText = note.getFocusedItem()?.getFormatTextWithSameIndexes() ?: FormatText()
 
     if (showBottomSheet.value) {
         TextFormatComponent(
-            noteItem = noteItem,
+            formatText = formatText,
             isDarkTheme = isDarkTheme,
             changeBottomSheetState = changeBottomSheetState,
             applyFormat = applyFormat
@@ -158,10 +155,10 @@ fun BottomOptions(
 @Preview(showBackground = true)
 @Composable
 fun TextFormatComponent(
-    noteItem: NoteItem = mockTextItem,
+    formatText: FormatText = mockBodyFormat,
     isDarkTheme: Boolean = false,
     changeBottomSheetState: (Boolean) -> Unit = {},
-    applyFormat: (FormatText) -> Unit = {},
+    applyFormat: (FormatType, FormatText) -> Unit = { _, _ -> },
 ) {
     Card(
         modifier = Modifier.fillMaxWidth(),
@@ -177,12 +174,11 @@ fun TextFormatComponent(
                 .padding(12.dp),
         ) {
             TextFormatHeader(changeBottomSheetState)
-            TextFormatContent(noteItem, isDarkTheme, applyFormat)
+            TextFormatContent(formatText, isDarkTheme, applyFormat)
         }
     }
 }
 
-@Preview(showBackground = true)
 @Composable
 fun TextFormatHeader(
     changeBottomSheetState: (Boolean) -> Unit = {},
@@ -216,47 +212,38 @@ fun TextFormatHeader(
 @Preview(showBackground = true)
 @Composable
 fun TextFormatContent(
-    noteItem: NoteItem = mockTextItem,
+    formatText: FormatText = mockBodyFormat,
     isDarkTheme: Boolean = false,
-    applyFormat: (FormatText) -> Unit = {},
+    applyFormat: (FormatType, FormatText) -> Unit = { _, _ -> },
 ) {
-    Spacer(modifier = Modifier.height(24.dp))
-    TypeTextsSelector(noteItem, applyFormat)
-    Spacer(modifier = Modifier.height(12.dp))
-    FormatTextsSelector(noteItem, applyFormat)
-    Spacer(modifier = Modifier.height(12.dp))
-    ParagraphsSelectorAndTextColor(noteItem, isDarkTheme, applyFormat)
-    Spacer(modifier = Modifier.height(24.dp))
+    Column(
+        modifier = Modifier.padding(vertical = 24.dp)
+    ) {
+        TypeTextsSelector(formatText.typeText, applyFormat)
+        FormatTextsSelector(formatText, applyFormat)
+        ParagraphsSelectorAndTextColor(formatText, isDarkTheme, applyFormat)
+    }
+
 }
 
-@Preview(showBackground = true)
 @Composable
 fun TypeTextsSelector(
-    noteItem: NoteItem = mockTextItem,
-    applyFormat: (FormatText) -> Unit = {},
+    typeText: TypeText = TypeText.HEADER,
+    applyFormat: (FormatType, FormatText) -> Unit = { _, _ -> },
 ) {
-    val formatTexts = remember {
-        listOf(
-            FormatText(TypeText.TITLE),
-            FormatText(TypeText.HEADER),
-            FormatText(TypeText.SUBTITLE),
-            FormatText(TypeText.BODY)
-        )
-    }
-    val selectedIndex = remember { mutableIntStateOf(-1) }
-    selectedIndex.intValue =
-        formatTexts.indexOfFirst { it.typeText == noteItem.formatText.typeText }
+    val typeTexts = remember { TypeText.entries }
+    val selectedIndex =
+        remember(typeText) { mutableIntStateOf(typeTexts.indexOfFirst { it == typeText }) }
 
     LazyRow(
         modifier = Modifier.fillMaxWidth(),
         verticalAlignment = Alignment.Bottom,
         horizontalArrangement = Arrangement.SpaceEvenly
     ) {
-        itemsIndexed(formatTexts) { index, formatText ->
+        itemsIndexed(typeTexts) { index, type ->
             TypeTextsItem(
-                noteItem = noteItem,
                 index = index,
-                formatText = formatText,
+                typeText = type,
                 selectedIndex = selectedIndex,
                 applyFormat = applyFormat
             )
@@ -264,27 +251,19 @@ fun TypeTextsSelector(
     }
 }
 
-@Preview(showBackground = true)
 @Composable
 fun TypeTextsItem(
-    noteItem: NoteItem = mockTextItem,
     index: Int = -1,
-    formatText: FormatText = mockBodyFormat,
+    typeText: TypeText = TypeText.HEADER,
     selectedIndex: MutableState<Int> = mutableIntStateOf(-1),
-    applyFormat: (FormatText) -> Unit = {},
+    applyFormat: (FormatType, FormatText) -> Unit = { _, _ -> },
 ) {
     Card(
         modifier = Modifier
             .height(40.dp)
             .clickable {
                 selectedIndex.value = index
-                applyFormat(
-                    noteItem.formatText.copy(
-                        typeText = formatText.typeText,
-                        fontSize = formatText.fontSize,
-                        isBold = formatText.isBold
-                    )
-                )
+                applyFormat(FormatType.TYPE_TEXT, FormatText(typeText))
             },
         shape = RoundedCornerShape(12.dp),
         colors = CardDefaults.cardColors(
@@ -299,14 +278,14 @@ fun TypeTextsItem(
         ) {
             Text(
                 modifier = Modifier.padding(vertical = 4.dp, horizontal = 16.dp),
-                text = when (formatText.typeText) {
+                text = when (typeText) {
                     TypeText.TITLE -> stringResource(id = R.string.title)
                     TypeText.HEADER -> stringResource(id = R.string.header)
                     TypeText.SUBTITLE -> stringResource(id = R.string.subtitle)
                     TypeText.BODY -> stringResource(id = R.string.body)
                 },
-                fontSize = formatText.fontSize.sp,
-                fontWeight = if (formatText.isBold) FontWeight.Bold else FontWeight.Normal,
+                fontSize = typeText.fontSize.sp,
+                fontWeight = if (typeText.isBold) FontWeight.Bold else FontWeight.Normal,
                 color =
                 if (selectedIndex.value == index) MaterialTheme.colorScheme.background
                 else MaterialTheme.colorScheme.secondary,
@@ -315,19 +294,20 @@ fun TypeTextsItem(
     }
 }
 
-@Preview(showBackground = true)
 @Composable
 fun FormatTextsSelector(
-    noteItem: NoteItem = mockTextItem,
-    applyFormat: (FormatText) -> Unit = {},
+    formatText: FormatText = mockBodyFormat,
+    applyFormat: (FormatType, FormatText) -> Unit = { _, _ -> },
 ) {
-    with(noteItem.formatText) {
+    with(formatText) {
         val selectedIndexes = remember(this) {
             mutableStateListOf(isBold, isItalic, isUnderline, isLineThrough)
         }
 
         Row(
-            modifier = Modifier.fillMaxWidth(),
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(vertical = 12.dp),
         ) {
             Card(
                 modifier = Modifier
@@ -335,7 +315,7 @@ fun FormatTextsSelector(
                     .weight(1f)
                     .clickable {
                         selectedIndexes[0] = !selectedIndexes[0]
-                        applyFormat(copy(isBold = selectedIndexes[0]))
+                        applyFormat(FormatType.BOLD, FormatText(isBold = selectedIndexes[0]))
                     },
                 shape = RoundedCornerShape(
                     topStart = 12.dp,
@@ -373,7 +353,7 @@ fun FormatTextsSelector(
                     .weight(1f)
                     .clickable {
                         selectedIndexes[1] = !selectedIndexes[1]
-                        applyFormat(copy(isItalic = selectedIndexes[1]))
+                        applyFormat(FormatType.ITALIC, FormatText(isItalic = selectedIndexes[1]))
                     },
                 shape = RoundedCornerShape(0.dp),
                 colors = CardDefaults.cardColors(
@@ -406,7 +386,10 @@ fun FormatTextsSelector(
                     .weight(1f)
                     .clickable {
                         selectedIndexes[2] = !selectedIndexes[2]
-                        applyFormat(copy(isUnderline = selectedIndexes[2]))
+                        applyFormat(
+                            FormatType.UNDERLINE,
+                            FormatText(isUnderline = selectedIndexes[2])
+                        )
                     },
                 shape = RoundedCornerShape(0.dp),
                 colors = CardDefaults.cardColors(
@@ -439,7 +422,10 @@ fun FormatTextsSelector(
                     .weight(1f)
                     .clickable {
                         selectedIndexes[3] = !selectedIndexes[3]
-                        applyFormat(copy(isLineThrough = selectedIndexes[3]))
+                        applyFormat(
+                            FormatType.LINE_THROUGH,
+                            FormatText(isLineThrough = selectedIndexes[3])
+                        )
                     },
                 shape = RoundedCornerShape(
                     topStart = 0.dp,
@@ -472,21 +458,17 @@ fun FormatTextsSelector(
     }
 }
 
-@Preview(showBackground = true)
 @Composable
 fun ParagraphsSelectorAndTextColor(
-    noteItem: NoteItem = mockTextItem,
+    formatText: FormatText = mockBodyFormat,
     isDarkTheme: Boolean = false,
-    applyFormat: (FormatText) -> Unit = {},
+    applyFormat: (FormatType, FormatText) -> Unit = { _, _ -> },
 ) {
-    val paragraphType = remember { mutableStateOf(noteItem.formatText.paragraphType) }
+    val paragraphType = remember { mutableStateOf(formatText.paragraphType) }
 
     val showColorSelector = remember { mutableStateOf(false) }
     val color =
-        getColor(
-            if (isDarkTheme) noteItem.formatText.textDarkColor
-            else noteItem.formatText.textLightColor
-        )
+        getColor(if (isDarkTheme) formatText.color.darkColor else formatText.color.lightColor)
 
     Column {
         Row(modifier = Modifier.fillMaxWidth()) {
@@ -527,7 +509,10 @@ fun ParagraphsSelectorAndTextColor(
                         .weight(1f)
                         .clickable {
                             paragraphType.value = ParagraphType.LEFT
-                            applyFormat(noteItem.formatText.copy(paragraphType = ParagraphType.LEFT))
+                            applyFormat(
+                                FormatType.PARAGRAPH_TYPE,
+                                FormatText(paragraphType = ParagraphType.LEFT)
+                            )
                         },
                     shape = RoundedCornerShape(
                         topStart = 12.dp,
@@ -564,7 +549,10 @@ fun ParagraphsSelectorAndTextColor(
                         .weight(1f)
                         .clickable {
                             paragraphType.value = ParagraphType.JUSTIFY
-                            applyFormat(noteItem.formatText.copy(paragraphType = ParagraphType.JUSTIFY))
+                            applyFormat(
+                                FormatType.PARAGRAPH_TYPE,
+                                FormatText(paragraphType = ParagraphType.JUSTIFY)
+                            )
                         },
                     shape = RoundedCornerShape(0.dp),
                     colors = CardDefaults.cardColors(
@@ -596,7 +584,10 @@ fun ParagraphsSelectorAndTextColor(
                         .weight(1f)
                         .clickable {
                             paragraphType.value = ParagraphType.CENTER
-                            applyFormat(noteItem.formatText.copy(paragraphType = ParagraphType.CENTER))
+                            applyFormat(
+                                FormatType.PARAGRAPH_TYPE,
+                                FormatText(paragraphType = ParagraphType.CENTER)
+                            )
                         },
                     shape = RoundedCornerShape(0.dp),
                     colors = CardDefaults.cardColors(
@@ -628,7 +619,10 @@ fun ParagraphsSelectorAndTextColor(
                         .weight(1f)
                         .clickable {
                             paragraphType.value = ParagraphType.RIGHT
-                            applyFormat(noteItem.formatText.copy(paragraphType = ParagraphType.RIGHT))
+                            applyFormat(
+                                FormatType.PARAGRAPH_TYPE,
+                                FormatText(paragraphType = ParagraphType.RIGHT)
+                            )
                         },
                     shape = RoundedCornerShape(
                         topStart = 0.dp,
@@ -659,16 +653,14 @@ fun ParagraphsSelectorAndTextColor(
             }
         }
 
-        if (showColorSelector.value) TextColorSelector(noteItem, isDarkTheme, applyFormat)
+        if (showColorSelector.value) TextColorSelector(isDarkTheme, applyFormat)
     }
 }
 
-@Preview(showBackground = true)
 @Composable
 fun TextColorSelector(
-    noteItem: NoteItem = mockTextItem,
     isDarkTheme: Boolean = false,
-    applyFormat: (FormatText) -> Unit = {},
+    applyFormat: (FormatType, FormatText) -> Unit = { _, _ -> },
 ) {
     val colors = remember { mutableStateOf(TextColor.entries) }
     LazyRow(
@@ -679,7 +671,6 @@ fun TextColorSelector(
     ) {
         items(colors.value) { item ->
             TextColorItem(
-                noteItem = noteItem,
                 item = item,
                 applyFormat = applyFormat,
                 isDarkTheme = isDarkTheme
@@ -690,9 +681,8 @@ fun TextColorSelector(
 
 @Composable
 fun TextColorItem(
-    noteItem: NoteItem = mockTextItem,
     item: TextColor = TextColor.BASIC,
-    applyFormat: (FormatText) -> Unit = {},
+    applyFormat: (FormatType, FormatText) -> Unit = { _, _ -> },
     isDarkTheme: Boolean = false,
 ) {
     val color = getColor(if (isDarkTheme) item.darkColor else item.lightColor)
@@ -701,13 +691,7 @@ fun TextColorItem(
         modifier = Modifier
             .size(32.dp)
             .padding(1.dp)
-            .clickable {
-                applyFormat(
-                    noteItem.formatText.copy(
-                        textLightColor = item.lightColor, textDarkColor = item.darkColor
-                    )
-                )
-            },
+            .clickable { applyFormat(FormatType.TEXT_COLOR, FormatText(color = item)) },
         shape = RoundedCornerShape(4.dp),
     ) {
         Box(

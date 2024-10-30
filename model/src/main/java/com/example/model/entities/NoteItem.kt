@@ -9,10 +9,12 @@ data class NoteItem(
     val id: String = "",
     val noteId: String = "",
     val text: String = "",
+    val cursorStartIndex: Int = 0,
+    val cursorEndIndex: Int = 0,
     val isChecked: Boolean = false,
     val type: NoteItemType = NoteItemType.TEXT,
     val isFocused: Boolean = true,
-    val formatText: FormatText,
+    val formatTexts: List<FormatText> = emptyList(),
     val table: Table? = null,
     val index: Int = 0,
 ) {
@@ -20,7 +22,7 @@ data class NoteItem(
         id = id,
         noteId = noteId,
         type = NoteItemType.TEXT,
-        formatText = FormatText(id = getUUID(), formatTextId = id),
+        formatTexts = listOf(FormatText(id = getUUID(), itemId = id)),
         index = index,
         isFocused = true,
     )
@@ -29,7 +31,7 @@ data class NoteItem(
         id = id,
         noteId = noteId,
         type = NoteItemType.CHECK_BOX,
-        formatText = FormatText(id = getUUID(), formatTextId = id),
+        formatTexts = listOf(FormatText(id = getUUID(), itemId = id)),
         isChecked = isChecked,
         index = index,
         isFocused = true,
@@ -39,7 +41,7 @@ data class NoteItem(
         id = id,
         noteId = noteId,
         type = NoteItemType.TABLE,
-        formatText = FormatText(id = getUUID(), formatTextId = id),
+        formatTexts = listOf(FormatText(id = getUUID(), itemId = id)),
         table = table.copy(noteItemId = id),
         index = index,
         isFocused = true,
@@ -59,7 +61,7 @@ data class NoteItem(
         return this.copy(
             id = newNoteItemId,
             noteId = newNoteId,
-            formatText = formatText.duplicate(newNoteItemId),
+            formatTexts = formatTexts.map { it.duplicate(newNoteItemId) },
             table = table?.duplicate(newNoteItemId)
         )
     }
@@ -79,4 +81,26 @@ data class NoteItem(
     fun restoreFocus() = copy(isFocused = true, table = table?.restoreFocus())
 
     fun isTableEmpty() = table?.isEmpty().orFalse()
+
+    fun getFormatTextWithSameIndexes() =
+        formatTexts.find { it.startIndex == cursorStartIndex && it.endIndex == cursorEndIndex }
+
+    fun addFormatText(formatText: FormatText) = copy(
+        formatTexts = formatTexts.toMutableList().apply {
+            add(
+                formatText.copy(
+                    id = getUUID(),
+                    itemId = id,
+                    startIndex = cursorStartIndex,
+                    endIndex = cursorEndIndex
+                )
+            )
+        }
+    )
+
+    fun removeFormatText(formatText: FormatText) = copy(
+        formatTexts = formatTexts.toMutableList().apply {
+            remove(formatText)
+        }
+    )
 }
