@@ -144,15 +144,14 @@ data class Note(
     })
 
     fun applyFormat(formatType: FormatType, formatText: FormatText) =
-        copy(items = items.map { currentNoteItem ->
-            with(currentNoteItem) {
-                if (isFocused) {
-                    getFormatTextWithSameIndexes()?.let { sameFormatIndexes ->
-                        removeFormatText(sameFormatIndexes)
-                        addFormatText(mergedFormat(formatType, formatText, sameFormatIndexes))
-                    } ?: addFormatText(formatText)
-                } else this
-            }
+        copy(items = items.map { current ->
+            if (current.isFocused) {
+                current.getFormatTextWithSameIndexes()?.let { sameIndexesFormat ->
+                    current
+                        .removeFormatText(sameIndexesFormat)
+                        .addFormatText(mergedFormat(formatType, formatText, sameIndexesFormat))
+                } ?: current.addFormatText(formatText)
+            } else current
         })
 
     private fun mergedFormat(

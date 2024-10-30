@@ -45,8 +45,7 @@ fun TextItem(
     text: String = "",
     formatTexts: List<FormatText> = emptyList(),
     isDarkTheme: Boolean = false,
-    maxLines: Int = 1,
-    color: Color = MaterialTheme.colorScheme.onBackground,
+    maxLines: Int = 1, color: Color = MaterialTheme.colorScheme.onBackground,
 ) {
     val annotatedString = remember(text, formatTexts, isDarkTheme) {
         getAnnotatedString(text, formatTexts, isDarkTheme)
@@ -71,6 +70,7 @@ fun TextFieldItem(
     TextItem(
         text = noteItem.text,
         formatTexts = noteItem.formatTexts,
+        isDarkTheme = isDarkTheme,
         maxLines = 8,
     )
 }
