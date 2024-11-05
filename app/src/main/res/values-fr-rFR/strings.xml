@@ -27,4 +27,13 @@
     <string name="header">En-tête</string>
     <string name="subtitle">sous-titre</string>
     <string name="body">corps</string>
+    <string name="options">Options</string>
+    <string name="grid">Grille</string>
+    <string name="list">Liste</string>
+    <string name="create_new_note">Créer une nouvelle note</string>
+    <string name="back">Retour</string>
+    <string name="add_text">Ajouter du texte</string>
+    <string name="add_checkbox">Ajouter une case à cocher</string>
+    <string name="add_table">Ajouter un tableau</string>
+    <string name="add_image">Ajouter une image</string>
 </resources>

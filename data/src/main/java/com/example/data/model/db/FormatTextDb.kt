@@ -8,14 +8,15 @@ import androidx.room.PrimaryKey
 data class FormatTextDb(
     @PrimaryKey val id: String = "",
 
-    @ColumnInfo(name = "formatTextId") val formatTextId: String = "",
+    @ColumnInfo(name = "itemId") val itemId: String = "",
+    @ColumnInfo(name = "startIndex") val startIndex: Int = 0,
+    @ColumnInfo(name = "endIndex") val endIndex: Int = 0,
     @ColumnInfo(name = "typeText") val typeText: String = "",
     @ColumnInfo(name = "fontSize") val fontSize: Int = 16,
     @ColumnInfo(name = "isBold") val isBold: Boolean = false,
     @ColumnInfo(name = "isItalic") val isItalic: Boolean = false,
     @ColumnInfo(name = "isUnderline") val isUnderline: Boolean = false,
     @ColumnInfo(name = "isLineThrough") val isLineThrough: Boolean = false,
-    @ColumnInfo(name = "textLightColor") val textLightColor: String = "",
-    @ColumnInfo(name = "textDarkColor") val textDarkColor: String = "",
+    @ColumnInfo(name = "color") val color: String = "",
     @ColumnInfo(name = "paragraphType") val paragraphType: String = "",
 )

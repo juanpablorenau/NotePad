@@ -1,7 +1,12 @@
 package com.example.notepad.utils
 
-import androidx.compose.ui.focus.FocusRequester
-import com.example.model.entities.*
+import com.example.model.entities.Cell
+import com.example.model.entities.FormatText
+import com.example.model.entities.Note
+import com.example.model.entities.NoteItem
+import com.example.model.entities.Table
+import com.example.model.enums.TextColor
+import com.example.model.enums.TypeText
 import com.example.model.enums.NoteColor as AppColor
 
 val mockNoteList by lazy {
@@ -30,7 +35,12 @@ val mockNoteItems by lazy {
     )
 }
 
-val mockTextItem by lazy { NoteItem(id = "1", noteId = "1", 0).copy(text = "Text Item") }
+val mockTextItem by lazy {
+    NoteItem(id = "1", noteId = "1", 0).copy(
+        text = "La vida es bella",
+        formatTexts = listOf(mockBodyFormat, mockColorFormat)
+    )
+}
 
 val mockCheckBoxItem by lazy {
     NoteItem(
@@ -62,8 +72,20 @@ val mockCell by lazy {
         tableId = "1",
         index = 0,
         text = "Cell Text",
-        formatText = FormatText()
+        formatTexts = listOf(mockBodyFormat)
     )
 }
 
-val mockFocusRequesters by lazy { mockTable.cells.map { FocusRequester() } }
+val mockBodyFormat by lazy { FormatText(TypeText.BODY) }
+
+val mockColorFormat by lazy {
+    FormatText(TypeText.HEADER).copy(
+        color = TextColor.GRAY_BLUE,
+        isBold = true,
+        isUnderline = true,
+        isItalic = true,
+        isLineThrough = true,
+        startIndex = 5,
+        endIndex = 9
+    )
+}

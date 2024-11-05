@@ -27,4 +27,14 @@
     <string name="header">Cabeçalho</string>
     <string name="subtitle">subtítulo</string>
     <string name="body">corpo</string>
+    <string name="options">Opções</string>
+    <string name="grid">Grade</string>
+    <string name="list">Lista</string>
+    <string name="create_new_note">Criar nova nota</string>
+    <string name="back">Voltar</string>
+    <string name="add_text">Adicionar texto</string>
+    <string name="add_checkbox">Adicionar caixa de seleção</string>
+    <string name="add_table">Adicionar tabela</string>
+    <string name="add_image">Adicionar imagem</string>
+
 </resources>

@@ -27,4 +27,13 @@
     <string name="header">Überschrift</string>
     <string name="subtitle">Untertitel</string>
     <string name="body">Inhalt</string>
+    <string name="options">Optionen</string>
+    <string name="grid">Raster</string>
+    <string name="list">Liste</string>
+    <string name="create_new_note">Neue Notiz erstellen</string>
+    <string name="back">Zurück</string>
+    <string name="add_text">Text hinzufügen</string>
+    <string name="add_checkbox">Kontrollkästchen hinzufügen</string>
+    <string name="add_table">Tabelle hinzufügen</string>
+    <string name="add_image">Bild hinzufügen</string>
 </resources>

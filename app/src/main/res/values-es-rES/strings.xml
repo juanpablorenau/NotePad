@@ -27,4 +27,13 @@
     <string name="header">Encabezamiento</string>
     <string name="subtitle">Subtítulo</string>
     <string name="body">Cuerpo</string>
+    <string name="options">Opciones</string>
+    <string name="grid">Cuadrícula</string>
+    <string name="list">Lista</string>
+    <string name="create_new_note">Crear nueva nota</string>
+    <string name="back">Atrás</string>
+    <string name="add_text">Añadir texto</string>
+    <string name="add_checkbox">Añadir casilla de verificación</string>
+    <string name="add_table">Añadir tabla</string>
+    <string name="add_image">Añadir imagen</string>
 </resources>

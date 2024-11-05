@@ -16,7 +16,7 @@ class CellDto @Inject constructor(
                 text = cell.text,
                 isFocused = cell.isFocused,
                 index = cell.index,
-                formatText = formatTextDto.toDomain(formatText)
+                formatTexts = formatTexts.map { formatTextDto.toDomain(it) }
             )
         }
 
@@ -30,7 +30,7 @@ class CellDto @Inject constructor(
                     isFocused = isFocused,
                     index = index
                 ),
-                formatText = formatTextDto.toDb(formatText),
+                formatTexts = formatTexts.map { formatTextDto.toDb(it) }
             )
         }
 }

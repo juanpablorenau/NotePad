@@ -12,6 +12,7 @@ import androidx.navigation.NavHostController
 import com.example.model.entities.FormatText
 import com.example.model.entities.Note
 import com.example.model.entities.NoteItem
+import com.example.model.enums.FormatType
 import com.example.model.enums.NoteColor
 import com.example.notepad.components.screens.ErrorScreen
 import com.example.notepad.components.screens.LoadingScreen
@@ -59,7 +60,7 @@ fun NoteDetailScreen(
                 deleteTextField = { noteItem -> viewModel.deleteTextField(noteItem) },
                 deleteNoteItemField = { noteItem -> viewModel.deleteNoteItemField(noteItem) },
                 duplicateNote = { viewModel.duplicateNote() },
-                applyFormat = { format -> viewModel.applyFormat(format) }
+                applyFormat = { type, formatText -> viewModel.applyFormat(type, formatText) }
             )
         }
     }
@@ -83,7 +84,7 @@ fun SuccessScreen(
     deleteTextField: (NoteItem) -> Unit = {},
     deleteNoteItemField: (NoteItem) -> Unit = {},
     duplicateNote: () -> Unit = {},
-    applyFormat: (FormatText) -> Unit = {}
+    applyFormat: (FormatType, FormatText) -> Unit = { _, _ -> },
 ) {
     Scaffold(
         topBar = {
@@ -103,6 +104,7 @@ fun SuccessScreen(
                 note = note,
                 saveText = saveText,
                 isDarkTheme = isDarkTheme,
+                addTextField = addTextField,
                 addCheckBox = addCheckBox,
                 updateNoteItem = updateNoteItem,
                 changeFocusIn = changeFocusIn,

@@ -30,6 +30,7 @@ import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.focus.onFocusChanged
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.SolidColor
 import androidx.compose.ui.input.key.Key
 import androidx.compose.ui.input.key.key
 import androidx.compose.ui.input.key.onKeyEvent
@@ -38,94 +39,17 @@ import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.TextFieldValue
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
-import androidx.lifecycle.compose.LifecycleResumeEffect
 import com.example.model.entities.Cell
 import com.example.model.entities.NoteItem
 import com.example.notepad.utils.bottomBorder
 import com.example.notepad.utils.endBorder
+import com.example.notepad.utils.getAnnotatedString
 import com.example.notepad.utils.mockCell
 import com.example.notepad.utils.mockCheckBoxItem
 import com.example.notepad.utils.mockTableItem
 import com.example.notepad.utils.mockTextItem
 import com.example.notepad.utils.startBorder
-import com.example.notepad.utils.toTextStyle
 import com.example.notepad.utils.topBorder
-
-@OptIn(ExperimentalMaterial3Api::class)
-@Preview(showBackground = true)
-@Composable
-fun CheckBoxItem(
-    noteItem: NoteItem = mockCheckBoxItem,
-    isDarkTheme: Boolean = false,
-    addCheckBox: (String) -> Unit = {},
-    updateNoteItem: (NoteItem) -> Unit = {},
-    changeFocusIn: (NoteItem) -> Unit = {},
-    deleteNoteItemField: (NoteItem) -> Unit = {},
-) {
-    val focusRequester = remember(noteItem.id) { FocusRequester() }
-    var isChecked by remember(noteItem.id) { mutableStateOf(noteItem.isChecked) }
-    var textField by remember(noteItem.id, noteItem.text) {
-        mutableStateOf(TextFieldValue(noteItem.text, TextRange(noteItem.text.length)))
-    }
-
-    Row(
-        modifier = Modifier.fillMaxWidth(),
-        horizontalArrangement = Arrangement.SpaceBetween,
-        verticalAlignment = Alignment.CenterVertically
-    ) {
-        Row(
-            verticalAlignment = Alignment.CenterVertically,
-            horizontalArrangement = Arrangement.Absolute.Left
-        ) {
-            CompositionLocalProvider(LocalMinimumInteractiveComponentEnforcement provides false) {
-                Checkbox(
-                    checked = isChecked,
-                    onCheckedChange = { newChecked -> isChecked = newChecked },
-                    colors = CheckboxDefaults.colors(
-                        checkedColor = MaterialTheme.colorScheme.primary,
-                        checkmarkColor = Color.White
-                    )
-                )
-            }
-
-            BasicTextField(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(start = 8.dp)
-                    .focusRequester(focusRequester)
-                    .onFocusChanged { changeFocusIn(noteItem.copy(isFocused = it.isFocused)) }
-                    .onKeyEvent {
-                        if (it.key == Key.Backspace && textField.text.isEmpty()) {
-                            deleteNoteItemField(noteItem)
-                            true
-                        } else false
-                    },
-                value = textField,
-                singleLine = true,
-                onValueChange = { newTextFieldValue -> textField = newTextFieldValue },
-                keyboardOptions = KeyboardOptions.Default.copy(imeAction = ImeAction.Done),
-                keyboardActions = KeyboardActions(
-                    onDone = {
-                        if (textField.text.isNotEmpty()) addCheckBox(noteItem.id)
-                        else deleteNoteItemField(noteItem)
-                    },
-                ),
-                textStyle = noteItem.formatText.toTextStyle(isDarkTheme),
-            )
-        }
-    }
-
-    LaunchedEffect(noteItem.id, noteItem.isFocused) {
-        if (noteItem.isFocused) focusRequester.requestFocus()
-        else focusRequester.freeFocus()
-    }
-
-    LifecycleResumeEffect(noteItem.id, textField.text, isChecked) {
-        onPauseOrDispose {
-            updateNoteItem(noteItem.copy(text = textField.text, isChecked = isChecked))
-        }
-    }
-}
 
 @Preview(showBackground = true)
 @Composable
@@ -137,8 +61,9 @@ fun TextFieldItem(
     deleteTextField: (NoteItem) -> Unit = {},
 ) {
     val focusRequester = remember(noteItem.id) { FocusRequester() }
-    var textField by remember(noteItem.id, noteItem.text) {
-        mutableStateOf(TextFieldValue(noteItem.text, TextRange(noteItem.text.length)))
+    val annotatedString = getAnnotatedString(noteItem.text, noteItem.formatTexts, isDarkTheme)
+    var textField by remember(noteItem.id, annotatedString) {
+        mutableStateOf(TextFieldValue(annotatedString, TextRange(annotatedString.length)))
     }
 
     BasicTextField(
@@ -152,18 +77,104 @@ fun TextFieldItem(
                     true
                 } else false
             },
-        textStyle = noteItem.formatText.toTextStyle(isDarkTheme),
+        cursorBrush = SolidColor(MaterialTheme.colorScheme.secondary),
         value = textField,
-        onValueChange = { newTextFieldValue -> textField = newTextFieldValue },
+        onValueChange = { newTextFieldValue ->
+            if (newTextFieldValue.selection != textField.selection) {
+                updateNoteItem(
+                    noteItem.copy(
+                        text = newTextFieldValue.text,
+                        cursorStartIndex = newTextFieldValue.selection.start,
+                        cursorEndIndex = newTextFieldValue.selection.end
+                    )
+                )
+                textField = newTextFieldValue
+            }
+        },
     )
 
     LaunchedEffect(noteItem.id, noteItem.isFocused) {
         if (noteItem.isFocused) focusRequester.requestFocus()
         else focusRequester.freeFocus()
     }
+}
 
-    LifecycleResumeEffect(noteItem.id, textField.text) {
-        onPauseOrDispose { updateNoteItem(noteItem.copy(text = textField.text)) }
+@OptIn(ExperimentalMaterial3Api::class)
+@Preview(showBackground = true)
+@Composable
+fun CheckBoxItem(
+    noteItem: NoteItem = mockCheckBoxItem,
+    isDarkTheme: Boolean = false,
+    addCheckBox: (String) -> Unit = {},
+    updateNoteItem: (NoteItem) -> Unit = {},
+    changeFocusIn: (NoteItem) -> Unit = {},
+    deleteNoteItemField: (NoteItem) -> Unit = {},
+) {
+    val focusRequester = remember(noteItem.id) { FocusRequester() }
+    val annotatedString = getAnnotatedString(noteItem.text, noteItem.formatTexts, isDarkTheme)
+    var isChecked by remember(noteItem.id) { mutableStateOf(noteItem.isChecked) }
+    var textField by remember(noteItem.id, annotatedString) {
+        mutableStateOf(TextFieldValue(annotatedString, TextRange(annotatedString.length)))
+    }
+
+    Row(
+        modifier = Modifier.fillMaxWidth(),
+        verticalAlignment = Alignment.Top,
+        horizontalArrangement = Arrangement.Absolute.Left
+    ) {
+        CompositionLocalProvider(LocalMinimumInteractiveComponentEnforcement provides false) {
+            Checkbox(
+                checked = isChecked,
+                onCheckedChange = { newChecked ->
+                    updateNoteItem(noteItem.copy(isChecked = newChecked))
+                    isChecked = newChecked
+                },
+                colors = CheckboxDefaults.colors(
+                    checkedColor = MaterialTheme.colorScheme.primary,
+                    checkmarkColor = Color.White
+                )
+            )
+        }
+
+        BasicTextField(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(start = 8.dp, top = 4.dp)
+                .focusRequester(focusRequester)
+                .onFocusChanged { changeFocusIn(noteItem.copy(isFocused = it.isFocused)) }
+                .onKeyEvent {
+                    if (it.key == Key.Backspace && textField.text.isEmpty()) {
+                        deleteNoteItemField(noteItem)
+                        true
+                    } else false
+                },
+            cursorBrush = SolidColor(MaterialTheme.colorScheme.secondary),
+            value = textField,
+            onValueChange = { newTextFieldValue ->
+                if (newTextFieldValue.selection != textField.selection) {
+                    updateNoteItem(
+                        noteItem.copy(
+                            text = newTextFieldValue.text,
+                            cursorStartIndex = newTextFieldValue.selection.start,
+                            cursorEndIndex = newTextFieldValue.selection.end
+                        )
+                    )
+                    textField = newTextFieldValue
+                }
+            },
+            keyboardOptions = KeyboardOptions.Default.copy(imeAction = ImeAction.Done),
+            keyboardActions = KeyboardActions(
+                onDone = {
+                    if (textField.text.isNotEmpty()) addCheckBox(noteItem.id)
+                    else deleteNoteItemField(noteItem)
+                },
+            ),
+        )
+    }
+
+    LaunchedEffect(noteItem.id, noteItem.isFocused) {
+        if (noteItem.isFocused) focusRequester.requestFocus()
+        else focusRequester.freeFocus()
     }
 }
 
@@ -254,12 +265,12 @@ fun CellItem(
                         else -> false
                     }
                 },
-            textStyle = cell.formatText.toTextStyle(isDarkTheme),
             value = textField,
             onValueChange = { newTextFieldValue ->
                 textField = newTextFieldValue
                 updateNoteItem(noteItem.applyInTable(cell.copy(text = textField.text)))
             },
+            cursorBrush = SolidColor(MaterialTheme.colorScheme.secondary),
         )
     }
 

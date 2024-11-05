@@ -27,4 +27,13 @@
     <string name="header">Header</string>
     <string name="subtitle">subtitle</string>
     <string name="body">body</string>
+    <string name="options">Options</string>
+    <string name="grid">Grid</string>
+    <string name="list">List</string>
+    <string name="create_new_note">Create new note</string>
+    <string name="back">Back</string>
+    <string name="add_text">Add text</string>
+    <string name="add_checkbox">Add checkbox</string>
+    <string name="add_table">Add table</string>
+    <string name="add_image">Add image</string>
 </resources>

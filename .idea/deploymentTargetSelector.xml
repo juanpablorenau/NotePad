@@ -16,9 +16,6 @@
       <SelectionState runConfigName="NotesTopBar">
         <option name="selectionMode" value="DROPDOWN" />
       </SelectionState>
-      <SelectionState runConfigName="CheckBoxItem">
-        <option name="selectionMode" value="DROPDOWN" />
-      </SelectionState>
       <SelectionState runConfigName="NoteBody">
         <option name="selectionMode" value="DROPDOWN" />
       </SelectionState>

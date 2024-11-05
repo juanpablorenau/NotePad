@@ -1,7 +1,15 @@
 package com.example.notepad.ui.list
 
 import androidx.compose.foundation.clickable
-import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxHeight
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.heightIn
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardActions
@@ -9,8 +17,25 @@ import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.Search
-import androidx.compose.material3.*
-import androidx.compose.runtime.*
+import androidx.compose.material3.DropdownMenu
+import androidx.compose.material3.DropdownMenuItem
+import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.FloatingActionButton
+import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.OutlinedTextField
+import androidx.compose.material3.Scaffold
+import androidx.compose.material3.Text
+import androidx.compose.material3.TextFieldDefaults
+import androidx.compose.material3.TopAppBar
+import androidx.compose.material3.TopAppBarDefaults
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.focusRequester
@@ -32,6 +57,7 @@ import androidx.navigation.NavHostController
 import com.example.model.entities.Note
 import com.example.notepad.R
 import com.example.notepad.components.Dialog
+import com.example.notepad.components.DisplayText
 import com.example.notepad.components.MenuItem
 import com.example.notepad.components.screens.ErrorScreen
 import com.example.notepad.components.screens.LoadingScreen
@@ -162,20 +188,26 @@ fun NotesTopBar(
         },
         actions = {
             if (notes.none { it.isChecked }) {
-                IconButton(onClick = { changeItemsView() }) {
-                    Icon(
-                        painter = painterResource(id = if (itemsView == 1) R.drawable.ic_grid_view else R.drawable.ic_list),
-                        contentDescription = "Grid icon",
-                        tint = MaterialTheme.colorScheme.primary
-                    )
+                DisplayText(
+                    description = if (itemsView == 1) R.string.grid else R.string.list
+                ) {
+                    IconButton(onClick = { changeItemsView() }) {
+                        Icon(
+                            painter = painterResource(id = if (itemsView == 1) R.drawable.ic_grid_view else R.drawable.ic_list),
+                            contentDescription = "Grid icon",
+                            tint = MaterialTheme.colorScheme.primary
+                        )
+                    }
                 }
 
-                IconButton(onClick = { setSearchBarVisible() }) {
-                    Icon(
-                        painter = painterResource(id = R.drawable.ic_search),
-                        contentDescription = "Search icon",
-                        tint = MaterialTheme.colorScheme.primary
-                    )
+                DisplayText(description = R.string.search) {
+                    IconButton(onClick = { setSearchBarVisible() }) {
+                        Icon(
+                            painter = painterResource(id = R.drawable.ic_search),
+                            contentDescription = "Search icon",
+                            tint = MaterialTheme.colorScheme.primary
+                        )
+                    }
                 }
             } else {
                 Text(
@@ -183,12 +215,14 @@ fun NotesTopBar(
                     color = MaterialTheme.colorScheme.primary
                 )
 
-                IconButton(onClick = { showMenu = !showMenu }) {
-                    Icon(
-                        painter = painterResource(id = R.drawable.ic_more_vert),
-                        contentDescription = "More icon",
-                        tint = MaterialTheme.colorScheme.primary
-                    )
+                DisplayText(description = R.string.options) {
+                    IconButton(onClick = { showMenu = !showMenu }) {
+                        Icon(
+                            painter = painterResource(id = R.drawable.ic_more_vert),
+                            contentDescription = "More icon",
+                            tint = MaterialTheme.colorScheme.primary
+                        )
+                    }
                 }
             }
             DropdownMenu(
@@ -382,17 +416,19 @@ private fun SearchNote(
 fun AddNoteButton(onClick: (String) -> Unit = {}, size: Int) {
     val route = AppScreens.NoteDetailScreen.route.plus("/new_element/$size")
 
-    FloatingActionButton(
-        modifier = Modifier.padding(bottom = 12.dp, end = 12.dp),
-        shape = CircleShape,
-        containerColor = MaterialTheme.colorScheme.tertiary,
-        onClick = { onClick(route) }
-    ) {
-        Icon(
-            modifier = Modifier.size(36.dp),
-            painter = painterResource(id = R.drawable.ic_add),
-            contentDescription = "Add_icon",
-            tint = MaterialTheme.colorScheme.primary
-        )
+    DisplayText(description = R.string.create_new_note) {
+        FloatingActionButton(
+            modifier = Modifier.padding(bottom = 12.dp, end = 12.dp),
+            shape = CircleShape,
+            containerColor = MaterialTheme.colorScheme.tertiary,
+            onClick = { onClick(route) }
+        ) {
+            Icon(
+                modifier = Modifier.size(36.dp),
+                painter = painterResource(id = R.drawable.ic_add),
+                contentDescription = "Add_icon",
+                tint = MaterialTheme.colorScheme.primary
+            )
+        }
     }
 }

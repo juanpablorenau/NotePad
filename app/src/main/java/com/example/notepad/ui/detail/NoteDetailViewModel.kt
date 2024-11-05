@@ -10,6 +10,7 @@ import com.example.domain.usecase.detail.UpdateNoteUseCase
 import com.example.model.entities.FormatText
 import com.example.model.entities.Note
 import com.example.model.entities.NoteItem
+import com.example.model.enums.FormatType
 import com.example.model.enums.NoteColor
 import com.example.model.utils.getUUID
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -193,10 +194,10 @@ class NoteDetailViewModel @Inject constructor(
         insertNote(getNote().duplicate())
     }
 
-    fun applyFormat(formatText: FormatText) {
+    fun applyFormat(formatType: FormatType, formatText: FormatText) {
         _uiState.getAndUpdate { state ->
             with((state.asSuccess())) {
-                copy(note = note.applyFormat(formatText))
+                copy(note = note.applyFormat(formatType, formatText))
             }
         }
     }

@@ -19,7 +19,7 @@ class NoteItemDto @Inject constructor(
                 isChecked = noteItem.isChecked,
                 isFocused = noteItem.isFocused,
                 type = NoteItemType.valueOf(noteItem.type),
-                formatText = formatTextDto.toDomain(formatText),
+                formatTexts = formatTexts.map { formatTextDto.toDomain(it) },
                 table = tableDto.toDomain(table),
                 index = noteItem.index
             )
@@ -37,7 +37,7 @@ class NoteItemDto @Inject constructor(
                     type = type.name,
                     index = index
                 ),
-                formatText = formatTextDto.toDb(formatText),
+                formatTexts = formatTexts.map { formatTextDto.toDb(it) },
                 table = tableDto.toDb(table),
             )
         }

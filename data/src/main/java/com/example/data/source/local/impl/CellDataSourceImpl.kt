@@ -14,11 +14,11 @@ class CellDataSourceImpl @Inject constructor(
 
     override suspend fun insertCell(cell: CellDb) {
         cellDao.insertCell(cell.cell)
-        formatTextDataSource.insertFormatText(cell.formatText)
+        cell.formatTexts.forEach { formatTextDataSource.insertFormatText(it) }
     }
 
     override suspend fun deleteCell(cell: Cell) {
         cellDao.deleteCell(cell.id)
-        formatTextDataSource.deleteFormatText(cell.formatText)
+        cell.formatTexts.forEach { formatTextDataSource.deleteFormatText(it) }
     }
 }
