@@ -45,7 +45,8 @@ fun TextItem(
     text: String = "",
     formatTexts: List<FormatText> = emptyList(),
     isDarkTheme: Boolean = false,
-    maxLines: Int = 1, color: Color = MaterialTheme.colorScheme.onBackground,
+    maxLines: Int = 1,
+    color: Color = MaterialTheme.colorScheme.onBackground,
 ) {
     val annotatedString = remember(text, formatTexts, isDarkTheme) {
         getAnnotatedString(text, formatTexts, isDarkTheme)
@@ -83,40 +84,35 @@ fun CheckBoxItem(
     isDarkTheme: Boolean = false,
 ) {
     Row(
-        horizontalArrangement = Arrangement.SpaceBetween,
-        verticalAlignment = Alignment.CenterVertically
+        verticalAlignment = Alignment.CenterVertically,
+        horizontalArrangement = Arrangement.Absolute.Left,
     ) {
-        Row(
-            verticalAlignment = Alignment.CenterVertically,
-            horizontalArrangement = Arrangement.Absolute.Left,
-        ) {
-            CompositionLocalProvider(LocalMinimumInteractiveComponentEnforcement provides false) {
-                Checkbox(
-                    modifier = Modifier
-                        .size(18.dp)
-                        .scale(0.75f)
-                        .padding(end = 4.dp),
-                    enabled = false,
-                    checked = noteItem.isChecked,
-                    onCheckedChange = { _ -> },
-                    colors = CheckboxDefaults.colors(
-                        checkedColor = MaterialTheme.colorScheme.primary,
-                        checkmarkColor = Color.White
-                    )
+        CompositionLocalProvider(LocalMinimumInteractiveComponentEnforcement provides false) {
+            Checkbox(
+                modifier = Modifier
+                    .size(18.dp)
+                    .scale(0.75f)
+                    .padding(end = 4.dp),
+                enabled = false,
+                checked = noteItem.isChecked,
+                onCheckedChange = { _ -> },
+                colors = CheckboxDefaults.colors(
+                    checkedColor = MaterialTheme.colorScheme.primary,
+                    checkmarkColor = Color.White
                 )
-            }
-
-            HorizontalDivider(
-                modifier = Modifier.width(4.dp),
-                color = Color.Transparent
-            )
-
-            TextItem(
-                text = noteItem.text,
-                formatTexts = noteItem.formatTexts,
-                maxLines = 1,
             )
         }
+
+        HorizontalDivider(
+            modifier = Modifier.width(4.dp),
+            color = Color.Transparent
+        )
+
+        TextItem(
+            text = noteItem.text,
+            formatTexts = noteItem.formatTexts,
+            maxLines = 1,
+        )
     }
 }
 
