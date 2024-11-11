@@ -29,6 +29,7 @@ import androidx.compose.ui.unit.sp
 import com.example.model.entities.Cell
 import com.example.model.entities.FormatText
 import com.example.model.entities.NoteItem
+import com.example.notepad.ui.detail.CellItem
 import com.example.notepad.utils.bottomBorder
 import com.example.notepad.utils.endBorder
 import com.example.notepad.utils.getAnnotatedString
@@ -46,10 +47,9 @@ fun TextItem(
     formatTexts: List<FormatText> = emptyList(),
     isDarkTheme: Boolean = false,
     maxLines: Int = 1,
-    color: Color = MaterialTheme.colorScheme.onBackground,
 ) {
     val annotatedString = remember(text, formatTexts, isDarkTheme) {
-        getAnnotatedString(text, formatTexts, isDarkTheme)
+        getAnnotatedString(text, formatTexts, isDarkTheme, false)
     }
 
     Text(
@@ -57,8 +57,7 @@ fun TextItem(
         text = annotatedString,
         overflow = TextOverflow.Ellipsis,
         maxLines = maxLines,
-        color = color,
-        fontSize = 12.sp,
+        fontSize = 12.sp
     )
 }
 
@@ -72,7 +71,7 @@ fun TextFieldItem(
         text = noteItem.text,
         formatTexts = noteItem.formatTexts,
         isDarkTheme = isDarkTheme,
-        maxLines = 8,
+        maxLines = 4,
     )
 }
 

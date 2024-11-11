@@ -1,5 +1,6 @@
 package com.example.notepad.utils
 
+import android.util.Log
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.composed
 import androidx.compose.ui.draw.drawBehind
@@ -16,42 +17,47 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.model.entities.FormatText
 
-fun getColor(hexColor: String): Color {
-    return Color(android.graphics.Color.parseColor(hexColor))
-}
+fun getColor(hexColor: String) =  Color(android.graphics.Color.parseColor(hexColor))
 
 fun getAnnotatedString(
     text: String,
     formatTexts: List<FormatText>,
-    isDarkTheme: Boolean
+    isDarkTheme: Boolean,
+    isDynamicFontSize: Boolean = true
 ): AnnotatedString {
-    val styles = formatTexts.map { format -> format.toSpanStyle(isDarkTheme) }
+    val styles =
+        formatTexts.mapNotNull { format -> format.toSpanStyle(isDarkTheme, isDynamicFontSize) }
     return AnnotatedString(text = text, spanStyles = styles)
 }
 
-fun FormatText.toSpanStyle(isDarkTheme: Boolean): AnnotatedString.Range<SpanStyle> =
-    AnnotatedString.Range(
-        start = startIndex,
-        end = endIndex,
-        item = SpanStyle(
-            color = getColor(if (isDarkTheme) color.darkColor else color.lightColor),
-            fontSize = typeText.fontSize.sp,
-            fontWeight = if (isBold) FontWeight.Bold else FontWeight.Normal,
-            fontStyle = if (isItalic) FontStyle.Italic else FontStyle.Normal,
-            textDecoration = when {
-                isUnderline && isLineThrough -> TextDecoration.combine(
-                    listOf(
-                        TextDecoration.Underline,
-                        TextDecoration.LineThrough,
+fun FormatText.toSpanStyle(
+    isDarkTheme: Boolean,
+    isDynamicFontSize: Boolean
+): AnnotatedString.Range<SpanStyle>? =
+    try {
+        AnnotatedString.Range(
+            start = startIndex,
+            end = endIndex,
+            item = SpanStyle(
+                color = getColor(if (isDarkTheme) color.darkColor else color.lightColor),
+                fontSize = if (isDynamicFontSize) typeText.fontSize.sp else 12.sp,
+                fontWeight = if (isBold) FontWeight.Bold else FontWeight.Normal,
+                fontStyle = if (isItalic) FontStyle.Italic else FontStyle.Normal,
+                textDecoration = when {
+                    isUnderline && isLineThrough -> TextDecoration.combine(
+                        listOf(TextDecoration.Underline, TextDecoration.LineThrough)
                     )
-                )
 
-                isUnderline -> TextDecoration.Underline
-                isLineThrough -> TextDecoration.LineThrough
-                else -> TextDecoration.None
-            },
+                    isUnderline -> TextDecoration.Underline
+                    isLineThrough -> TextDecoration.LineThrough
+                    else -> TextDecoration.None
+                },
+            )
         )
-    )
+    } catch (e: Exception) {
+        Log.e("SPAN", "startIndex: $startIndex, endIndex: $endIndex")
+        null
+    }
 
 fun Modifier.bottomBorder(strokeWidth: Dp = 0.5.dp, color: Color) = composed(
     factory = {

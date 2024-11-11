@@ -685,7 +685,9 @@ fun TextColorItem(
     applyFormat: (FormatType, FormatText) -> Unit = { _, _ -> },
     isDarkTheme: Boolean = false,
 ) {
-    val color = getColor(if (isDarkTheme) item.darkColor else item.lightColor)
+    val color = remember(item, isDarkTheme) {
+        getColor(if (isDarkTheme) item.darkColor else item.lightColor)
+    }
 
     Card(
         modifier = Modifier

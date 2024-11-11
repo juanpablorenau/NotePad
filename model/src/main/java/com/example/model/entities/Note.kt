@@ -100,9 +100,34 @@ data class Note(
     })
 
     fun updateNoteItem(noteItem: NoteItem) = copy(items = items.map { current ->
-        if (current.id == noteItem.id) noteItem
-        else current
+        if (current.id == noteItem.id) {
+            when {
+                current.text > noteItem.text -> {
+                    noteItem.updateFormatsAfterDeletingCharacter(
+                        getIndexOfCharacter(current.text, noteItem.text)
+                    )
+                }
+
+                current.text < noteItem.text -> {
+                    noteItem.updateFormatsAfterAddingCharacter(
+                        getIndexOfCharacter(current.text, noteItem.text)
+                    )
+                }
+
+                else -> noteItem
+            }
+        } else current
     })
+
+    private fun getIndexOfCharacter(oldText: String, newText: String): Int {
+        val minLength = minOf(oldText.length, newText.length)
+
+        for (i in 0 until minLength) {
+            if (oldText[i] != newText[i]) return i
+        }
+
+        return minLength
+    }
 
     fun deleteTextField(noteItemId: String) =
         copy(items = items.mapIndexedNotNull { index, noteItem ->
@@ -148,9 +173,9 @@ data class Note(
             if (current.isFocused) {
                 current.getFormatTextWithSameIndexes()?.let { sameIndexesFormat ->
                     current
-                        .removeFormatText(sameIndexesFormat)
+                        .removeFormatText(sameIndexesFormat.id)
                         .addFormatText(mergedFormat(formatType, formatText, sameIndexesFormat))
-                } ?: current.addFormatText(formatText)
+                } ?: current.addFormatText(formatText.copy(id = getUUID()))
             } else current
         })
 
@@ -183,6 +208,9 @@ data class Note(
             else noteItem.removeFocus()
         }
     )
+
+    fun setCursorOnLastPosition() =
+        copy(items = items.map { noteItem -> noteItem.setCursorOnLastPosition() })
 
     fun changeFocusIn(noteItem: NoteItem) =
         copy(items = items.map { current ->
