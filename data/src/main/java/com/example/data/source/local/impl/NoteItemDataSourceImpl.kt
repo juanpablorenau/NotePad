@@ -22,7 +22,7 @@ class NoteItemDataSourceImpl @Inject constructor(
 
     override suspend fun deleteNoteItem(noteItem: NoteItem) {
         noteItemDao.deleteNoteItem(noteItem.id)
-        noteItem.formatTexts.forEach { formatTextDataSource.deleteFormatText(it) }
+        noteItem.formatTexts.forEach { format -> formatTextDataSource.deleteFormatText(format.id) }
         noteItem.table?.let { table -> tableDataSource.deleteTable(table) }
     }
 }

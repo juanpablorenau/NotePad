@@ -99,25 +99,26 @@ data class Note(
         }
     })
 
-    fun updateNoteItem(noteItem: NoteItem) = copy(items = items.map { current ->
-        if (current.id == noteItem.id) {
-            when {
-                current.text > noteItem.text -> {
-                    noteItem.updateFormatsAfterDeletingCharacter(
-                        getIndexOfCharacter(current.text, noteItem.text)
-                    )
-                }
+    fun updateNoteItem(noteItem: NoteItem, deleteFormat: (String) -> Unit) =
+        copy(items = items.map { current ->
+            if (current.id == noteItem.id) {
+                when {
+                    current.text.length > noteItem.text.length -> {
+                        noteItem.updateFormatsAfterDeletingCharacter(
+                            getIndexOfCharacter(current.text, noteItem.text)
+                        ) { id -> deleteFormat(id) }
+                    }
 
-                current.text < noteItem.text -> {
-                    noteItem.updateFormatsAfterAddingCharacter(
-                        getIndexOfCharacter(current.text, noteItem.text)
-                    )
-                }
+                    current.text.length < noteItem.text.length -> {
+                        noteItem.updateFormatsAfterAddingCharacter(
+                            getIndexOfCharacter(current.text, noteItem.text)
+                        )
+                    }
 
-                else -> noteItem
-            }
-        } else current
-    })
+                    else -> noteItem
+                }
+            } else current
+        })
 
     private fun getIndexOfCharacter(oldText: String, newText: String): Int {
         val minLength = minOf(oldText.length, newText.length)
@@ -168,12 +169,17 @@ data class Note(
         addAll(updatedItems)
     })
 
-    fun applyFormat(formatType: FormatType, formatText: FormatText) =
+    fun applyFormat(
+        formatType: FormatType,
+        formatText: FormatText,
+        deleteFormat: (String) -> Unit
+    ) =
         copy(items = items.map { current ->
             if (current.isFocused) {
                 current.getFormatTextWithSameIndexes()?.let { sameIndexesFormat ->
                     current
                         .removeFormatText(sameIndexesFormat.id)
+                        .also { deleteFormat(sameIndexesFormat.id) }
                         .addFormatText(mergedFormat(formatType, formatText, sameIndexesFormat))
                 } ?: current.addFormatText(formatText.copy(id = getUUID()))
             } else current

@@ -1,6 +1,8 @@
 package com.example.domain.di
 
+import com.example.data.repository.FormatTextRepository
 import com.example.data.repository.NoteRepository
+import com.example.domain.usecase.detail.DeleteFormatTextUseCase
 import com.example.domain.usecase.detail.DeleteNoteUseCase
 import com.example.domain.usecase.detail.GetNoteDetailUseCase
 import com.example.domain.usecase.detail.InsertNoteUseCase
@@ -72,5 +74,13 @@ class UseCaseModule {
         dispatcher: CoroutineDispatcher,
     ): UpdateNotesUseCase {
         return UpdateNotesUseCase(repository, dispatcher)
+    }
+
+    @Provides
+    fun providesDeleteFormatTextUseCase(
+        repository: FormatTextRepository,
+        dispatcher: CoroutineDispatcher,
+    ): DeleteFormatTextUseCase {
+        return DeleteFormatTextUseCase(repository, dispatcher)
     }
 }

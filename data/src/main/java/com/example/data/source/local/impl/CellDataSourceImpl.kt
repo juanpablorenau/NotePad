@@ -19,6 +19,6 @@ class CellDataSourceImpl @Inject constructor(
 
     override suspend fun deleteCell(cell: Cell) {
         cellDao.deleteCell(cell.id)
-        cell.formatTexts.forEach { formatTextDataSource.deleteFormatText(it) }
+        cell.formatTexts.forEach { format -> formatTextDataSource.deleteFormatText(format.id) }
     }
 }

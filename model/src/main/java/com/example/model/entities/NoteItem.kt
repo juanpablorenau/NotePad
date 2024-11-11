@@ -101,22 +101,23 @@ data class NoteItem(
             removeIf { formatTextId == it.id }
         })
 
-    fun updateFormatsAfterDeletingCharacter(deletedIndex: Int) = copy(
-        formatTexts = formatTexts.mapNotNull { current ->
-            when {
-                current.shouldDelete(deletedIndex) -> null
-                current.isBefore(deletedIndex) -> current
-                current.isBetween(deletedIndex) -> current.copy(endIndex = current.endIndex - 1)
-                current.isAfter(deletedIndex) -> {
-                    current.copy(
-                        startIndex = current.startIndex - 1, endIndex = current.endIndex - 1
-                    )
-                }
+    fun updateFormatsAfterDeletingCharacter(deletedIndex: Int, deleteFormat: (String) -> Unit) =
+        copy(
+            formatTexts = formatTexts.mapNotNull { current ->
+                when {
+                    current.shouldDelete(deletedIndex) -> deleteFormat(current.id).let { null }
+                    current.isBefore(deletedIndex) -> current
+                    current.isBetween(deletedIndex) -> current.copy(endIndex = current.endIndex - 1)
+                    current.isAfter(deletedIndex) -> {
+                        current.copy(
+                            startIndex = current.startIndex - 1, endIndex = current.endIndex - 1
+                        )
+                    }
 
-                else -> current
+                    else -> current
+                }
             }
-        }
-    )
+        )
 
     fun updateFormatsAfterAddingCharacter(deletedIndex: Int) = copy(
         formatTexts = formatTexts.map { current ->
