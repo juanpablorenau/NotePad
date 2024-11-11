@@ -60,42 +60,37 @@ fun TextFieldItem(
     changeFocusIn: (NoteItem) -> Unit = {},
     deleteTextField: (NoteItem) -> Unit = {},
 ) {
-    val focusRequester = remember(noteItem.id) { FocusRequester() }
-    val annotatedString = getAnnotatedString(noteItem.text, noteItem.formatTexts, isDarkTheme)
-    var textField by remember(noteItem.id, annotatedString) {
-        mutableStateOf(TextFieldValue(annotatedString, TextRange(annotatedString.length)))
-    }
+    with(noteItem) {
+        val focusRequester = remember(id) { FocusRequester() }
+        val annotatedString = remember(id, text, formatTexts, isDarkTheme) {
+            getAnnotatedString(text, formatTexts, isDarkTheme)
+        }
 
-    BasicTextField(
-        modifier = Modifier
-            .fillMaxWidth()
-            .focusRequester(focusRequester)
-            .onFocusChanged { changeFocusIn(noteItem.copy(isFocused = it.isFocused)) }
-            .onKeyEvent {
-                if (it.key == Key.Backspace && textField.text.isEmpty()) {
-                    deleteTextField(noteItem)
-                    true
-                } else false
-            },
-        cursorBrush = SolidColor(MaterialTheme.colorScheme.secondary),
-        value = textField,
-        onValueChange = { newTextFieldValue ->
-            if (newTextFieldValue.selection != textField.selection) {
+        BasicTextField(
+            modifier = Modifier
+                .fillMaxWidth()
+                .focusRequester(focusRequester)
+                .onFocusChanged { changeFocusIn(copy(isFocused = it.isFocused)) }
+                .onKeyEvent {
+                    if (it.key == Key.Backspace && text.isEmpty()) deleteTextField(this).let { true }
+                    else false
+                },
+            cursorBrush = SolidColor(MaterialTheme.colorScheme.secondary),
+            value = TextFieldValue(annotatedString, TextRange(cursorStartIndex, cursorEndIndex)),
+            onValueChange = { newTextField ->
                 updateNoteItem(
-                    noteItem.copy(
-                        text = newTextFieldValue.text,
-                        cursorStartIndex = newTextFieldValue.selection.start,
-                        cursorEndIndex = newTextFieldValue.selection.end
+                    copy(
+                        text = newTextField.text,
+                        cursorStartIndex = newTextField.selection.start,
+                        cursorEndIndex = newTextField.selection.end
                     )
                 )
-                textField = newTextFieldValue
-            }
-        },
-    )
+            },
+        )
 
-    LaunchedEffect(noteItem.id, noteItem.isFocused) {
-        if (noteItem.isFocused) focusRequester.requestFocus()
-        else focusRequester.freeFocus()
+        LaunchedEffect(id, isFocused) {
+            if (isFocused) focusRequester.requestFocus() else focusRequester.freeFocus()
+        }
     }
 }
 
@@ -150,17 +145,15 @@ fun CheckBoxItem(
                 },
             cursorBrush = SolidColor(MaterialTheme.colorScheme.secondary),
             value = textField,
-            onValueChange = { newTextFieldValue ->
-                if (newTextFieldValue.selection != textField.selection) {
-                    updateNoteItem(
-                        noteItem.copy(
-                            text = newTextFieldValue.text,
-                            cursorStartIndex = newTextFieldValue.selection.start,
-                            cursorEndIndex = newTextFieldValue.selection.end
-                        )
+            onValueChange = { newTextField ->
+                updateNoteItem(
+                    noteItem.copy(
+                        text = newTextField.text,
+                        cursorStartIndex = newTextField.selection.start,
+                        cursorEndIndex = newTextField.selection.end
                     )
-                    textField = newTextFieldValue
-                }
+                )
+                textField = newTextField
             },
             keyboardOptions = KeyboardOptions.Default.copy(imeAction = ImeAction.Done),
             keyboardActions = KeyboardActions(
@@ -266,8 +259,8 @@ fun CellItem(
                     }
                 },
             value = textField,
-            onValueChange = { newTextFieldValue ->
-                textField = newTextFieldValue
+            onValueChange = { newTextField ->
+                textField = newTextField
                 updateNoteItem(noteItem.applyInTable(cell.copy(text = textField.text)))
             },
             cursorBrush = SolidColor(MaterialTheme.colorScheme.secondary),

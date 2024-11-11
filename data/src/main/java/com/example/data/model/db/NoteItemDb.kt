@@ -31,6 +31,8 @@ data class NoteItemEmbeddedDb(
 
     @ColumnInfo(name = "noteId") val noteId: String,
     @ColumnInfo(name = "text") val text: String,
+    @ColumnInfo(name = "cursorStartIndex") val cursorStartIndex: Int,
+    @ColumnInfo(name = "cursorEndIndex") val cursorEndIndex: Int,
     @ColumnInfo(name = "isChecked") val isChecked: Boolean = false,
     @ColumnInfo(name = "type") val type: String,
     @ColumnInfo(name = "isFocused") val isFocused: Boolean = false,

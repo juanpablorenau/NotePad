@@ -46,10 +46,7 @@ fun NoteDetailScreen(
                 onBackClick = { navController.popBackStack() },
                 saveText = { title -> viewModel.saveText(title) },
                 pinUpNote = { viewModel.pinUpNote() },
-                deleteNote = {
-                    viewModel.deleteNote()
-                    navController.popBackStack()
-                },
+                deleteNote = { viewModel.deleteNote().also { navController.popBackStack() } },
                 changeColor = { color -> viewModel.changeColor(color) },
                 isDarkTheme = isDarkTheme,
                 addTextField = { viewModel.addTextField() },

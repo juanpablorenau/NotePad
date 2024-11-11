@@ -6,6 +6,6 @@ enum class TypeText(
 ) {
     TITLE(24, true),
     HEADER(20, false),
-    SUBTITLE(16, true),
-    BODY(16, false)
+    SUBTITLE(14, true),
+    BODY(14, false)
 }

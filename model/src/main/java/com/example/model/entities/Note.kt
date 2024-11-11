@@ -99,10 +99,36 @@ data class Note(
         }
     })
 
-    fun updateNoteItem(noteItem: NoteItem) = copy(items = items.map { current ->
-        if (current.id == noteItem.id) noteItem
-        else current
-    })
+    fun updateNoteItem(noteItem: NoteItem, deleteFormat: (String) -> Unit) =
+        copy(items = items.map { current ->
+            if (current.id == noteItem.id) {
+                when {
+                    current.text.length > noteItem.text.length -> {
+                        noteItem.updateFormatsAfterDeletingCharacter(
+                            getIndexOfCharacter(current.text, noteItem.text)
+                        ) { id -> deleteFormat(id) }
+                    }
+
+                    current.text.length < noteItem.text.length -> {
+                        noteItem.updateFormatsAfterAddingCharacter(
+                            getIndexOfCharacter(current.text, noteItem.text)
+                        )
+                    }
+
+                    else -> noteItem
+                }
+            } else current
+        })
+
+    private fun getIndexOfCharacter(oldText: String, newText: String): Int {
+        val minLength = minOf(oldText.length, newText.length)
+
+        for (i in 0 until minLength) {
+            if (oldText[i] != newText[i]) return i
+        }
+
+        return minLength
+    }
 
     fun deleteTextField(noteItemId: String) =
         copy(items = items.mapIndexedNotNull { index, noteItem ->
@@ -143,14 +169,19 @@ data class Note(
         addAll(updatedItems)
     })
 
-    fun applyFormat(formatType: FormatType, formatText: FormatText) =
+    fun applyFormat(
+        formatType: FormatType,
+        formatText: FormatText,
+        deleteFormat: (String) -> Unit
+    ) =
         copy(items = items.map { current ->
             if (current.isFocused) {
                 current.getFormatTextWithSameIndexes()?.let { sameIndexesFormat ->
                     current
-                        .removeFormatText(sameIndexesFormat)
+                        .removeFormatText(sameIndexesFormat.id)
+                        .also { deleteFormat(sameIndexesFormat.id) }
                         .addFormatText(mergedFormat(formatType, formatText, sameIndexesFormat))
-                } ?: current.addFormatText(formatText)
+                } ?: current.addFormatText(formatText.copy(id = getUUID()))
             } else current
         })
 
@@ -183,6 +214,9 @@ data class Note(
             else noteItem.removeFocus()
         }
     )
+
+    fun setCursorOnLastPosition() =
+        copy(items = items.map { noteItem -> noteItem.setCursorOnLastPosition() })
 
     fun changeFocusIn(noteItem: NoteItem) =
         copy(items = items.map { current ->

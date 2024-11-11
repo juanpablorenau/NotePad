@@ -1,14 +1,17 @@
 package com.example.data.di
 
+import com.example.data.repository.FormatTextRepository
 import com.example.data.repository.NoteItemRepository
 import com.example.data.repository.NoteRepository
 import com.example.data.repository.PreferencesRepository
 import com.example.data.repository.dto.LanguageDto
 import com.example.data.repository.dto.NoteDto
+import com.example.data.repository.impl.FormatTextRepositoryImpl
 import com.example.data.repository.impl.NoteItemRepositoryImpl
 import com.example.data.repository.impl.NoteRepositoryImpl
 import com.example.data.repository.impl.PreferencesRepositoryImpl
 import com.example.data.source.datastore.DataStoreSource
+import com.example.data.source.local.FormatTextDataSource
 import com.example.data.source.local.NoteDataSource
 import com.example.data.source.local.NoteItemDataSource
 import dagger.Module
@@ -20,6 +23,13 @@ import kotlinx.coroutines.CoroutineDispatcher
 @Module
 @InstallIn(SingletonComponent::class)
 class RepositoryModule {
+
+    @Provides
+    fun providesPreferencesRepository(
+        dataStoreSource: DataStoreSource,
+        dispatcher: CoroutineDispatcher,
+        languageDto: LanguageDto,
+    ): PreferencesRepository = PreferencesRepositoryImpl(dataStoreSource, dispatcher, languageDto)
 
     @Provides
     fun providesNoteRepository(
@@ -35,10 +45,8 @@ class RepositoryModule {
     ): NoteItemRepository = NoteItemRepositoryImpl(noteItemDataSource, dispatcher)
 
     @Provides
-    fun providesPreferencesRepository(
-        dataStoreSource: DataStoreSource,
+    fun providesFormatTextRepository(
+        formatTextDataSource: FormatTextDataSource,
         dispatcher: CoroutineDispatcher,
-        languageDto: LanguageDto,
-    ): PreferencesRepository = PreferencesRepositoryImpl(dataStoreSource, dispatcher, languageDto)
-
+    ): FormatTextRepository = FormatTextRepositoryImpl(formatTextDataSource, dispatcher)
 }

@@ -22,7 +22,6 @@ data class NoteItem(
         id = id,
         noteId = noteId,
         type = NoteItemType.TEXT,
-        formatTexts = listOf(FormatText(id = getUUID(), itemId = id)),
         index = index,
         isFocused = true,
     )
@@ -31,7 +30,6 @@ data class NoteItem(
         id = id,
         noteId = noteId,
         type = NoteItemType.CHECK_BOX,
-        formatTexts = listOf(FormatText(id = getUUID(), itemId = id)),
         isChecked = isChecked,
         index = index,
         isFocused = true,
@@ -41,7 +39,6 @@ data class NoteItem(
         id = id,
         noteId = noteId,
         type = NoteItemType.TABLE,
-        formatTexts = listOf(FormatText(id = getUUID(), itemId = id)),
         table = table.copy(noteItemId = id),
         index = index,
         isFocused = true,
@@ -80,6 +77,8 @@ data class NoteItem(
 
     fun restoreFocus() = copy(isFocused = true, table = table?.restoreFocus())
 
+    fun setCursorOnLastPosition() = copy(cursorEndIndex = text.length)
+
     fun isTableEmpty() = table?.isEmpty().orFalse()
 
     fun getFormatTextWithSameIndexes() =
@@ -89,7 +88,6 @@ data class NoteItem(
         formatTexts = formatTexts.toMutableList().apply {
             add(
                 formatText.copy(
-                    id = getUUID(),
                     itemId = id,
                     startIndex = cursorStartIndex,
                     endIndex = cursorEndIndex
@@ -98,9 +96,42 @@ data class NoteItem(
         }
     )
 
-    fun removeFormatText(formatText: FormatText) = copy(
+    fun removeFormatText(formatTextId: String) = copy(
         formatTexts = formatTexts.toMutableList().apply {
-            remove(formatText)
+            removeIf { formatTextId == it.id }
+        })
+
+    fun updateFormatsAfterDeletingCharacter(deletedIndex: Int, deleteFormat: (String) -> Unit) =
+        copy(
+            formatTexts = formatTexts.mapNotNull { current ->
+                when {
+                    current.shouldDelete(deletedIndex) -> deleteFormat(current.id).let { null }
+                    current.isBefore(deletedIndex) -> current
+                    current.isBetween(deletedIndex) -> current.copy(endIndex = current.endIndex - 1)
+                    current.isAfter(deletedIndex) -> {
+                        current.copy(
+                            startIndex = current.startIndex - 1, endIndex = current.endIndex - 1
+                        )
+                    }
+
+                    else -> current
+                }
+            }
+        )
+
+    fun updateFormatsAfterAddingCharacter(deletedIndex: Int) = copy(
+        formatTexts = formatTexts.map { current ->
+            when {
+                current.isBefore(deletedIndex) -> current
+                current.isBetween(deletedIndex) -> current.copy(endIndex = current.endIndex + 1)
+                current.isAfter(deletedIndex) -> {
+                    current.copy(
+                        startIndex = current.startIndex + 1, endIndex = current.endIndex + 1
+                    )
+                }
+
+                else -> current
+            }
         }
     )
 }

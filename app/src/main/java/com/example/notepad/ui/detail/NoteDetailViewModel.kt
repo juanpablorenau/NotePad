@@ -2,6 +2,7 @@ package com.example.notepad.ui.detail
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.example.domain.usecase.detail.DeleteFormatTextUseCase
 import com.example.domain.usecase.detail.DeleteNoteItemUseCase
 import com.example.domain.usecase.detail.DeleteNoteUseCase
 import com.example.domain.usecase.detail.GetNoteDetailUseCase
@@ -39,6 +40,7 @@ class NoteDetailViewModel @Inject constructor(
     private val updateNoteUseCase: UpdateNoteUseCase,
     private val deleteNoteUseCase: DeleteNoteUseCase,
     private val deleteNoteItemUseCase: DeleteNoteItemUseCase,
+    private val deleteFormatTextUseCase: DeleteFormatTextUseCase
 ) : ViewModel() {
 
     private val _uiState = MutableStateFlow<NoteDetailUiState>(NoteDetailUiState.Loading)
@@ -149,7 +151,7 @@ class NoteDetailViewModel @Inject constructor(
         viewModelScope.launch(dispatcher) {
             _uiState.getAndUpdate { state ->
                 with((state.asSuccess())) {
-                    copy(note = note.updateNoteItem(noteItem))
+                    copy(note = note.updateNoteItem(noteItem) { id -> deleteFormatText(id) })
                 }
             }
         }
@@ -197,8 +199,14 @@ class NoteDetailViewModel @Inject constructor(
     fun applyFormat(formatType: FormatType, formatText: FormatText) {
         _uiState.getAndUpdate { state ->
             with((state.asSuccess())) {
-                copy(note = note.applyFormat(formatType, formatText))
+                copy(note = note.applyFormat(formatType, formatText) { id -> deleteFormatText(id) })
             }
+        }
+    }
+
+    private fun deleteFormatText(formatTextId: String) {
+        viewModelScope.launch(dispatcher) {
+            tryOrError { deleteFormatTextUseCase(formatTextId) }
         }
     }
 

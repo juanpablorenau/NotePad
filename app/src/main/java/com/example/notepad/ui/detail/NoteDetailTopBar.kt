@@ -204,7 +204,9 @@ fun ColorItem(
     changeColor: (NoteColor) -> Unit = {},
     isDarkTheme: Boolean = false,
 ) {
-    val color = getColor(if (isDarkTheme) item.darkColor else item.lightColor)
+    val color = remember(item, isDarkTheme) {
+        getColor(if (isDarkTheme) item.darkColor else item.lightColor)
+    }
 
     Card(
         shape = CircleShape,

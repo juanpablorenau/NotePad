@@ -28,4 +28,12 @@ data class FormatText(
         id = getUUID(),
         itemId = newFormatTextId
     )
+
+    fun isBefore(deletedIndex: Int) = (endIndex - 1) < deletedIndex
+
+    fun isBetween(deletedIndex: Int) = deletedIndex in startIndex..<endIndex
+
+    fun isAfter(deletedIndex: Int) = startIndex > deletedIndex
+
+    fun shouldDelete(deletedIndex: Int) = startIndex == deletedIndex && startIndex == (endIndex - 1)
 }
