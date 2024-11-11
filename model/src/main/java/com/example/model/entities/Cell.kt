@@ -16,7 +16,7 @@ data class Cell(
         tableId = tableId,
         index = index,
         isFocused = isFocused,
-        formatTexts = listOf(FormatText(id = getUUID(), itemId = id))
+        formatTexts = emptyList()
     )
 
     fun contains(query: String) =
