@@ -3,6 +3,7 @@ package com.example.data.repository.dto
 import com.example.data.model.db.NoteDb
 import com.example.data.model.db.NoteEmbeddedDb
 import com.example.model.entities.Note
+import com.example.model.enums.NoteColor
 import javax.inject.Inject
 
 class NoteDto @Inject constructor(
@@ -13,8 +14,7 @@ class NoteDto @Inject constructor(
             Note(
                 id = note.id,
                 title = note.title,
-                lightNoteColor = note.lightColor,
-                darkNoteColor = note.darkColor,
+                color = NoteColor.valueOf(note.color),
                 isPinned = note.isPinned,
                 index = note.index,
                 items = items.map { noteItemDto.toDomain(it) }
@@ -27,8 +27,7 @@ class NoteDto @Inject constructor(
                 note = NoteEmbeddedDb(
                     id = id,
                     title = title,
-                    lightColor = lightNoteColor,
-                    darkColor = darkNoteColor,
+                    color = color.name,
                     isPinned = isPinned,
                     index = index
                 ),

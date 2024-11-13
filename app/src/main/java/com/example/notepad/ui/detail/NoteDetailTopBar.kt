@@ -38,7 +38,7 @@ import com.example.notepad.R
 import com.example.notepad.components.Dialog
 import com.example.notepad.components.DisplayText
 import com.example.notepad.components.MenuItem
-import com.example.notepad.utils.getColor
+import com.example.notepad.utils.getColorFromHex
 import com.example.notepad.utils.mockNote
 
 
@@ -205,7 +205,7 @@ fun ColorItem(
     isDarkTheme: Boolean = false,
 ) {
     val color = remember(item, isDarkTheme) {
-        getColor(if (isDarkTheme) item.darkColor else item.lightColor)
+        getColorFromHex(if (isDarkTheme) item.darkColor else item.lightColor)
     }
 
     Card(

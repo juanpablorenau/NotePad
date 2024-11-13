@@ -3,8 +3,8 @@ package com.example.domain.usecase.list
 import com.example.data.repository.NoteRepository
 import com.example.model.entities.Note
 import kotlinx.coroutines.CoroutineDispatcher
-import kotlinx.coroutines.async
-import kotlinx.coroutines.awaitAll
+import kotlinx.coroutines.joinAll
+import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import javax.inject.Inject
 
@@ -14,6 +14,6 @@ class DeleteNotesUseCase @Inject constructor(
 ) {
     suspend operator fun invoke(notes: List<Note>) =
         withContext(dispatcher) {
-            notes.map { note -> async { repository.deleteNote(note) } }.awaitAll()
+            notes.map { note -> launch { repository.deleteNote(note) } }.joinAll()
         }
 }

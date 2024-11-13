@@ -49,7 +49,7 @@ import com.example.model.enums.TextColor
 import com.example.model.enums.TypeText
 import com.example.notepad.R
 import com.example.notepad.components.DisplayText
-import com.example.notepad.utils.getColor
+import com.example.notepad.utils.getColorFromHex
 import com.example.notepad.utils.mockBodyFormat
 import com.example.notepad.utils.mockNote
 
@@ -465,10 +465,10 @@ fun ParagraphsSelectorAndTextColor(
     applyFormat: (FormatType, FormatText) -> Unit = { _, _ -> },
 ) {
     val paragraphType = remember { mutableStateOf(formatText.paragraphType) }
-
     val showColorSelector = remember { mutableStateOf(false) }
-    val color =
-        getColor(if (isDarkTheme) formatText.color.darkColor else formatText.color.lightColor)
+    val color = remember(formatText.color, isDarkTheme) {
+        getColorFromHex(formatText.getColor(isDarkTheme))
+    }
 
     Column {
         Row(modifier = Modifier.fillMaxWidth()) {
@@ -686,7 +686,7 @@ fun TextColorItem(
     isDarkTheme: Boolean = false,
 ) {
     val color = remember(item, isDarkTheme) {
-        getColor(if (isDarkTheme) item.darkColor else item.lightColor)
+        getColorFromHex(if (isDarkTheme) item.darkColor else item.lightColor)
     }
 
     Card(

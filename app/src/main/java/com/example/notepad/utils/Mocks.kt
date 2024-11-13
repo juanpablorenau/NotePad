@@ -7,7 +7,6 @@ import com.example.model.entities.NoteItem
 import com.example.model.entities.Table
 import com.example.model.enums.TextColor
 import com.example.model.enums.TypeText
-import com.example.model.enums.NoteColor as AppColor
 
 val mockNoteList by lazy {
     listOf(
@@ -20,8 +19,6 @@ val mockNoteList by lazy {
 val mockNote by lazy {
     Note(
         title = "Meeting Notes",
-        lightNoteColor = AppColor.PALE_YELLOW.lightColor,
-        darkNoteColor = AppColor.PALE_YELLOW.darkColor,
         isPinned = true,
         items = mockNoteItems
     )

@@ -17,7 +17,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.model.entities.FormatText
 
-fun getColor(hexColor: String) =  Color(android.graphics.Color.parseColor(hexColor))
+fun getColorFromHex(hexColor: String) =  Color(android.graphics.Color.parseColor(hexColor))
 
 fun getAnnotatedString(
     text: String,
@@ -39,7 +39,7 @@ fun FormatText.toSpanStyle(
             start = startIndex,
             end = endIndex,
             item = SpanStyle(
-                color = getColor(if (isDarkTheme) color.darkColor else color.lightColor),
+                color = getColorFromHex(getColor(isDarkTheme)),
                 fontSize = if (isDynamicFontSize) typeText.fontSize.sp else 12.sp,
                 fontWeight = if (isBold) FontWeight.Bold else FontWeight.Normal,
                 fontStyle = if (isItalic) FontStyle.Italic else FontStyle.Normal,

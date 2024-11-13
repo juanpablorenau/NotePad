@@ -96,15 +96,10 @@ class NoteDetailViewModel @Inject constructor(
         }
     }
 
-    fun changeColor(color: NoteColor) {
+    fun changeColor(newColor: NoteColor) {
         _uiState.getAndUpdate { state ->
             with((state.asSuccess())) {
-                copy(
-                    note = note.copy(
-                        lightNoteColor = color.lightColor,
-                        darkNoteColor = color.darkColor
-                    )
-                )
+                copy(note = note.copy(color = newColor))
             }
         }
     }

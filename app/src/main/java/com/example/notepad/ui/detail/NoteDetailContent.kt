@@ -50,7 +50,7 @@ import com.example.model.entities.NoteItem
 import com.example.model.enums.NoteItemType
 import com.example.model.utils.orFalse
 import com.example.notepad.R
-import com.example.notepad.utils.getColor
+import com.example.notepad.utils.getColorFromHex
 import com.example.notepad.utils.mockNote
 import com.example.notepad.utils.mockNoteItems
 
@@ -69,9 +69,7 @@ fun NoteDetailContent(
     deleteTextField: (NoteItem) -> Unit = {},
     deleteNoteItemField: (NoteItem) -> Unit = {},
 ) {
-    val color = remember(note.darkNoteColor, isDarkTheme) {
-        getColor(if (isDarkTheme) note.darkNoteColor else note.lightNoteColor)
-    }
+    val color = remember(note.color, isDarkTheme) { getColorFromHex(note.getColor(isDarkTheme)) }
 
     Card(
         modifier = Modifier

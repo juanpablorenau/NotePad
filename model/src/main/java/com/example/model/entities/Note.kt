@@ -8,8 +8,7 @@ import com.example.model.utils.normalize
 data class Note(
     val id: String = "",
     val title: String = "",
-    val lightNoteColor: String = NoteColor.PALE_YELLOW.lightColor,
-    val darkNoteColor: String = NoteColor.PALE_YELLOW.darkColor,
+    val color: NoteColor = NoteColor.PALE_YELLOW,
     val isPinned: Boolean = false,
     val isChecked: Boolean = false,
     val index: Int = 0,
@@ -20,6 +19,8 @@ data class Note(
         index = index,
         items = listOf(NoteItem(id = getUUID(), noteId = id, index = 0))
     )
+
+    fun getColor(isDarkTheme: Boolean) = if (isDarkTheme) color.darkColor else color.lightColor
 
     fun contains(query: String) = containsInTitle(query) || containsInItems(query)
 

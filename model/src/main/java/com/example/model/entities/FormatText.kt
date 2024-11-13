@@ -24,6 +24,8 @@ data class FormatText(
         isBold = typeText.isBold
     )
 
+    fun getColor(isDarkTheme: Boolean) = if (isDarkTheme) color.darkColor else color.lightColor
+
     fun duplicate(newFormatTextId: String): FormatText = copy(
         id = getUUID(),
         itemId = newFormatTextId
