@@ -104,7 +104,7 @@ class NoteDetailViewModel @Inject constructor(
         }
     }
 
-    fun saveText(title: String) {
+    fun saveTitle(title: String) {
         _uiState.getAndUpdate { state ->
             with((state.asSuccess())) {
                 copy(note = note.copy(title = title))

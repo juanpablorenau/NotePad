@@ -49,7 +49,7 @@ fun NoteDetailScreen(
             SuccessScreen(
                 note = state.note,
                 onBackClick = { navController.popBackStack() },
-                saveText = { title -> viewModel.saveText(title) },
+                saveTitle = { title -> viewModel.saveTitle(title) },
                 pinUpNote = { viewModel.pinUpNote() },
                 deleteNote = {
                     viewModel.deleteNote()
@@ -80,7 +80,7 @@ fun SuccessScreen(
     pinUpNote: () -> Unit = {},
     deleteNote: () -> Unit = {},
     changeColor: (NoteColor) -> Unit = {},
-    saveText: (String) -> Unit = { },
+    saveTitle: (String) -> Unit = { },
     isDarkTheme: Boolean = false,
     addTextField: () -> Unit = {},
     addCheckBox: (String?) -> Unit = {},
@@ -108,7 +108,7 @@ fun SuccessScreen(
             NoteDetailContent(
                 padding = padding,
                 note = note,
-                saveText = saveText,
+                saveTitle = saveTitle,
                 isDarkTheme = isDarkTheme,
                 addTextField = addTextField,
                 addCheckBox = addCheckBox,
