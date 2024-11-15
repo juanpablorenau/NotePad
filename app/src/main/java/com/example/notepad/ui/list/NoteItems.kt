@@ -34,7 +34,6 @@ import androidx.compose.ui.unit.sp
 import com.example.model.entities.Cell
 import com.example.model.entities.FormatText
 import com.example.model.entities.NoteItem
-import com.example.notepad.ui.detail.CellItem
 import com.example.notepad.utils.bottomBorder
 import com.example.notepad.utils.endBorder
 import com.example.notepad.utils.getAnnotatedString
@@ -147,6 +146,7 @@ fun TableItem(
                         .padding(horizontal = 4.dp)
                         .weight(1f),
                     cell = cell,
+                    maxLines = 1
                 )
             }
         }
@@ -158,12 +158,16 @@ fun TableItem(
 fun CellItem(
     modifier: Modifier = Modifier,
     cell: Cell = mockCell,
+    maxLines: Int = 1
 ) {
     Box(modifier = modifier) {
-        TextItem(
+        Text(
+            modifier = Modifier.fillMaxWidth(),
             text = cell.text,
-            formatTexts = cell.formatTexts,
-            maxLines = 1,
+            overflow = TextOverflow.Ellipsis,
+            maxLines = maxLines,
+            fontSize = 12.sp,
+            color = MaterialTheme.colorScheme.secondary
         )
     }
 }
