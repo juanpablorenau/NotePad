@@ -36,6 +36,7 @@ import androidx.compose.ui.input.key.Key
 import androidx.compose.ui.input.key.key
 import androidx.compose.ui.input.key.onKeyEvent
 import androidx.compose.ui.text.TextRange
+import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.TextFieldValue
 import androidx.compose.ui.tooling.preview.Preview
@@ -265,7 +266,7 @@ fun CellItem(
         }
 
         LaunchedEffect(id, isPressed.value) {
-            if (isPressed.value)  changeFocusIn(noteItem.changeFocusInTable(id))
+            if (isPressed.value) changeFocusIn(noteItem.changeFocusInTable(id))
         }
 
         Box(modifier = modifier) {
@@ -290,6 +291,7 @@ fun CellItem(
                         }
                     },
                 cursorBrush = SolidColor(MaterialTheme.colorScheme.secondary),
+                textStyle = TextStyle(color = MaterialTheme.colorScheme.secondary),
                 value = textField,
                 interactionSource = interactionSource,
                 onValueChange = { newTextField ->
