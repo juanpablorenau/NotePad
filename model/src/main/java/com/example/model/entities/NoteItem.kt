@@ -77,7 +77,8 @@ data class NoteItem(
 
     fun restoreFocus() = copy(isFocused = true, table = table?.restoreFocus())
 
-    fun setCursorOnLastPosition() = copy(cursorEndIndex = text.length)
+    fun setCursorOnLastPosition() =
+        copy(cursorStartIndex = text.length, cursorEndIndex = text.length)
 
     fun isTableEmpty() = table?.isEmpty().orFalse()
 

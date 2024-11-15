@@ -221,7 +221,6 @@ data class Note(
 
     fun changeFocusIn(noteItem: NoteItem) =
         copy(items = items.map { current ->
-            if (current.id == noteItem.id) noteItem
-            else current
+            current.copy(isFocused = current.id == noteItem.id)
         })
 }
