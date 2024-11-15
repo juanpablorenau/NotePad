@@ -149,7 +149,7 @@ fun CheckBoxItem(
                 Checkbox(
                     checked = isChecked,
                     onCheckedChange = { newChecked ->
-                        updateNoteItem(noteItem.copy(isChecked = newChecked))
+                        updateNoteItem(copy(isChecked = newChecked))
                         isChecked = newChecked
                     },
                     colors = CheckboxDefaults.colors(
@@ -165,7 +165,7 @@ fun CheckBoxItem(
                     .padding(start = 8.dp, top = 4.dp)
                     .focusRequester(focusRequester)
                     .onKeyEvent {
-                        if (it.key == Key.Backspace && textField.text.isEmpty()) {
+                        if (it.key == Key.Backspace && text.isEmpty()) {
                             deleteNoteItemField(noteItem)
                             true
                         } else false
@@ -185,7 +185,7 @@ fun CheckBoxItem(
                 keyboardOptions = KeyboardOptions.Default.copy(imeAction = ImeAction.Done),
                 keyboardActions = KeyboardActions(
                     onDone = {
-                        if (textField.text.isNotEmpty()) addCheckBox(noteItem.id)
+                        if (text.isNotEmpty()) addCheckBox(noteItem.id)
                         else deleteNoteItemField(noteItem)
                     },
                 ),
