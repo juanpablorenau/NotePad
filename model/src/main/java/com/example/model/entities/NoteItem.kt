@@ -65,11 +65,8 @@ data class NoteItem(
 
     fun applyInTable(cell: Cell) = copy(table = table?.applyInTable(cell))
 
-    fun changeFocusInTable(cellId: String, isFocused: Boolean) =
-        copy(
-            isFocused = isFocused,
-            table = table?.changeFocus(cellId, isFocused)
-        )
+    fun changeFocusInTable(cellId: String) =
+        copy(table = table?.changeFocus(cellId))
 
     fun initFocus() = copy(isFocused = true, table = table?.initFocus())
 

@@ -45,10 +45,9 @@ data class Table(
         else cell.removeFocus()
     })
 
-    fun changeFocus(cellId: String, isFocused: Boolean) =
+    fun changeFocus(cellId: String) =
         copy(cells = cells.map { current ->
-            if (current.id == cellId) current.copy(isFocused = isFocused)
-            else current
+            current.copy(isFocused = current.id == cellId)
         })
 
     fun isEmpty() = cells.all { it.text.isEmpty() }

@@ -30,7 +30,6 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.focusRequester
-import androidx.compose.ui.focus.onFocusChanged
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.SolidColor
 import androidx.compose.ui.input.key.Key
@@ -136,7 +135,7 @@ fun CheckBoxItem(
             if (isFocused) focusRequester.requestFocus() else focusRequester.freeFocus()
         }
 
-        LaunchedEffect(isPressed.value) {
+        LaunchedEffect(id, isPressed.value) {
             if (isPressed.value) changeFocusIn(noteItem)
         }
 
@@ -253,45 +252,51 @@ fun CellItem(
     changeFocusIn: (NoteItem) -> Unit = {},
     deleteNoteItemField: (NoteItem) -> Unit = {},
 ) {
-    var textField by remember(cell.id) {
-        mutableStateOf(TextFieldValue(cell.text, TextRange(cell.text.length)))
-    }
+    with(cell) {
+        var textField by remember(id) {
+            mutableStateOf(TextFieldValue(text, TextRange(text.length)))
+        }
+        val interactionSource = remember(id) { MutableInteractionSource() }
+        val isPressed = interactionSource.collectIsPressedAsState()
 
-    Box(modifier = modifier) {
-        BasicTextField(
-            modifier = Modifier
-                .focusRequester(currentFocusRequester)
-                .onFocusChanged {
-                    changeFocusIn(noteItem.changeFocusInTable(cell.id, it.isFocused))
-                }
-                .onKeyEvent {
-                    val isBackspace = it.key == Key.Backspace
-                    when {
-                        isFirstCell && isBackspace && noteItem.isTableEmpty() -> {
-                            previousFocusRequester?.requestFocus()
-                            deleteNoteItemField(noteItem)
-                            true
+        LaunchedEffect(id, isFocused) {
+            if (isFocused) currentFocusRequester.requestFocus()
+            else currentFocusRequester.freeFocus()
+        }
+
+        LaunchedEffect(id, isPressed.value) {
+            if (isPressed.value)  changeFocusIn(noteItem.changeFocusInTable(id))
+        }
+
+        Box(modifier = modifier) {
+            BasicTextField(
+                modifier = Modifier
+                    .focusRequester(currentFocusRequester)
+                    .onKeyEvent {
+                        val isBackspace = it.key == Key.Backspace
+                        when {
+                            isFirstCell && isBackspace && noteItem.isTableEmpty() -> {
+                                previousFocusRequester?.requestFocus()
+                                deleteNoteItemField(noteItem)
+                                true
+                            }
+
+                            !isFirstCell && isBackspace && textField.text.isEmpty() -> {
+                                previousFocusRequester?.requestFocus()
+                                true
+                            }
+
+                            else -> false
                         }
-
-                        !isFirstCell && isBackspace && textField.text.isEmpty() -> {
-                            previousFocusRequester?.requestFocus()
-                            true
-                        }
-
-                        else -> false
-                    }
+                    },
+                cursorBrush = SolidColor(MaterialTheme.colorScheme.secondary),
+                value = textField,
+                interactionSource = interactionSource,
+                onValueChange = { newTextField ->
+                    textField = newTextField
+                    updateNoteItem(noteItem.applyInTable(cell.copy(text = textField.text)))
                 },
-            value = textField,
-            onValueChange = { newTextField ->
-                textField = newTextField
-                updateNoteItem(noteItem.applyInTable(cell.copy(text = textField.text)))
-            },
-            cursorBrush = SolidColor(MaterialTheme.colorScheme.secondary),
-        )
-    }
-
-    LaunchedEffect(cell.id, cell.isFocused) {
-        if (cell.isFocused) currentFocusRequester.requestFocus()
-        else currentFocusRequester.freeFocus()
+            )
+        }
     }
 }

@@ -17,11 +17,16 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.scale
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.text.AnnotatedString
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
@@ -48,8 +53,10 @@ fun TextItem(
     isDarkTheme: Boolean = false,
     maxLines: Int = 1,
 ) {
-    val annotatedString = remember(text, formatTexts, isDarkTheme) {
-        getAnnotatedString(text, formatTexts, isDarkTheme, false)
+    var annotatedString by remember { mutableStateOf(AnnotatedString(text)) }
+
+    LaunchedEffect(text, formatTexts, isDarkTheme) {
+        annotatedString = getAnnotatedString(text, formatTexts, isDarkTheme)
     }
 
     Text(

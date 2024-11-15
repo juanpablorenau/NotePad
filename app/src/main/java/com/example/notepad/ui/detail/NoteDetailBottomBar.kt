@@ -31,6 +31,7 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalSoftwareKeyboardController
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
@@ -47,6 +48,7 @@ import com.example.model.enums.FormatType
 import com.example.model.enums.ParagraphType
 import com.example.model.enums.TextColor
 import com.example.model.enums.TypeText
+import com.example.model.utils.orFalse
 import com.example.notepad.R
 import com.example.notepad.components.DisplayText
 import com.example.notepad.utils.getColorFromHex
@@ -64,7 +66,8 @@ fun NoteDetailBottomBar(
 ) {
     val showBottomSheet = remember { mutableStateOf(false) }
     val changeBottomSheetState = { value: Boolean -> showBottomSheet.value = value }
-    val formatText = note.getFocusedItem()?.getFormatTextWithSameIndexes() ?: FormatText()
+    val focusedItem = note.getFocusedItem()
+    val formatText = focusedItem?.getFormatTextWithSameIndexes() ?: FormatText()
 
     if (showBottomSheet.value) {
         TextFormatComponent(
@@ -76,6 +79,7 @@ fun NoteDetailBottomBar(
     } else {
         BottomOptions(
             changeBottomSheetState = changeBottomSheetState,
+            isTable = focusedItem?.isTable().orFalse(),
             addTextField = addTextField,
             addCheckBox = addCheckBox,
             addTable = addTable
@@ -86,6 +90,7 @@ fun NoteDetailBottomBar(
 @Composable
 fun BottomOptions(
     changeBottomSheetState: (Boolean) -> Unit = {},
+    isTable: Boolean = false,
     addTextField: () -> Unit = {},
     addCheckBox: (String?) -> Unit = {},
     addTable: () -> Unit = {},
@@ -103,12 +108,15 @@ fun BottomOptions(
         DisplayText(description = R.string.text_format) {
             Icon(
                 modifier = Modifier.clickable {
-                    changeBottomSheetState(true)
-                    keyboardController?.hide()
+                    if (!isTable) {
+                        changeBottomSheetState(true)
+                        keyboardController?.hide()
+                    }
                 },
                 painter = painterResource(id = R.drawable.ic_border_color),
                 contentDescription = "text format icon",
-                tint = MaterialTheme.colorScheme.primary
+                tint = if (isTable) Color.Gray
+                else MaterialTheme.colorScheme.primary
             )
         }
 
