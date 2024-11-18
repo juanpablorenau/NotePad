@@ -91,6 +91,7 @@ fun TextFieldItem(
                     if (it.key == Key.Backspace && text.isEmpty()) deleteTextField(this).let { true }
                     else false
                 },
+            textStyle = TextStyle(color = MaterialTheme.colorScheme.secondary),
             cursorBrush = SolidColor(MaterialTheme.colorScheme.secondary),
             interactionSource = interactionSource,
             value = textField,
@@ -170,6 +171,7 @@ fun CheckBoxItem(
                             true
                         } else false
                     },
+                textStyle = TextStyle(color = MaterialTheme.colorScheme.secondary),
                 cursorBrush = SolidColor(MaterialTheme.colorScheme.secondary),
                 interactionSource = interactionSource,
                 value = textField,
