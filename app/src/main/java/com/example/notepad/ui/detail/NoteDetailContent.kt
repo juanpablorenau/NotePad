@@ -50,7 +50,7 @@ import com.example.model.entities.NoteItem
 import com.example.model.enums.NoteItemType
 import com.example.model.utils.orFalse
 import com.example.notepad.R
-import com.example.notepad.utils.getColor
+import com.example.notepad.utils.getColorFromHex
 import com.example.notepad.utils.mockNote
 import com.example.notepad.utils.mockNoteItems
 
@@ -60,7 +60,7 @@ import com.example.notepad.utils.mockNoteItems
 fun NoteDetailContent(
     padding: PaddingValues = PaddingValues(),
     note: Note = mockNote,
-    saveText: (String) -> Unit = { },
+    saveTitle: (String) -> Unit = { },
     isDarkTheme: Boolean = false,
     addTextField: () -> Unit = {},
     addCheckBox: (String?) -> Unit = {},
@@ -69,9 +69,7 @@ fun NoteDetailContent(
     deleteTextField: (NoteItem) -> Unit = {},
     deleteNoteItemField: (NoteItem) -> Unit = {},
 ) {
-    val color = remember(note.darkNoteColor, isDarkTheme) {
-        getColor(if (isDarkTheme) note.darkNoteColor else note.lightNoteColor)
-    }
+    val color = remember(note.color, isDarkTheme) { getColorFromHex(note.getColor(isDarkTheme)) }
 
     Card(
         modifier = Modifier
@@ -91,7 +89,7 @@ fun NoteDetailContent(
                 .background(color)
                 .padding(8.dp)
         ) {
-            NoteHeader(note, saveText)
+            NoteHeader(note, saveTitle)
 
             NoteBody(
                 noteItems = note.items,
@@ -111,7 +109,7 @@ fun NoteDetailContent(
 @Composable
 fun NoteHeader(
     note: Note = mockNote,
-    saveText: (String) -> Unit = { },
+    saveTitle: (String) -> Unit = { },
 ) {
     val focusManager = LocalFocusManager.current
     val title = note.title.ifBlank { stringResource(id = R.string.new_title) }
@@ -126,10 +124,7 @@ fun NoteHeader(
         BasicTextField(
             modifier = Modifier.padding(24.dp),
             value = titleFieldValue,
-            onValueChange = { newText ->
-                titleFieldValue = newText
-                saveText(titleFieldValue.text)
-            },
+            onValueChange = { newText -> titleFieldValue = newText },
             textStyle = TextStyle(
                 fontWeight = FontWeight.Bold,
                 fontSize = 24.sp,
@@ -155,7 +150,7 @@ fun NoteHeader(
     }
 
     LifecycleResumeEffect(note.id) {
-        onPauseOrDispose { saveText(titleFieldValue.text) }
+        onPauseOrDispose { saveTitle(titleFieldValue.text) }
     }
 }
 

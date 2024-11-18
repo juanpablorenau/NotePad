@@ -21,6 +21,7 @@ import com.example.data.source.local.impl.FormatTextDataSourceImpl
 import com.example.data.source.local.impl.NoteDataSourceImpl
 import com.example.data.source.local.impl.NoteItemDataSourceImpl
 import com.example.data.source.local.impl.TableDataSourceImpl
+import com.example.data.utils.TransactionProvider
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
@@ -36,8 +37,8 @@ class DataSourceModule {
     fun providesNoteDataSource(
         noteDao: NoteDao,
         noteItemDataSource: NoteItemDataSource,
-        dispatcher: CoroutineDispatcher,
-    ): NoteDataSource = NoteDataSourceImpl(noteDao, noteItemDataSource, dispatcher)
+        transactionProvider: TransactionProvider,
+    ): NoteDataSource = NoteDataSourceImpl(noteDao, noteItemDataSource, transactionProvider)
 
     @Provides
     fun providesNoteItemDataSource(

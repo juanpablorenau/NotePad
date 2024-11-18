@@ -65,11 +65,8 @@ data class NoteItem(
 
     fun applyInTable(cell: Cell) = copy(table = table?.applyInTable(cell))
 
-    fun changeFocusInTable(cellId: String, isFocused: Boolean) =
-        copy(
-            isFocused = isFocused,
-            table = table?.changeFocus(cellId, isFocused)
-        )
+    fun changeFocusInTable(cellId: String) =
+        copy(table = table?.changeFocus(cellId))
 
     fun initFocus() = copy(isFocused = true, table = table?.initFocus())
 
@@ -77,7 +74,8 @@ data class NoteItem(
 
     fun restoreFocus() = copy(isFocused = true, table = table?.restoreFocus())
 
-    fun setCursorOnLastPosition() = copy(cursorEndIndex = text.length)
+    fun setCursorOnLastPosition() =
+        copy(cursorStartIndex = text.length, cursorEndIndex = text.length)
 
     fun isTableEmpty() = table?.isEmpty().orFalse()
 
@@ -119,12 +117,12 @@ data class NoteItem(
             }
         )
 
-    fun updateFormatsAfterAddingCharacter(deletedIndex: Int) = copy(
-        formatTexts = formatTexts.map { current ->
+    fun updateFormatsAfterAddingCharacter(addedIndex: Int) = copy(formatTexts = formatTexts.map { current ->
             when {
-                current.isBefore(deletedIndex) -> current
-                current.isBetween(deletedIndex) -> current.copy(endIndex = current.endIndex + 1)
-                current.isAfter(deletedIndex) -> {
+                current.isRightAfter(addedIndex) -> current.copy(endIndex = current.endIndex + 1)
+                current.isBefore(addedIndex) -> current
+                current.isBetween(addedIndex) -> current.copy(endIndex = current.endIndex + 1)
+                current.isAfter(addedIndex) -> {
                     current.copy(
                         startIndex = current.startIndex + 1, endIndex = current.endIndex + 1
                     )

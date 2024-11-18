@@ -4,6 +4,9 @@ import androidx.compose.material3.Scaffold
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.lifecycle.compose.LifecycleResumeEffect
@@ -29,29 +32,35 @@ fun NoteDetailScreen(
     val viewModel = LocalContext.current.getViewModel<NoteDetailViewModel>()
     val uiState: NoteDetailUiState by viewModel.uiState.collectAsStateWithLifecycle()
 
+    var isNoteDeleted by remember { mutableStateOf(false) }
+
     LaunchedEffect(noteId) {
         viewModel.manageNote(noteId, index)
     }
 
     LifecycleResumeEffect(noteId) {
-        onPauseOrDispose { viewModel.updateNote() }
+        onPauseOrDispose { if (!isNoteDeleted) viewModel.updateNote() }
     }
 
     when (val state = uiState) {
-         NoteDetailUiState.Loading -> LoadingScreen()
-         NoteDetailUiState.Error -> ErrorScreen { navController.popBackStack() }
+        NoteDetailUiState.Loading -> LoadingScreen()
+        NoteDetailUiState.Error -> ErrorScreen { navController.popBackStack() }
         is NoteDetailUiState.Success -> {
             SuccessScreen(
                 note = state.note,
                 onBackClick = { navController.popBackStack() },
-                saveText = { title -> viewModel.saveText(title) },
+                saveTitle = { title -> viewModel.saveTitle(title) },
                 pinUpNote = { viewModel.pinUpNote() },
-                deleteNote = { viewModel.deleteNote().also { navController.popBackStack() } },
+                deleteNote = {
+                    viewModel.deleteNote()
+                    isNoteDeleted = true
+                    navController.popBackStack()
+                },
                 changeColor = { color -> viewModel.changeColor(color) },
                 isDarkTheme = isDarkTheme,
                 addTextField = { viewModel.addTextField() },
                 addCheckBox = { id -> viewModel.addCheckBox(id) },
-                addTable = { viewModel.addTable()},
+                addTable = { viewModel.addTable() },
                 updateNoteItem = { textField -> viewModel.updateNoteItem(textField) },
                 changeFocusIn = { noteItem -> viewModel.changeFocusIn(noteItem) },
                 deleteTextField = { noteItem -> viewModel.deleteTextField(noteItem) },
@@ -71,7 +80,7 @@ fun SuccessScreen(
     pinUpNote: () -> Unit = {},
     deleteNote: () -> Unit = {},
     changeColor: (NoteColor) -> Unit = {},
-    saveText: (String) -> Unit = { },
+    saveTitle: (String) -> Unit = { },
     isDarkTheme: Boolean = false,
     addTextField: () -> Unit = {},
     addCheckBox: (String?) -> Unit = {},
@@ -99,7 +108,7 @@ fun SuccessScreen(
             NoteDetailContent(
                 padding = padding,
                 note = note,
-                saveText = saveText,
+                saveTitle = saveTitle,
                 isDarkTheme = isDarkTheme,
                 addTextField = addTextField,
                 addCheckBox = addCheckBox,
@@ -116,7 +125,7 @@ fun SuccessScreen(
                 addTextField = addTextField,
                 addCheckBox = addCheckBox,
                 addTable = addTable,
-                applyFormat =  applyFormat
+                applyFormat = applyFormat
             )
         },
     )

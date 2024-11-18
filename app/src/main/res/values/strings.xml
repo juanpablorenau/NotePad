@@ -35,4 +35,5 @@
     <string name="add_checkbox">Add checkbox</string>
     <string name="add_table">Add table</string>
     <string name="add_image">Add image</string>
+    <string name="text_copied">Text copied</string>
 </resources>

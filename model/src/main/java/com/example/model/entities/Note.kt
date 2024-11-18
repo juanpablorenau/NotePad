@@ -8,8 +8,7 @@ import com.example.model.utils.normalize
 data class Note(
     val id: String = "",
     val title: String = "",
-    val lightNoteColor: String = NoteColor.PALE_YELLOW.lightColor,
-    val darkNoteColor: String = NoteColor.PALE_YELLOW.darkColor,
+    val color: NoteColor = NoteColor.PALE_YELLOW,
     val isPinned: Boolean = false,
     val isChecked: Boolean = false,
     val index: Int = 0,
@@ -20,6 +19,8 @@ data class Note(
         index = index,
         items = listOf(NoteItem(id = getUUID(), noteId = id, index = 0))
     )
+
+    fun getColor(isDarkTheme: Boolean) = if (isDarkTheme) color.darkColor else color.lightColor
 
     fun contains(query: String) = containsInTitle(query) || containsInItems(query)
 
@@ -189,10 +190,10 @@ data class Note(
         formatType: FormatType, newFormat: FormatText, oldFormat: FormatText
     ) = with(newFormat) {
         when (formatType) {
-            FormatType.BOLD -> oldFormat.copy(isBold = isBold)
-            FormatType.ITALIC -> oldFormat.copy(isItalic = isItalic)
-            FormatType.UNDERLINE -> oldFormat.copy(isUnderline = isUnderline)
-            FormatType.LINE_THROUGH -> oldFormat.copy(isLineThrough = isLineThrough)
+            FormatType.BOLD -> oldFormat.copy(isBold = true)
+            FormatType.ITALIC -> oldFormat.copy(isItalic = true)
+            FormatType.UNDERLINE -> oldFormat.copy(isUnderline = true)
+            FormatType.LINE_THROUGH -> oldFormat.copy(isLineThrough = true)
             FormatType.PARAGRAPH_TYPE -> oldFormat.copy(paragraphType = paragraphType)
             FormatType.TEXT_COLOR -> oldFormat.copy(color = color)
             FormatType.TYPE_TEXT -> oldFormat.copy(typeText = typeText, isBold = typeText.isBold)
@@ -220,7 +221,18 @@ data class Note(
 
     fun changeFocusIn(noteItem: NoteItem) =
         copy(items = items.map { current ->
-            if (current.id == noteItem.id) noteItem
-            else current
+            current.copy(isFocused = current.id == noteItem.id)
         })
+
+    fun getItemsText(): String {
+        var totalText = "*$title*\n\n"
+        items.forEach { currentItem ->
+            totalText += when {
+                currentItem.isText() -> currentItem.text
+                currentItem.isTable() -> currentItem.table?.getItemsText().orEmpty()
+                else -> "-${currentItem.text}"
+            }.plus("\n")
+        }
+        return totalText
+    }
 }

@@ -17,11 +17,16 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.scale
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.text.AnnotatedString
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
@@ -29,16 +34,15 @@ import androidx.compose.ui.unit.sp
 import com.example.model.entities.Cell
 import com.example.model.entities.FormatText
 import com.example.model.entities.NoteItem
-import com.example.notepad.ui.detail.CellItem
-import com.example.notepad.utils.bottomBorder
-import com.example.notepad.utils.endBorder
+import com.example.notepad.components.bottomBorder
+import com.example.notepad.components.endBorder
+import com.example.notepad.components.startBorder
+import com.example.notepad.components.topBorder
 import com.example.notepad.utils.getAnnotatedString
 import com.example.notepad.utils.mockCell
 import com.example.notepad.utils.mockCheckBoxItem
 import com.example.notepad.utils.mockTableItem
 import com.example.notepad.utils.mockTextItem
-import com.example.notepad.utils.startBorder
-import com.example.notepad.utils.topBorder
 
 @Preview(showBackground = true)
 @Composable
@@ -48,8 +52,10 @@ fun TextItem(
     isDarkTheme: Boolean = false,
     maxLines: Int = 1,
 ) {
-    val annotatedString = remember(text, formatTexts, isDarkTheme) {
-        getAnnotatedString(text, formatTexts, isDarkTheme, false)
+    var annotatedString by remember { mutableStateOf(AnnotatedString(text)) }
+
+    LaunchedEffect(text, formatTexts, isDarkTheme) {
+        annotatedString = getAnnotatedString(text, formatTexts, isDarkTheme)
     }
 
     Text(
@@ -140,6 +146,7 @@ fun TableItem(
                         .padding(horizontal = 4.dp)
                         .weight(1f),
                     cell = cell,
+                    maxLines = 1
                 )
             }
         }
@@ -151,12 +158,16 @@ fun TableItem(
 fun CellItem(
     modifier: Modifier = Modifier,
     cell: Cell = mockCell,
+    maxLines: Int = 1
 ) {
     Box(modifier = modifier) {
-        TextItem(
+        Text(
+            modifier = Modifier.fillMaxWidth(),
             text = cell.text,
-            formatTexts = cell.formatTexts,
-            maxLines = 1,
+            overflow = TextOverflow.Ellipsis,
+            maxLines = maxLines,
+            fontSize = 12.sp,
+            color = MaterialTheme.colorScheme.secondary
         )
     }
 }

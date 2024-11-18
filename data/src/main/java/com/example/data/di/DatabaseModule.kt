@@ -2,7 +2,13 @@ package com.example.data.di
 
 import android.content.Context
 import androidx.room.Room
-import com.example.data.source.local.dao.*
+import com.example.data.source.local.dao.AppDatabase
+import com.example.data.source.local.dao.CellDao
+import com.example.data.source.local.dao.FormatTextDao
+import com.example.data.source.local.dao.NoteDao
+import com.example.data.source.local.dao.NoteItemDao
+import com.example.data.source.local.dao.TableDao
+import com.example.data.utils.TransactionProvider
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
@@ -23,6 +29,11 @@ object DatabaseModule {
             "NotePad.db"
         ).fallbackToDestructiveMigration().build()
     }
+
+    @Singleton
+    @Provides
+    fun provideTransactionProvider(appDatabase: AppDatabase): TransactionProvider =
+        TransactionProvider(appDatabase)
 
     @Singleton
     @Provides

@@ -62,6 +62,7 @@ import com.example.notepad.components.MenuItem
 import com.example.notepad.components.screens.ErrorScreen
 import com.example.notepad.components.screens.LoadingScreen
 import com.example.notepad.navigation.AppScreens
+import com.example.notepad.utils.Constants.NEW_ELEMENT
 import com.example.notepad.utils.getViewModel
 import com.example.notepad.utils.mockNoteList
 
@@ -414,7 +415,7 @@ private fun SearchNote(
 
 @Composable
 fun AddNoteButton(onClick: (String) -> Unit = {}, size: Int) {
-    val route = AppScreens.NoteDetailScreen.route.plus("/new_element/$size")
+    val route = AppScreens.NoteDetailScreen.route.plus("/$NEW_ELEMENT/$size")
 
     DisplayText(description = R.string.create_new_note) {
         FloatingActionButton(

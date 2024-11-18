@@ -13,7 +13,7 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.catch
-import kotlinx.coroutines.flow.getAndUpdate
+import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 
@@ -88,7 +88,7 @@ class NotesViewModel @Inject constructor(
 
     fun searchNotes(query: String) {
         viewModelScope.launch(dispatcher) {
-            _uiState.getAndUpdate { state ->
+            _uiState.update { state ->
                 with((state.asSuccess())) {
                     copy(notes = notes.filter { note -> note.contains(query) })
                 }
@@ -97,7 +97,7 @@ class NotesViewModel @Inject constructor(
     }
 
     fun restoreNotes(originalNotes: List<Note>) {
-        _uiState.getAndUpdate { state ->
+        _uiState.update { state ->
             with((state.asSuccess())) {
                 copy(notes = originalNotes)
             }
@@ -105,7 +105,7 @@ class NotesViewModel @Inject constructor(
     }
 
     fun swipeNotes(oldIndex: Int, newIndex: Int) {
-        _uiState.getAndUpdate { state ->
+        _uiState.update { state ->
             with((state.asSuccess())) {
                 copy(notes = notes.toMutableList().apply { add(newIndex, removeAt(oldIndex)) })
             }
@@ -113,7 +113,7 @@ class NotesViewModel @Inject constructor(
     }
 
     fun checkNote(id: String) {
-        _uiState.getAndUpdate { state ->
+        _uiState.update { state ->
             with((state.asSuccess())) {
                 copy(notes = notes.map { note ->
                     if (note.id == id) note.copy(isChecked = !note.isChecked) else note
@@ -123,7 +123,7 @@ class NotesViewModel @Inject constructor(
     }
 
     fun pinUpCheckedNotes() {
-        _uiState.getAndUpdate { state ->
+        _uiState.update { state ->
             with((state.asSuccess())) {
                 val arePinned = allCheckedArePinned(notes)
                 copy(notes = notes.map { note ->
@@ -138,7 +138,7 @@ class NotesViewModel @Inject constructor(
         notes.filter { it.isChecked }.all { it.isPinned }
 
     fun changeItemsView() {
-        _uiState.getAndUpdate { state ->
+        _uiState.update { state ->
             with((state.asSuccess())) {
                 copy(itemsView = if (itemsView == 2) 1 else 2)
             }
@@ -146,7 +146,7 @@ class NotesViewModel @Inject constructor(
     }
 
     fun selectAllNotes(select: Boolean) {
-        _uiState.getAndUpdate { state ->
+        _uiState.update { state ->
             with((state.asSuccess())) {
                 copy(notes = notes.map { note -> note.copy(isChecked = select) })
             }
