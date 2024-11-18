@@ -51,4 +51,12 @@ data class Table(
         })
 
     fun isEmpty() = cells.all { it.text.isEmpty() }
+
+    fun getItemsText(): String {
+        var totalText = ""
+        cells.forEach { currentCell ->
+            totalText += currentCell.text + "    "
+        }
+        return totalText
+    }
 }

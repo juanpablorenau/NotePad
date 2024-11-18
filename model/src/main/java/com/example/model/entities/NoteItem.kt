@@ -117,12 +117,12 @@ data class NoteItem(
             }
         )
 
-    fun updateFormatsAfterAddingCharacter(deletedIndex: Int) = copy(
-        formatTexts = formatTexts.map { current ->
+    fun updateFormatsAfterAddingCharacter(addedIndex: Int) = copy(formatTexts = formatTexts.map { current ->
             when {
-                current.isBefore(deletedIndex) -> current
-                current.isBetween(deletedIndex) -> current.copy(endIndex = current.endIndex + 1)
-                current.isAfter(deletedIndex) -> {
+                current.isRightAfter(addedIndex) -> current.copy(endIndex = current.endIndex + 1)
+                current.isBefore(addedIndex) -> current
+                current.isBetween(addedIndex) -> current.copy(endIndex = current.endIndex + 1)
+                current.isAfter(addedIndex) -> {
                     current.copy(
                         startIndex = current.startIndex + 1, endIndex = current.endIndex + 1
                     )

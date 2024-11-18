@@ -43,15 +43,15 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.example.model.entities.Cell
 import com.example.model.entities.NoteItem
-import com.example.notepad.utils.bottomBorder
-import com.example.notepad.utils.endBorder
+import com.example.notepad.components.bottomBorder
+import com.example.notepad.components.endBorder
+import com.example.notepad.components.startBorder
+import com.example.notepad.components.topBorder
 import com.example.notepad.utils.getAnnotatedString
 import com.example.notepad.utils.mockCell
 import com.example.notepad.utils.mockCheckBoxItem
 import com.example.notepad.utils.mockTableItem
 import com.example.notepad.utils.mockTextItem
-import com.example.notepad.utils.startBorder
-import com.example.notepad.utils.topBorder
 
 @Preview(showBackground = true)
 @Composable
@@ -70,7 +70,7 @@ fun TextFieldItem(
         val interactionSource = remember(id) { MutableInteractionSource() }
         val isPressed = interactionSource.collectIsPressedAsState()
 
-        LaunchedEffect(noteItem, isDarkTheme) {
+        LaunchedEffect(id, text, formatTexts, cursorStartIndex, cursorEndIndex, isDarkTheme) {
             val annotatedString = getAnnotatedString(text, formatTexts, isDarkTheme)
             textField = TextFieldValue(annotatedString, TextRange(cursorStartIndex, cursorEndIndex))
         }
@@ -127,7 +127,7 @@ fun CheckBoxItem(
         val interactionSource = remember(id) { MutableInteractionSource() }
         val isPressed = interactionSource.collectIsPressedAsState()
 
-        LaunchedEffect(noteItem, isDarkTheme) {
+        LaunchedEffect(id, text, formatTexts, cursorStartIndex, cursorEndIndex, isDarkTheme) {
             val annotatedString = getAnnotatedString(text, formatTexts, isDarkTheme)
             textField = TextFieldValue(annotatedString, TextRange(cursorStartIndex, cursorEndIndex))
         }

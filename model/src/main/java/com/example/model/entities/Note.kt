@@ -190,10 +190,10 @@ data class Note(
         formatType: FormatType, newFormat: FormatText, oldFormat: FormatText
     ) = with(newFormat) {
         when (formatType) {
-            FormatType.BOLD -> oldFormat.copy(isBold = isBold)
-            FormatType.ITALIC -> oldFormat.copy(isItalic = isItalic)
-            FormatType.UNDERLINE -> oldFormat.copy(isUnderline = isUnderline)
-            FormatType.LINE_THROUGH -> oldFormat.copy(isLineThrough = isLineThrough)
+            FormatType.BOLD -> oldFormat.copy(isBold = true)
+            FormatType.ITALIC -> oldFormat.copy(isItalic = true)
+            FormatType.UNDERLINE -> oldFormat.copy(isUnderline = true)
+            FormatType.LINE_THROUGH -> oldFormat.copy(isLineThrough = true)
             FormatType.PARAGRAPH_TYPE -> oldFormat.copy(paragraphType = paragraphType)
             FormatType.TEXT_COLOR -> oldFormat.copy(color = color)
             FormatType.TYPE_TEXT -> oldFormat.copy(typeText = typeText, isBold = typeText.isBold)
@@ -223,4 +223,16 @@ data class Note(
         copy(items = items.map { current ->
             current.copy(isFocused = current.id == noteItem.id)
         })
+
+    fun getItemsText(): String {
+        var totalText = "*$title*\n\n"
+        items.forEach { currentItem ->
+            totalText += when {
+                currentItem.isText() -> currentItem.text
+                currentItem.isTable() -> currentItem.table?.getItemsText().orEmpty()
+                else -> "-${currentItem.text}"
+            }.plus("\n")
+        }
+        return totalText
+    }
 }

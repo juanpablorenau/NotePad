@@ -24,9 +24,11 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
@@ -40,6 +42,9 @@ import com.example.notepad.components.DisplayText
 import com.example.notepad.components.MenuItem
 import com.example.notepad.utils.getColorFromHex
 import com.example.notepad.utils.mockNote
+import com.example.notepad.utils.setClipboard
+import com.example.notepad.utils.showToast
+import kotlinx.coroutines.launch
 
 
 @Preview(showBackground = true)
@@ -133,9 +138,19 @@ fun NoteDetailTopBar(
                     },
                 )
 
+                val scope = rememberCoroutineScope()
+                val context = LocalContext.current
+                val text = stringResource(R.string.text_copied)
+
                 DropdownMenuItem(
                     text = { MenuItem(R.drawable.ic_share, stringResource(R.string.share)) },
-                    onClick = { showMenu = false },
+                    onClick = {
+                        showMenu = false
+                        scope.launch {
+                            setClipboard(context, note.getItemsText())
+                            showToast(context, text)
+                        }
+                    },
                 )
 
                 DropdownMenuItem(

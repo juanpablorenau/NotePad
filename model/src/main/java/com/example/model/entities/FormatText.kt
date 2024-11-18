@@ -31,11 +31,13 @@ data class FormatText(
         itemId = newFormatTextId
     )
 
-    fun isBefore(deletedIndex: Int) = (endIndex - 1) < deletedIndex
+    fun isBefore(index: Int) = (endIndex - 1) < index
 
-    fun isBetween(deletedIndex: Int) = deletedIndex in startIndex..<endIndex
+    fun isBetween(index: Int) = index in startIndex..<endIndex
 
-    fun isAfter(deletedIndex: Int) = startIndex > deletedIndex
+    fun isRightAfter(index: Int) = endIndex == index
 
-    fun shouldDelete(deletedIndex: Int) = startIndex == deletedIndex && startIndex == (endIndex - 1)
+    fun isAfter(index: Int) = startIndex > index
+
+    fun shouldDelete(index: Int) = startIndex == index && startIndex == (endIndex - 1)
 }

@@ -34,15 +34,15 @@ import androidx.compose.ui.unit.sp
 import com.example.model.entities.Cell
 import com.example.model.entities.FormatText
 import com.example.model.entities.NoteItem
-import com.example.notepad.utils.bottomBorder
-import com.example.notepad.utils.endBorder
+import com.example.notepad.components.bottomBorder
+import com.example.notepad.components.endBorder
+import com.example.notepad.components.startBorder
+import com.example.notepad.components.topBorder
 import com.example.notepad.utils.getAnnotatedString
 import com.example.notepad.utils.mockCell
 import com.example.notepad.utils.mockCheckBoxItem
 import com.example.notepad.utils.mockTableItem
 import com.example.notepad.utils.mockTextItem
-import com.example.notepad.utils.startBorder
-import com.example.notepad.utils.topBorder
 
 @Preview(showBackground = true)
 @Composable
