@@ -7,6 +7,7 @@ import com.example.data.model.db.FormatTextDb
 import com.example.data.model.db.NoteEmbeddedDb
 import com.example.data.model.db.NoteItemEmbeddedDb
 import com.example.data.model.db.TableEmbeddedDb
+import com.example.data.utils.Constants.DATABASE_VERSION
 
 @Database(
     entities = [
@@ -16,7 +17,7 @@ import com.example.data.model.db.TableEmbeddedDb
         CellEmbeddedDb::class,
         FormatTextDb::class,
     ],
-    version = 4,
+    version = DATABASE_VERSION,
     exportSchema = false
 )
 abstract class AppDatabase : RoomDatabase() {

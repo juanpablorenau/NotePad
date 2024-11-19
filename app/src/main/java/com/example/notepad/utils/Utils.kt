@@ -90,3 +90,12 @@ fun setClipboard(context: Context, text: String) {
 fun showToast(context: Context, message: String, duration: Int = Toast.LENGTH_SHORT) {
     Toast.makeText(context, message, duration).show()
 }
+
+fun getAppVersion(context: Context): String {
+    return try {
+        val packageInfo = context.packageManager.getPackageInfo(context.packageName, 0)
+        packageInfo.versionName ?: "1.0"
+    } catch (e: Exception) {
+        "1.0"
+    }
+}
