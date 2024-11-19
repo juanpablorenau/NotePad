@@ -5,4 +5,7 @@ plugins {
     id("com.android.library") version "8.2.0-rc03" apply false
     id("com.google.dagger.hilt.android") version "2.48" apply false
     alias(libs.plugins.jetbrains.kotlin.jvm) apply false
+    id("com.google.gms.google-services") version "4.4.2" apply false
+    id("com.google.firebase.crashlytics") version "2.9.9" apply false
+    id("com.google.firebase.firebase-perf") version "1.4.2" apply false
 }
