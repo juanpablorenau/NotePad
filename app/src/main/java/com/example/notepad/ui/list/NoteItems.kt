@@ -32,7 +32,6 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.model.entities.Cell
-import com.example.model.entities.FormatText
 import com.example.model.entities.NoteItem
 import com.example.notepad.components.bottomBorder
 import com.example.notepad.components.endBorder
@@ -47,15 +46,14 @@ import com.example.notepad.utils.mockTextItem
 @Preview(showBackground = true)
 @Composable
 fun TextItem(
-    text: String = "",
-    formatTexts: List<FormatText> = emptyList(),
+    noteItem: NoteItem = mockTextItem,
     isDarkTheme: Boolean = false,
     maxLines: Int = 1,
 ) {
-    var annotatedString by remember { mutableStateOf(AnnotatedString(text)) }
+    var annotatedString by remember { mutableStateOf(AnnotatedString(noteItem.text)) }
 
-    LaunchedEffect(text, formatTexts, isDarkTheme) {
-        annotatedString = getAnnotatedString(text, formatTexts, isDarkTheme)
+    LaunchedEffect(noteItem, isDarkTheme) {
+        annotatedString = getAnnotatedString(noteItem, isDarkTheme)
     }
 
     Text(
@@ -74,8 +72,7 @@ fun TextFieldItem(
     isDarkTheme: Boolean = false,
 ) {
     TextItem(
-        text = noteItem.text,
-        formatTexts = noteItem.formatTexts,
+        noteItem = noteItem,
         isDarkTheme = isDarkTheme,
         maxLines = 4,
     )
@@ -114,8 +111,7 @@ fun CheckBoxItem(
         )
 
         TextItem(
-            text = noteItem.text,
-            formatTexts = noteItem.formatTexts,
+            noteItem = noteItem,
             maxLines = 1,
         )
     }

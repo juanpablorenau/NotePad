@@ -18,5 +18,4 @@ data class FormatTextDb(
     @ColumnInfo(name = "isUnderline") val isUnderline: Boolean = false,
     @ColumnInfo(name = "isLineThrough") val isLineThrough: Boolean = false,
     @ColumnInfo(name = "color") val color: String = "",
-    @ColumnInfo(name = "paragraphType") val paragraphType: String = "",
 )

@@ -2,6 +2,7 @@ package com.example.model.entities
 
 import com.example.model.enums.FormatType
 import com.example.model.enums.NoteColor
+import com.example.model.enums.ParagraphType
 import com.example.model.utils.getUUID
 import com.example.model.utils.normalize
 
@@ -170,6 +171,13 @@ data class Note(
         addAll(updatedItems)
     })
 
+    fun applyParagraph(
+        paragraphType: ParagraphType
+    ) = copy(items = items.map { current ->
+        if (current.isFocused) current.copy(paragraphType = paragraphType)
+        else current
+    })
+
     fun applyFormat(
         formatType: FormatType,
         formatText: FormatText,
@@ -194,7 +202,6 @@ data class Note(
             FormatType.ITALIC -> oldFormat.copy(isItalic = true)
             FormatType.UNDERLINE -> oldFormat.copy(isUnderline = true)
             FormatType.LINE_THROUGH -> oldFormat.copy(isLineThrough = true)
-            FormatType.PARAGRAPH_TYPE -> oldFormat.copy(paragraphType = paragraphType)
             FormatType.TEXT_COLOR -> oldFormat.copy(color = color)
             FormatType.TYPE_TEXT -> oldFormat.copy(typeText = typeText, isBold = typeText.isBold)
         }

@@ -15,21 +15,25 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextDecoration
 import androidx.compose.ui.unit.sp
 import com.example.model.entities.FormatText
+import com.example.model.entities.NoteItem
 import com.example.model.enums.ParagraphType
 
 fun getColorFromHex(hexColor: String) = Color(android.graphics.Color.parseColor(hexColor))
 
 fun getAnnotatedString(
-    text: String,
-    formatTexts: List<FormatText>,
+    noteItem: NoteItem,
     isDarkTheme: Boolean,
     isDynamicFontSize: Boolean = true
 ): AnnotatedString {
-    val spanStyles =
-        formatTexts.mapNotNull { format -> format.toSpanStyle(isDarkTheme, isDynamicFontSize) }
-    val paragraphStyles = formatTexts.mapNotNull { format -> format.toParagraphStyle() }
+    val spanStyles = noteItem.formatTexts.mapNotNull { format ->
+        format.toSpanStyle(isDarkTheme, isDynamicFontSize)
+    }
 
-    return AnnotatedString(text = text, spanStyles = spanStyles, paragraphStyles = paragraphStyles)
+    return AnnotatedString(
+        text = noteItem.text,
+        spanStyles = spanStyles,
+        paragraphStyles = listOf(noteItem.toParagraphStyle())
+    )
 }
 
 fun FormatText.toSpanStyle(
@@ -61,24 +65,19 @@ fun FormatText.toSpanStyle(
         null
     }
 
-fun FormatText.toParagraphStyle(): AnnotatedString.Range<ParagraphStyle>? =
-    try {
-        AnnotatedString.Range(
-            start = startIndex,
-            end = endIndex,
-            item = ParagraphStyle(
-                textAlign = when (paragraphType) {
-                    ParagraphType.LEFT -> TextAlign.Left
-                    ParagraphType.JUSTIFY -> TextAlign.Justify
-                    ParagraphType.CENTER -> TextAlign.Center
-                    ParagraphType.RIGHT -> TextAlign.Right
-                }
-            )
+fun NoteItem.toParagraphStyle(): AnnotatedString.Range<ParagraphStyle> =
+    AnnotatedString.Range(
+        start = 0,
+        end = text.length,
+        item = ParagraphStyle(
+            textAlign = when (paragraphType) {
+                ParagraphType.LEFT -> TextAlign.Left
+                ParagraphType.JUSTIFY -> TextAlign.Justify
+                ParagraphType.CENTER -> TextAlign.Center
+                ParagraphType.RIGHT -> TextAlign.Right
+            }
         )
-    } catch (e: Exception) {
-        Log.e("ParagraphStyle", "startIndex: $startIndex, endIndex: $endIndex")
-        null
-    }
+    )
 
 
 fun setClipboard(context: Context, text: String) {

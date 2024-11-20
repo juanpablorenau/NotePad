@@ -1,6 +1,7 @@
 package com.example.model.entities
 
 import com.example.model.enums.NoteItemType
+import com.example.model.enums.ParagraphType
 import com.example.model.utils.getUUID
 import com.example.model.utils.normalize
 import com.example.model.utils.orFalse
@@ -15,6 +16,7 @@ data class NoteItem(
     val type: NoteItemType = NoteItemType.TEXT,
     val isFocused: Boolean = true,
     val formatTexts: List<FormatText> = emptyList(),
+    val paragraphType: ParagraphType = ParagraphType.LEFT,
     val table: Table? = null,
     val index: Int = 0,
 ) {

@@ -70,8 +70,8 @@ fun TextFieldItem(
         val interactionSource = remember(id) { MutableInteractionSource() }
         val isPressed = interactionSource.collectIsPressedAsState()
 
-        LaunchedEffect(id, text, formatTexts, cursorStartIndex, cursorEndIndex, isDarkTheme) {
-            val annotatedString = getAnnotatedString(text, formatTexts, isDarkTheme)
+        LaunchedEffect(noteItem, isDarkTheme) {
+            val annotatedString = getAnnotatedString(noteItem, isDarkTheme)
             textField = TextFieldValue(annotatedString, TextRange(cursorStartIndex, cursorEndIndex))
         }
 
@@ -128,8 +128,8 @@ fun CheckBoxItem(
         val interactionSource = remember(id) { MutableInteractionSource() }
         val isPressed = interactionSource.collectIsPressedAsState()
 
-        LaunchedEffect(id, text, formatTexts, cursorStartIndex, cursorEndIndex, isDarkTheme) {
-            val annotatedString = getAnnotatedString(text, formatTexts, isDarkTheme)
+        LaunchedEffect(noteItem, isDarkTheme) {
+            val annotatedString = getAnnotatedString(noteItem, isDarkTheme)
             textField = TextFieldValue(annotatedString, TextRange(cursorStartIndex, cursorEndIndex))
         }
 

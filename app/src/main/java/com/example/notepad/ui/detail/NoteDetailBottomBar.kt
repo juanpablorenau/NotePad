@@ -62,6 +62,7 @@ fun NoteDetailBottomBar(
     addTextField: () -> Unit = {},
     addCheckBox: (String?) -> Unit = {},
     addTable: () -> Unit = {},
+    applyParagraph: (ParagraphType) -> Unit = {},
     applyFormat: (FormatType, FormatText) -> Unit = { _, _ -> },
 ) {
     val showBottomSheet = remember { mutableStateOf(false) }
@@ -72,8 +73,10 @@ fun NoteDetailBottomBar(
     if (showBottomSheet.value) {
         TextFormatComponent(
             formatText = formatText,
+            paragraphType = focusedItem?.paragraphType ?: ParagraphType.LEFT,
             isDarkTheme = isDarkTheme,
             changeBottomSheetState = changeBottomSheetState,
+            applyParagraph = applyParagraph,
             applyFormat = applyFormat
         )
     } else {
@@ -164,8 +167,10 @@ fun BottomOptions(
 @Composable
 fun TextFormatComponent(
     formatText: FormatText = mockBodyFormat,
+    paragraphType: ParagraphType = ParagraphType.LEFT,
     isDarkTheme: Boolean = false,
     changeBottomSheetState: (Boolean) -> Unit = {},
+    applyParagraph: (ParagraphType) -> Unit = {},
     applyFormat: (FormatType, FormatText) -> Unit = { _, _ -> },
 ) {
     Card(
@@ -182,7 +187,14 @@ fun TextFormatComponent(
                 .padding(12.dp),
         ) {
             TextFormatHeader(changeBottomSheetState)
-            TextFormatContent(formatText, isDarkTheme, applyFormat)
+
+            TextFormatContent(
+                formatText = formatText,
+                paragraphType = paragraphType,
+                isDarkTheme = isDarkTheme,
+                applyParagraph = applyParagraph,
+                applyFormat = applyFormat
+            )
         }
     }
 }
@@ -221,15 +233,25 @@ fun TextFormatHeader(
 @Composable
 fun TextFormatContent(
     formatText: FormatText = mockBodyFormat,
+    paragraphType: ParagraphType = ParagraphType.LEFT,
     isDarkTheme: Boolean = false,
+    applyParagraph: (ParagraphType) -> Unit = {},
     applyFormat: (FormatType, FormatText) -> Unit = { _, _ -> },
 ) {
     Column(
         modifier = Modifier.padding(vertical = 24.dp)
     ) {
         TypeTextsSelector(formatText.typeText, applyFormat)
+
         FormatTextsSelector(formatText, applyFormat)
-        ParagraphsSelectorAndTextColor(formatText, isDarkTheme, applyFormat)
+
+        ParagraphsSelectorAndTextColor(
+            formatText = formatText,
+            paragraphType = paragraphType,
+            isDarkTheme = isDarkTheme,
+            applyParagraph = applyParagraph,
+            applyFormat = applyFormat
+        )
     }
 
 }
@@ -469,10 +491,12 @@ fun FormatTextsSelector(
 @Composable
 fun ParagraphsSelectorAndTextColor(
     formatText: FormatText = mockBodyFormat,
+    paragraphType: ParagraphType = ParagraphType.LEFT,
     isDarkTheme: Boolean = false,
+    applyParagraph: (ParagraphType) -> Unit = {},
     applyFormat: (FormatType, FormatText) -> Unit = { _, _ -> },
 ) {
-    val paragraphType = remember { mutableStateOf(formatText.paragraphType) }
+    val currentParagraph = remember { mutableStateOf(paragraphType) }
     val showColorSelector = remember { mutableStateOf(false) }
     val color = remember(formatText.color, isDarkTheme) {
         getColorFromHex(formatText.getColor(isDarkTheme))
@@ -516,11 +540,8 @@ fun ParagraphsSelectorAndTextColor(
                         .height(32.dp)
                         .weight(1f)
                         .clickable {
-                            paragraphType.value = ParagraphType.LEFT
-                            applyFormat(
-                                FormatType.PARAGRAPH_TYPE,
-                                FormatText(paragraphType = ParagraphType.LEFT)
-                            )
+                            currentParagraph.value = ParagraphType.LEFT
+                            applyParagraph(ParagraphType.LEFT)
                         },
                     shape = RoundedCornerShape(
                         topStart = 12.dp,
@@ -530,7 +551,7 @@ fun ParagraphsSelectorAndTextColor(
                     ),
                     colors = CardDefaults.cardColors(
                         containerColor =
-                        if (paragraphType.value == ParagraphType.LEFT) MaterialTheme.colorScheme.primary
+                        if (currentParagraph.value == ParagraphType.LEFT) MaterialTheme.colorScheme.primary
                         else MaterialTheme.colorScheme.tertiary
                     ),
                 ) {
@@ -543,7 +564,7 @@ fun ParagraphsSelectorAndTextColor(
                             painter = painterResource(id = R.drawable.ic_format_align_left),
                             contentDescription = "text color icon",
                             tint =
-                            if (paragraphType.value == ParagraphType.LEFT) MaterialTheme.colorScheme.background
+                            if (currentParagraph.value == ParagraphType.LEFT) MaterialTheme.colorScheme.background
                             else MaterialTheme.colorScheme.secondary,
                         )
                     }
@@ -556,16 +577,13 @@ fun ParagraphsSelectorAndTextColor(
                         .height(32.dp)
                         .weight(1f)
                         .clickable {
-                            paragraphType.value = ParagraphType.JUSTIFY
-                            applyFormat(
-                                FormatType.PARAGRAPH_TYPE,
-                                FormatText(paragraphType = ParagraphType.JUSTIFY)
-                            )
+                            currentParagraph.value = ParagraphType.JUSTIFY
+                            applyParagraph(ParagraphType.JUSTIFY)
                         },
                     shape = RoundedCornerShape(0.dp),
                     colors = CardDefaults.cardColors(
                         containerColor =
-                        if (paragraphType.value == ParagraphType.JUSTIFY) MaterialTheme.colorScheme.primary
+                        if (currentParagraph.value == ParagraphType.JUSTIFY) MaterialTheme.colorScheme.primary
                         else MaterialTheme.colorScheme.tertiary
                     ),
                 ) {
@@ -578,7 +596,7 @@ fun ParagraphsSelectorAndTextColor(
                             painter = painterResource(id = R.drawable.ic_format_align_justify),
                             contentDescription = "text color icon",
                             tint =
-                            if (paragraphType.value == ParagraphType.JUSTIFY) MaterialTheme.colorScheme.background
+                            if (currentParagraph.value == ParagraphType.JUSTIFY) MaterialTheme.colorScheme.background
                             else MaterialTheme.colorScheme.secondary,
                         )
                     }
@@ -591,16 +609,13 @@ fun ParagraphsSelectorAndTextColor(
                         .height(32.dp)
                         .weight(1f)
                         .clickable {
-                            paragraphType.value = ParagraphType.CENTER
-                            applyFormat(
-                                FormatType.PARAGRAPH_TYPE,
-                                FormatText(paragraphType = ParagraphType.CENTER)
-                            )
+                            currentParagraph.value = ParagraphType.CENTER
+                            applyParagraph(ParagraphType.CENTER)
                         },
                     shape = RoundedCornerShape(0.dp),
                     colors = CardDefaults.cardColors(
                         containerColor =
-                        if (paragraphType.value == ParagraphType.CENTER) MaterialTheme.colorScheme.primary
+                        if (currentParagraph.value == ParagraphType.CENTER) MaterialTheme.colorScheme.primary
                         else MaterialTheme.colorScheme.tertiary
                     ),
                 ) {
@@ -613,7 +628,7 @@ fun ParagraphsSelectorAndTextColor(
                             painter = painterResource(id = R.drawable.ic_format_align_center),
                             contentDescription = "text color icon",
                             tint =
-                            if (paragraphType.value == ParagraphType.CENTER) MaterialTheme.colorScheme.background
+                            if (currentParagraph.value == ParagraphType.CENTER) MaterialTheme.colorScheme.background
                             else MaterialTheme.colorScheme.secondary,
                         )
                     }
@@ -626,11 +641,8 @@ fun ParagraphsSelectorAndTextColor(
                         .height(32.dp)
                         .weight(1f)
                         .clickable {
-                            paragraphType.value = ParagraphType.RIGHT
-                            applyFormat(
-                                FormatType.PARAGRAPH_TYPE,
-                                FormatText(paragraphType = ParagraphType.RIGHT)
-                            )
+                            currentParagraph.value = ParagraphType.RIGHT
+                            applyParagraph(ParagraphType.RIGHT)
                         },
                     shape = RoundedCornerShape(
                         topStart = 0.dp,
@@ -640,7 +652,7 @@ fun ParagraphsSelectorAndTextColor(
                     ),
                     colors = CardDefaults.cardColors(
                         containerColor =
-                        if (paragraphType.value == ParagraphType.RIGHT) MaterialTheme.colorScheme.primary
+                        if (currentParagraph.value == ParagraphType.RIGHT) MaterialTheme.colorScheme.primary
                         else MaterialTheme.colorScheme.tertiary
                     ),
                 ) {
@@ -653,7 +665,7 @@ fun ParagraphsSelectorAndTextColor(
                             painter = painterResource(id = R.drawable.ic_format_align_right),
                             contentDescription = "text color icon",
                             tint =
-                            if (paragraphType.value == ParagraphType.RIGHT) MaterialTheme.colorScheme.background
+                            if (currentParagraph.value == ParagraphType.RIGHT) MaterialTheme.colorScheme.background
                             else MaterialTheme.colorScheme.secondary,
                         )
                     }
