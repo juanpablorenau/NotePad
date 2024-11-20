@@ -8,6 +8,7 @@ converter-gson = "2.9.0"
 converter-moshi = "2.9.0"
 datastore-preferences = "1.1.1"
 espresso-core = "3.5.1"
+firebase-bom = "33.6.0"
 glide = "4.16.0"
 gson = "2.10.1"
 hilt-android = "2.48"
@@ -68,6 +69,12 @@ androidx-ui-test-manifest = { module = "androidx.compose.ui:ui-test-manifest", v
 # ViewModel
 androidx-activity-ktx = { module = "androidx.activity:activity-ktx", version.ref = "activity-compose" }
 androidx-lifecycle-viewmodel-ktx = { module = "androidx.lifecycle:lifecycle-viewmodel-ktx", version.ref = "lifecycle-runtime-ktx" }
+
+# Firebase
+firebase-analytics = { module = "com.google.firebase:firebase-analytics" }
+firebase-bom = { module = "com.google.firebase:firebase-bom", version.ref = "firebase-bom" }
+firebase-crashlytics = { module = "com.google.firebase:firebase-crashlytics" }
+firebase-perf = { module = "com.google.firebase:firebase-perf" }
 
 # Images
 glide = { module = "com.github.bumptech.glide:glide", version.ref = "glide" }

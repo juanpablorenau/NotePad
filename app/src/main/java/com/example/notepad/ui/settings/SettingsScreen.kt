@@ -1,7 +1,27 @@
 package com.example.notepad.ui.settings
 
-import androidx.compose.foundation.layout.*
-import androidx.compose.material3.*
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.fillMaxHeight
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.padding
+import androidx.compose.material3.DropdownMenuItem
+import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.ExposedDropdownMenuBox
+import androidx.compose.material3.ExposedDropdownMenuDefaults
+import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.OutlinedTextField
+import androidx.compose.material3.OutlinedTextFieldDefaults
+import androidx.compose.material3.Scaffold
+import androidx.compose.material3.Switch
+import androidx.compose.material3.SwitchDefaults
+import androidx.compose.material3.Text
+import androidx.compose.material3.TopAppBar
+import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -21,6 +41,7 @@ import com.example.model.enums.Language
 import com.example.notepad.R
 import com.example.notepad.theme.DarkSkyBlue
 import com.example.notepad.theme.LightSkyBlue
+import com.example.notepad.utils.getAppVersion
 import com.example.notepad.utils.getViewModel
 
 @Composable
@@ -93,6 +114,8 @@ fun SettingsContent(
         )
 
         LanguageSelector(language = language, changeLanguage = changeLanguage)
+
+        Version()
     }
 }
 
@@ -192,4 +215,37 @@ fun LanguageSelector(
             }
         }
     }
+}
+
+@Composable
+fun Version() {
+    Column(
+        modifier = Modifier.fillMaxHeight(),
+        verticalArrangement = Arrangement.Bottom
+    ) {
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(horizontal = 24.dp, vertical = 16.dp),
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.Center
+        ) {
+            Text(
+                text = stringResource(R.string.version),
+                color = MaterialTheme.colorScheme.onBackground,
+                fontSize = 14.sp,
+            )
+
+            val context = LocalContext.current
+            val versionName = remember { getAppVersion(context) }
+
+            Text(
+                modifier = Modifier.padding(start = 12.dp),
+                text = versionName,
+                color = MaterialTheme.colorScheme.onBackground,
+                fontSize = 14.sp,
+            )
+        }
+    }
+
 }

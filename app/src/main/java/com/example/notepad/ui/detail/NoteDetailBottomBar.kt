@@ -150,13 +150,13 @@ fun BottomOptions(
                 tint = MaterialTheme.colorScheme.primary
             )
         }
-        DisplayText(description = R.string.add_image) {
-            Icon(
-                painter = painterResource(id = R.drawable.ic_image),
-                contentDescription = "Image icon",
-                tint = MaterialTheme.colorScheme.primary
-            )
-        }
+//        DisplayText(description = R.string.add_image) {
+//            Icon(
+//                painter = painterResource(id = R.drawable.ic_image),
+//                contentDescription = "Image icon",
+//                tint = MaterialTheme.colorScheme.primary
+//            )
+//        }
     }
 }
 

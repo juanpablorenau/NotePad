@@ -7,12 +7,15 @@ import android.util.Log
 import android.widget.Toast
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.AnnotatedString
+import androidx.compose.ui.text.ParagraphStyle
 import androidx.compose.ui.text.SpanStyle
 import androidx.compose.ui.text.font.FontStyle
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextDecoration
 import androidx.compose.ui.unit.sp
 import com.example.model.entities.FormatText
+import com.example.model.enums.ParagraphType
 
 fun getColorFromHex(hexColor: String) = Color(android.graphics.Color.parseColor(hexColor))
 
@@ -22,9 +25,11 @@ fun getAnnotatedString(
     isDarkTheme: Boolean,
     isDynamicFontSize: Boolean = true
 ): AnnotatedString {
-    val styles =
+    val spanStyles =
         formatTexts.mapNotNull { format -> format.toSpanStyle(isDarkTheme, isDynamicFontSize) }
-    return AnnotatedString(text = text, spanStyles = styles)
+    val paragraphStyles = formatTexts.mapNotNull { format -> format.toParagraphStyle() }
+
+    return AnnotatedString(text = text, spanStyles = spanStyles, paragraphStyles = paragraphStyles)
 }
 
 fun FormatText.toSpanStyle(
@@ -52,9 +57,29 @@ fun FormatText.toSpanStyle(
             )
         )
     } catch (e: Exception) {
-        Log.e("SPAN", "startIndex: $startIndex, endIndex: $endIndex")
+        Log.e("SpanStyle", "startIndex: $startIndex, endIndex: $endIndex")
         null
     }
+
+fun FormatText.toParagraphStyle(): AnnotatedString.Range<ParagraphStyle>? =
+    try {
+        AnnotatedString.Range(
+            start = startIndex,
+            end = endIndex,
+            item = ParagraphStyle(
+                textAlign = when (paragraphType) {
+                    ParagraphType.LEFT -> TextAlign.Left
+                    ParagraphType.JUSTIFY -> TextAlign.Justify
+                    ParagraphType.CENTER -> TextAlign.Center
+                    ParagraphType.RIGHT -> TextAlign.Right
+                }
+            )
+        )
+    } catch (e: Exception) {
+        Log.e("ParagraphStyle", "startIndex: $startIndex, endIndex: $endIndex")
+        null
+    }
+
 
 fun setClipboard(context: Context, text: String) {
     val clipboard = context.getSystemService(Context.CLIPBOARD_SERVICE) as ClipboardManager
@@ -64,4 +89,13 @@ fun setClipboard(context: Context, text: String) {
 
 fun showToast(context: Context, message: String, duration: Int = Toast.LENGTH_SHORT) {
     Toast.makeText(context, message, duration).show()
+}
+
+fun getAppVersion(context: Context): String {
+    return try {
+        val packageInfo = context.packageManager.getPackageInfo(context.packageName, 0)
+        packageInfo.versionName ?: "1.0"
+    } catch (e: Exception) {
+        "1.0"
+    }
 }
