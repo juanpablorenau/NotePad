@@ -14,10 +14,10 @@ import com.example.model.entities.NoteItem
 import com.example.model.enums.FormatType
 import com.example.model.enums.NoteColor
 import com.example.model.utils.getUUID
- import com.example.notepad.utils.Constants.NEW_ELEMENT
- import dagger.hilt.android.lifecycle.HiltViewModel
+import com.example.notepad.di.MainDispatcher
+import com.example.notepad.utils.Constants.NEW_ELEMENT
+import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.CoroutineDispatcher
-import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.catch
@@ -35,7 +35,7 @@ fun NoteDetailUiState.asSuccess() = this as NoteDetailUiState.Success
 
 @HiltViewModel
 class NoteDetailViewModel @Inject constructor(
-    private val dispatcher: CoroutineDispatcher = Dispatchers.Main,
+    @MainDispatcher private val dispatcher: CoroutineDispatcher,
     private val insertNoteUseCase: InsertNoteUseCase,
     private val getNoteDetailUseCase: GetNoteDetailUseCase,
     private val updateNoteUseCase: UpdateNoteUseCase,

@@ -10,6 +10,7 @@ import kotlinx.coroutines.awaitAll
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.flow.flowOn
+import kotlinx.coroutines.flow.transform
 import kotlinx.coroutines.withContext
 import javax.inject.Inject
 
@@ -19,9 +20,10 @@ class NoteRepositoryImpl @Inject constructor(
     private val noteDto: NoteDto,
 ) : NoteRepository {
 
-    override fun getNotes(): Flow<List<Note>> = flow {
-        noteDataSource.getNotes().map { noteDto.toDomain(it) }.also { emit(it) }
-    }.flowOn(dispatcher)
+    override fun getNotes(): Flow<List<Note>> =
+        noteDataSource.getNotes()
+            .transform { notes -> emit(notes.map { noteDto.toDomain(it) }) }
+            .flowOn(dispatcher)
 
     override fun getNoteById(id: String): Flow<Note> = flow {
         noteDataSource.getNoteById(id)?.also { emit(noteDto.toDomain(it)) }

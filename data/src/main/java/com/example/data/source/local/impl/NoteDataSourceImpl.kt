@@ -6,6 +6,7 @@ import com.example.data.source.local.NoteItemDataSource
 import com.example.data.source.local.dao.NoteDao
 import com.example.data.utils.TransactionProvider
 import com.example.model.entities.Note
+import kotlinx.coroutines.flow.Flow
 import javax.inject.Inject
 
 class NoteDataSourceImpl @Inject constructor(
@@ -14,7 +15,7 @@ class NoteDataSourceImpl @Inject constructor(
     private val transactionProvider: TransactionProvider,
 ) : NoteDataSource {
 
-    override suspend fun getNotes(): List<NoteDb> = noteDao.getNotes()
+    override fun getNotes(): Flow<List<NoteDb>> = noteDao.getNotes()
 
     override suspend fun getNoteById(id: String): NoteDb? = noteDao.getNoteById(id)
 

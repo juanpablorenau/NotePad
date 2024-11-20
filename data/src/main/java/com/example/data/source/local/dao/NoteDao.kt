@@ -3,13 +3,14 @@ package com.example.data.source.local.dao
 import androidx.room.*
 import com.example.data.model.db.NoteDb
 import com.example.data.model.db.NoteEmbeddedDb
+import kotlinx.coroutines.flow.Flow
 
 @Dao
 interface NoteDao {
 
     @Transaction
     @Query("SELECT * FROM Notes")
-    suspend fun getNotes(): List<NoteDb>
+    fun getNotes(): Flow<List<NoteDb>>
 
     @Transaction
     @Query("SELECT * FROM Notes WHERE id = :id")
