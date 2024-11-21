@@ -185,27 +185,11 @@ data class Note(
     ) =
         copy(items = items.map { current ->
             if (current.isFocused) {
-                current.getFormatTextWithSameIndexes()?.let { sameIndexesFormat ->
-                    current
-                        .removeFormatText(sameIndexesFormat.id)
-                        .also { deleteFormat(sameIndexesFormat.id) }
-                        .addFormatText(mergedFormat(formatType, formatText, sameIndexesFormat))
-                } ?: current.addFormatText(formatText.copy(id = getUUID()))
+                current.checkIfExistsFormatWithSameIndexes(formatType, formatText, deleteFormat) ?:
+                current.checkIfMatchingFormat(formatType, formatText) ?:
+                current.addFormatTextInCursor(formatText.copy(id = getUUID()))
             } else current
         })
-
-    private fun mergedFormat(
-        formatType: FormatType, newFormat: FormatText, oldFormat: FormatText
-    ) = with(newFormat) {
-        when (formatType) {
-            FormatType.BOLD -> oldFormat.copy(isBold = true)
-            FormatType.ITALIC -> oldFormat.copy(isItalic = true)
-            FormatType.UNDERLINE -> oldFormat.copy(isUnderline = true)
-            FormatType.LINE_THROUGH -> oldFormat.copy(isLineThrough = true)
-            FormatType.TEXT_COLOR -> oldFormat.copy(color = color)
-            FormatType.TYPE_TEXT -> oldFormat.copy(typeText = typeText, isBold = typeText.isBold)
-        }
-    }
 
     fun duplicate(): Note {
         val newNoteId = getUUID()

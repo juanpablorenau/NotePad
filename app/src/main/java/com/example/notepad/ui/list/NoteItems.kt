@@ -47,7 +47,9 @@ fun TextItem(
     isDarkTheme: Boolean = false,
     maxLines: Int = 1,
 ) {
-    val annotatedString by remember { mutableStateOf(getAnnotatedString(noteItem, isDarkTheme)) }
+    val annotatedString by remember(noteItem, isDarkTheme) {
+        mutableStateOf(getAnnotatedString(noteItem, isDarkTheme))
+    }
 
     Text(
         modifier = Modifier.fillMaxWidth(),

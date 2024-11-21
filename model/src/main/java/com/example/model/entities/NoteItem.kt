@@ -1,5 +1,6 @@
 package com.example.model.entities
 
+import com.example.model.enums.FormatType
 import com.example.model.enums.NoteItemType
 import com.example.model.enums.ParagraphType
 import com.example.model.utils.getUUID
@@ -81,26 +82,6 @@ data class NoteItem(
 
     fun isTableEmpty() = table?.isEmpty().orFalse()
 
-    fun getFormatTextWithSameIndexes() =
-        formatTexts.find { it.startIndex == cursorStartIndex && it.endIndex == cursorEndIndex }
-
-    fun addFormatText(formatText: FormatText) = copy(
-        formatTexts = formatTexts.toMutableList().apply {
-            add(
-                formatText.copy(
-                    itemId = id,
-                    startIndex = cursorStartIndex,
-                    endIndex = cursorEndIndex
-                )
-            )
-        }
-    )
-
-    fun removeFormatText(formatTextId: String) = copy(
-        formatTexts = formatTexts.toMutableList().apply {
-            removeIf { formatTextId == it.id }
-        })
-
     fun updateFormatsAfterDeletingCharacter(deletedIndex: Int, deleteFormat: (String) -> Unit) =
         copy(
             formatTexts = formatTexts.mapNotNull { current ->
@@ -119,7 +100,8 @@ data class NoteItem(
             }
         )
 
-    fun updateFormatsAfterAddingCharacter(addedIndex: Int) = copy(formatTexts = formatTexts.map { current ->
+    fun updateFormatsAfterAddingCharacter(addedIndex: Int) =
+        copy(formatTexts = formatTexts.map { current ->
             when {
                 current.isRightAfter(addedIndex) -> current.copy(endIndex = current.endIndex + 1)
                 current.isBefore(addedIndex) -> current
@@ -132,6 +114,75 @@ data class NoteItem(
 
                 else -> current
             }
+        })
+
+    fun checkIfExistsFormatWithSameIndexes(
+        formatType: FormatType,
+        formatText: FormatText,
+        deleteFormat: (String) -> Unit
+    ): NoteItem? =
+        findFormatWithSameIndexes()?.let { sameIndexesFormat ->
+            this
+                .removeFormatText(sameIndexesFormat.id)
+                .also { deleteFormat(sameIndexesFormat.id) }
+                .addFormatText(mergedFormat(formatType, formatText, sameIndexesFormat))
+        }
+
+    fun checkIfMatchingFormat(
+        formatType: FormatType,
+        formatText: FormatText,
+    ): NoteItem? =
+        findMatchingFormat()?.let { matchingFormat ->
+            val newFormatText = matchingFormat.copy(
+                id = getUUID(),
+                startIndex = cursorStartIndex,
+                endIndex = cursorEndIndex
+            )
+
+            this.addFormatText(mergedFormat(formatType, formatText, newFormatText))
+        }
+
+    private fun findFormatWithSameIndexes() =
+        formatTexts.find { it.startIndex == cursorStartIndex && it.endIndex == cursorEndIndex }
+
+    fun findMatchingFormat() =
+        formatTexts.find { format ->
+            format.startIndex <= cursorStartIndex && format.endIndex >= cursorEndIndex
+        }
+
+    private fun mergedFormat(
+        formatType: FormatType, newFormat: FormatText, oldFormat: FormatText
+    ) = with(newFormat) {
+        when (formatType) {
+            FormatType.BOLD -> oldFormat.copy(isBold = true)
+            FormatType.ITALIC -> oldFormat.copy(isItalic = true)
+            FormatType.UNDERLINE -> oldFormat.copy(isUnderline = true)
+            FormatType.LINE_THROUGH -> oldFormat.copy(isLineThrough = true)
+            FormatType.TEXT_COLOR -> oldFormat.copy(color = color)
+            FormatType.TYPE_TEXT -> oldFormat.copy(typeText = typeText, isBold = typeText.isBold)
+        }
+    }
+
+    private fun addFormatText(formatText: FormatText) = copy(
+        formatTexts = formatTexts.toMutableList().apply {
+            add(formatText.copy(itemId = id))
         }
     )
+
+    fun addFormatTextInCursor(formatText: FormatText) = copy(
+        formatTexts = formatTexts.toMutableList().apply {
+            add(
+                formatText.copy(
+                    itemId = id,
+                    startIndex = cursorStartIndex,
+                    endIndex = cursorEndIndex
+                )
+            )
+        }
+    )
+
+    private fun removeFormatText(formatTextId: String) = copy(
+        formatTexts = formatTexts.toMutableList().apply {
+            removeIf { formatTextId == it.id }
+        })
 }
