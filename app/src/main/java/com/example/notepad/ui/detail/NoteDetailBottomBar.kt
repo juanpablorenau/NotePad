@@ -25,6 +25,7 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.MutableState
+import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.mutableStateOf
@@ -51,6 +52,7 @@ import com.example.model.enums.TypeText
 import com.example.model.utils.orFalse
 import com.example.notepad.R
 import com.example.notepad.components.DisplayText
+import com.example.notepad.components.keyboardAsState
 import com.example.notepad.utils.getColorFromHex
 import com.example.notepad.utils.mockBodyFormat
 import com.example.notepad.utils.mockNote
@@ -65,13 +67,14 @@ fun NoteDetailBottomBar(
     applyParagraph: (ParagraphType) -> Unit = {},
     applyFormat: (FormatType, FormatText) -> Unit = { _, _ -> },
 ) {
+    val isKeyboardVisible by keyboardAsState()
     val showBottomSheet = remember { mutableStateOf(false) }
     val changeBottomSheetState = { value: Boolean -> showBottomSheet.value = value }
 
     val focusedItem = note.getFocusedItem()
     val formatText = focusedItem?.findMatchingFormat() ?: FormatText()
 
-    if (showBottomSheet.value) {
+    if (showBottomSheet.value && !isKeyboardVisible) {
         TextFormatComponent(
             formatText = formatText,
             paragraphType = focusedItem?.paragraphType ?: ParagraphType.LEFT,
