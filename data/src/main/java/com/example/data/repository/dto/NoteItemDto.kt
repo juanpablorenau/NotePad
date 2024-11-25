@@ -4,6 +4,7 @@ import com.example.data.model.db.NoteItemDb
 import com.example.data.model.db.NoteItemEmbeddedDb
 import com.example.model.entities.NoteItem
 import com.example.model.enums.NoteItemType
+import com.example.model.enums.ParagraphType
 import javax.inject.Inject
 
 class NoteItemDto @Inject constructor(
@@ -22,6 +23,7 @@ class NoteItemDto @Inject constructor(
                 isFocused = noteItem.isFocused,
                 type = NoteItemType.valueOf(noteItem.type),
                 formatTexts = formatTexts.map { formatTextDto.toDomain(it) },
+                paragraphType = ParagraphType.valueOf(noteItem.paragraphType),
                 table = tableDto.toDomain(table),
                 index = noteItem.index
             )
@@ -39,7 +41,8 @@ class NoteItemDto @Inject constructor(
                     isChecked = isChecked,
                     isFocused = isFocused,
                     type = type.name,
-                    index = index
+                    index = index,
+                    paragraphType = paragraphType.name
                 ),
                 formatTexts = formatTexts.map { formatTextDto.toDb(it) },
                 table = tableDto.toDb(table),

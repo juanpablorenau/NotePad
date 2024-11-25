@@ -2,7 +2,6 @@ package com.example.data.repository.dto
 
 import com.example.data.model.db.FormatTextDb
 import com.example.model.entities.FormatText
-import com.example.model.enums.ParagraphType
 import com.example.model.enums.TextColor
 import com.example.model.enums.TypeText
 import javax.inject.Inject
@@ -21,7 +20,6 @@ class FormatTextDto @Inject constructor() {
             isUnderline = formatTextDb.isUnderline,
             isLineThrough = formatTextDb.isLineThrough,
             color = TextColor.valueOf(formatTextDb.color),
-            paragraphType = ParagraphType.valueOf(formatTextDb.paragraphType)
         )
 
     fun toDb(formatText: FormatText) =
@@ -36,6 +34,5 @@ class FormatTextDto @Inject constructor() {
             isUnderline = formatText.isUnderline,
             isLineThrough = formatText.isLineThrough,
             color = formatText.color.name,
-            paragraphType = formatText.paragraphType.name
         )
 }

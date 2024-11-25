@@ -10,7 +10,7 @@ class GetNotesUseCase @Inject constructor(
     private val repository: NoteRepository,
     private val dispatcher: CoroutineDispatcher,
 ) {
-    operator fun invoke() = repository.getNotes().map { notes ->
-        notes.map { note -> note.copy(items = note.items.sortedBy { item -> item.index }) }
-    }.flowOn(dispatcher)
+    operator fun invoke() = repository.getNotes()
+        .map { notes -> notes.map { note -> note.sortItemsByIndex() } }
+        .flowOn(dispatcher)
 }

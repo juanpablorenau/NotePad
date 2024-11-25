@@ -4,8 +4,8 @@ import com.example.model.entities.Note
 import kotlinx.coroutines.flow.Flow
 
 interface NoteRepository {
-    fun getNoteById(id: String): Flow<Note>
     fun getNotes(): Flow<List<Note>>
+    fun getNoteById(id: String): Flow<Note>
     suspend fun insertNote(note: Note)
     suspend fun updateNote(note: Note)
     suspend fun updateNotes(notes: List<Note>)

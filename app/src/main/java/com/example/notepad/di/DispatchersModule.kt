@@ -1,4 +1,4 @@
-package com.example.data.di
+package com.example.notepad.di
 
 import dagger.Module
 import dagger.Provides
@@ -13,10 +13,10 @@ import javax.inject.Qualifier
 internal object DispatchersModule {
 
     @Provides
-    @IoDispatcher
-    fun providesIODispatcher(): CoroutineDispatcher = Dispatchers.IO
+    @MainDispatcher
+    fun providesMainDispatcher(): CoroutineDispatcher = Dispatchers.Main
 }
 
 @Retention(AnnotationRetention.BINARY)
 @Qualifier
-annotation class IoDispatcher
+annotation class MainDispatcher

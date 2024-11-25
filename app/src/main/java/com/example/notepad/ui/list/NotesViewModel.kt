@@ -1,15 +1,14 @@
 package com.example.notepad.ui.list
 
-import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.domain.usecase.list.DeleteNotesUseCase
 import com.example.domain.usecase.list.GetNotesUseCase
 import com.example.domain.usecase.list.UpdateNotesUseCase
 import com.example.model.entities.Note
+import com.example.notepad.di.MainDispatcher
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.CoroutineDispatcher
-import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.catch
@@ -27,7 +26,7 @@ sealed class NotesUiState {
 
 @HiltViewModel
 class NotesViewModel @Inject constructor(
-    private val dispatcher: CoroutineDispatcher = Dispatchers.Main,
+    @MainDispatcher private val dispatcher: CoroutineDispatcher,
     private val getNotesUseCase: GetNotesUseCase,
     private val updateNotesUseCase: UpdateNotesUseCase,
     private val deleteNotesUseCase: DeleteNotesUseCase,
@@ -50,10 +49,7 @@ class NotesViewModel @Inject constructor(
     fun getNotes() {
         viewModelScope.launch(dispatcher) {
             getNotesUseCase()
-                .catch {
-                    Log.e("ROOM ERROR", it.toString())
-                    setErrorState()
-                }
+                .catch { setErrorState() }
                 .collect { notes -> setSuccessState(getSortedNotes(notes)) }
         }
     }
@@ -76,10 +72,7 @@ class NotesViewModel @Inject constructor(
     fun deleteNotes() {
         viewModelScope.launch(dispatcher) {
             with(_uiState.value.asSuccess()) {
-                tryOrError {
-                    deleteNotesUseCase(getCheckedNotes(notes))
-                    getNotes()
-                }
+                tryOrError { deleteNotesUseCase(getCheckedNotes(notes)) }
             }
         }
     }

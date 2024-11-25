@@ -5,9 +5,9 @@ import androidx.lifecycle.viewModelScope
 import com.example.domain.usecase.preferences.GetIsDarkThemeUseCase
 import com.example.domain.usecase.preferences.GetLanguageUseCase
 import com.example.model.enums.Language
+import com.example.notepad.di.MainDispatcher
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.CoroutineDispatcher
-import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.SharedFlow
 import kotlinx.coroutines.flow.asSharedFlow
@@ -16,7 +16,7 @@ import javax.inject.Inject
 
 @HiltViewModel
 class MainViewModel @Inject constructor(
-    private val dispatcher: CoroutineDispatcher = Dispatchers.Main,
+    @MainDispatcher private val dispatcher: CoroutineDispatcher,
     private val getIsDarkThemeUseCase: GetIsDarkThemeUseCase,
     private val getLanguageUseCase: GetLanguageUseCase
 ) : ViewModel() {

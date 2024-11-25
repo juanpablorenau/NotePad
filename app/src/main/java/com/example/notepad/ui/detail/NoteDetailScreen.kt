@@ -17,6 +17,7 @@ import com.example.model.entities.Note
 import com.example.model.entities.NoteItem
 import com.example.model.enums.FormatType
 import com.example.model.enums.NoteColor
+import com.example.model.enums.ParagraphType
 import com.example.notepad.components.screens.ErrorScreen
 import com.example.notepad.components.screens.LoadingScreen
 import com.example.notepad.utils.getViewModel
@@ -66,6 +67,7 @@ fun NoteDetailScreen(
                 deleteTextField = { noteItem -> viewModel.deleteTextField(noteItem) },
                 deleteNoteItemField = { noteItem -> viewModel.deleteNoteItemField(noteItem) },
                 duplicateNote = { viewModel.duplicateNote() },
+                applyParagraph = { paragraphType -> viewModel.applyParagraph(paragraphType) },
                 applyFormat = { type, formatText -> viewModel.applyFormat(type, formatText) }
             )
         }
@@ -90,6 +92,7 @@ fun SuccessScreen(
     deleteTextField: (NoteItem) -> Unit = {},
     deleteNoteItemField: (NoteItem) -> Unit = {},
     duplicateNote: () -> Unit = {},
+    applyParagraph: (ParagraphType) -> Unit = {},
     applyFormat: (FormatType, FormatText) -> Unit = { _, _ -> },
 ) {
     Scaffold(
@@ -125,6 +128,7 @@ fun SuccessScreen(
                 addTextField = addTextField,
                 addCheckBox = addCheckBox,
                 addTable = addTable,
+                applyParagraph = applyParagraph,
                 applyFormat = applyFormat
             )
         },

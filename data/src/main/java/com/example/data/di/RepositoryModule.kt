@@ -27,26 +27,26 @@ class RepositoryModule {
     @Provides
     fun providesPreferencesRepository(
         dataStoreSource: DataStoreSource,
-        dispatcher: CoroutineDispatcher,
+        @IoDispatcher dispatcher: CoroutineDispatcher,
         languageDto: LanguageDto,
     ): PreferencesRepository = PreferencesRepositoryImpl(dataStoreSource, dispatcher, languageDto)
 
     @Provides
     fun providesNoteRepository(
         noteDataSource: NoteDataSource,
-        dispatcher: CoroutineDispatcher,
+        @IoDispatcher dispatcher: CoroutineDispatcher,
         noteDto: NoteDto,
     ): NoteRepository = NoteRepositoryImpl(noteDataSource, dispatcher, noteDto)
 
     @Provides
     fun providesNoteItemRepository(
         noteItemDataSource: NoteItemDataSource,
-        dispatcher: CoroutineDispatcher,
+        @IoDispatcher dispatcher: CoroutineDispatcher,
     ): NoteItemRepository = NoteItemRepositoryImpl(noteItemDataSource, dispatcher)
 
     @Provides
     fun providesFormatTextRepository(
         formatTextDataSource: FormatTextDataSource,
-        dispatcher: CoroutineDispatcher,
+        @IoDispatcher dispatcher: CoroutineDispatcher,
     ): FormatTextRepository = FormatTextRepositoryImpl(formatTextDataSource, dispatcher)
 }

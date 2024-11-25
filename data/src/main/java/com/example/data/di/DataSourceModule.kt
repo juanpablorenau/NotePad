@@ -71,6 +71,6 @@ class DataSourceModule {
     @Provides
     fun providesDataStoreSource(
         @ApplicationContext context: Context,
-        dispatcher: CoroutineDispatcher,
+        @IoDispatcher dispatcher: CoroutineDispatcher,
     ): DataStoreSource = DataStoreSourceImpl(context.dataStore, dispatcher)
 }

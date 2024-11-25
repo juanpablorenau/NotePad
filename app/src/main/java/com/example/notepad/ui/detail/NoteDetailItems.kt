@@ -63,17 +63,15 @@ fun TextFieldItem(
     deleteTextField: (NoteItem) -> Unit = {},
 ) {
     with(noteItem) {
-        var textField by remember(id) {
-            mutableStateOf(TextFieldValue(text, TextRange(cursorStartIndex, cursorEndIndex)))
+        val textField by remember(noteItem, isDarkTheme) {
+            val annotatedString = getAnnotatedString(noteItem, isDarkTheme)
+            mutableStateOf(
+                TextFieldValue(annotatedString, TextRange(cursorStartIndex, cursorEndIndex))
+            )
         }
         val focusRequester = remember(id) { FocusRequester() }
         val interactionSource = remember(id) { MutableInteractionSource() }
         val isPressed = interactionSource.collectIsPressedAsState()
-
-        LaunchedEffect(id, text, formatTexts, cursorStartIndex, cursorEndIndex, isDarkTheme) {
-            val annotatedString = getAnnotatedString(text, formatTexts, isDarkTheme)
-            textField = TextFieldValue(annotatedString, TextRange(cursorStartIndex, cursorEndIndex))
-        }
 
         LaunchedEffect(id, isFocused) {
             if (isFocused) focusRequester.requestFocus() else focusRequester.freeFocus()
@@ -120,18 +118,17 @@ fun CheckBoxItem(
     deleteNoteItemField: (NoteItem) -> Unit = {},
 ) {
     with(noteItem) {
-        var textField by remember(id) {
-            mutableStateOf(TextFieldValue(text, TextRange(cursorStartIndex, cursorEndIndex)))
+        val textField by remember(noteItem, isDarkTheme) {
+            val annotatedString = getAnnotatedString(noteItem, isDarkTheme)
+            mutableStateOf(
+                TextFieldValue(annotatedString, TextRange(cursorStartIndex, cursorEndIndex))
+            )
         }
+
         var isChecked by remember(id) { mutableStateOf(isChecked) }
         val focusRequester = remember(id) { FocusRequester() }
         val interactionSource = remember(id) { MutableInteractionSource() }
         val isPressed = interactionSource.collectIsPressedAsState()
-
-        LaunchedEffect(id, text, formatTexts, cursorStartIndex, cursorEndIndex, isDarkTheme) {
-            val annotatedString = getAnnotatedString(text, formatTexts, isDarkTheme)
-            textField = TextFieldValue(annotatedString, TextRange(cursorStartIndex, cursorEndIndex))
-        }
 
         LaunchedEffect(id, isFocused) {
             if (isFocused) focusRequester.requestFocus() else focusRequester.freeFocus()

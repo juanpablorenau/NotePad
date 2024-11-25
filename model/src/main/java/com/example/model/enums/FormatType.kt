@@ -7,5 +7,4 @@ enum class FormatType {
     UNDERLINE,
     LINE_THROUGH,
     TEXT_COLOR,
-    PARAGRAPH_TYPE,
 }
