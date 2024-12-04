@@ -1,4 +1,4 @@
-package com.example.domain.usecase.detail
+package com.example.domain.usecase.note
 
 import com.example.data.repository.NoteRepository
 import kotlinx.coroutines.CoroutineDispatcher

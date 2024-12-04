@@ -2,12 +2,12 @@ package com.example.notepad.ui.detail
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.example.domain.usecase.detail.DeleteFormatTextUseCase
-import com.example.domain.usecase.detail.DeleteNoteItemUseCase
-import com.example.domain.usecase.detail.DeleteNoteUseCase
-import com.example.domain.usecase.detail.GetNoteDetailUseCase
-import com.example.domain.usecase.detail.InsertNoteUseCase
-import com.example.domain.usecase.detail.UpdateNoteUseCase
+import com.example.domain.usecase.formattext.DeleteFormatTextUseCase
+import com.example.domain.usecase.note.DeleteNoteUseCase
+import com.example.domain.usecase.note.GetNoteDetailUseCase
+import com.example.domain.usecase.note.InsertNoteUseCase
+import com.example.domain.usecase.note.UpdateNoteUseCase
+import com.example.domain.usecase.noteitem.DeleteNoteItemUseCase
 import com.example.model.entities.FormatText
 import com.example.model.entities.Note
 import com.example.model.entities.NoteItem

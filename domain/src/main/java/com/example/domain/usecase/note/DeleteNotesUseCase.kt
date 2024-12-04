@@ -1,4 +1,4 @@
-package com.example.domain.usecase.list
+package com.example.domain.usecase.note
 
 import com.example.data.repository.NoteRepository
 import com.example.model.entities.Note

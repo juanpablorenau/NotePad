@@ -2,9 +2,9 @@ package com.example.notepad.ui.list
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.example.domain.usecase.list.DeleteNotesUseCase
-import com.example.domain.usecase.list.GetNotesUseCase
-import com.example.domain.usecase.list.UpdateNotesUseCase
+import com.example.domain.usecase.note.DeleteNotesUseCase
+import com.example.domain.usecase.note.GetNotesUseCase
+import com.example.domain.usecase.note.UpdateNotesUseCase
 import com.example.model.entities.Note
 import com.example.notepad.di.MainDispatcher
 import dagger.hilt.android.lifecycle.HiltViewModel

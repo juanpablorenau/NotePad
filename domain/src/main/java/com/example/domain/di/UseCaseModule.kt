@@ -4,15 +4,15 @@ import com.example.data.repository.FormatTextRepository
 import com.example.data.repository.NoteItemRepository
 import com.example.data.repository.NoteRepository
 import com.example.data.repository.PreferencesRepository
-import com.example.domain.usecase.detail.DeleteFormatTextUseCase
-import com.example.domain.usecase.detail.DeleteNoteItemUseCase
-import com.example.domain.usecase.detail.DeleteNoteUseCase
-import com.example.domain.usecase.detail.GetNoteDetailUseCase
-import com.example.domain.usecase.detail.InsertNoteUseCase
-import com.example.domain.usecase.detail.UpdateNoteUseCase
-import com.example.domain.usecase.list.DeleteNotesUseCase
-import com.example.domain.usecase.list.GetNotesUseCase
-import com.example.domain.usecase.list.UpdateNotesUseCase
+import com.example.domain.usecase.formattext.DeleteFormatTextUseCase
+import com.example.domain.usecase.note.DeleteNoteUseCase
+import com.example.domain.usecase.note.DeleteNotesUseCase
+import com.example.domain.usecase.note.GetNoteDetailUseCase
+import com.example.domain.usecase.note.GetNotesUseCase
+import com.example.domain.usecase.note.InsertNoteUseCase
+import com.example.domain.usecase.note.UpdateNoteUseCase
+import com.example.domain.usecase.note.UpdateNotesUseCase
+import com.example.domain.usecase.noteitem.DeleteNoteItemUseCase
 import com.example.domain.usecase.preferences.GetIsDarkThemeUseCase
 import com.example.domain.usecase.preferences.GetLanguageUseCase
 import com.example.domain.usecase.preferences.SetIsDarkThemeUseCase
@@ -45,10 +45,10 @@ class UseCaseModule {
 
     @Provides
     fun providesUpdateNotesUseCase(
-        repository: NoteRepository,
+        updateNoteUseCase: UpdateNoteUseCase,
         @DefaultDispatcher dispatcher: CoroutineDispatcher,
     ): UpdateNotesUseCase {
-        return UpdateNotesUseCase(repository, dispatcher)
+        return UpdateNotesUseCase(updateNoteUseCase, dispatcher)
     }
 
     @Provides
