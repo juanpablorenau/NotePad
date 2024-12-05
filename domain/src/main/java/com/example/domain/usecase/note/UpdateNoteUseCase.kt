@@ -14,7 +14,7 @@ class UpdateNoteUseCase @Inject constructor(
         withContext(dispatcher) {
             repository.updateNote(
                 note
-                    .setFocusOnLastItem()
+                    .removeFocus()
                     .setCursorOnLastPosition()
             )
         }
