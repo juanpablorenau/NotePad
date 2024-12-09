@@ -50,20 +50,13 @@ class NotesViewModel @Inject constructor(
         viewModelScope.launch(dispatcher) {
             getNotesUseCase()
                 .catch { setErrorState() }
-                .collect { notes -> setSuccessState(getSortedNotes(notes)) }
+                .collect { notes -> setSuccessState(notes) }
         }
-    }
-
-    private fun getSortedNotes(notes: List<Note>): List<Note> {
-        val (pinNotes, unPinNotes) = notes.partition { it.isPinned }
-        return pinNotes.sortedBy { it.index } + unPinNotes.sortedBy { it.index }
     }
 
     fun updateNotes() {
         viewModelScope.launch(dispatcher) {
             with(_uiState.value.asSuccess()) {
-                notes.mapIndexed { index, note -> note.copy(index = index) }
-            }.also { notes ->
                 tryOrError { updateNotesUseCase(notes) }
             }
         }
@@ -72,12 +65,10 @@ class NotesViewModel @Inject constructor(
     fun deleteNotes() {
         viewModelScope.launch(dispatcher) {
             with(_uiState.value.asSuccess()) {
-                tryOrError { deleteNotesUseCase(getCheckedNotes(notes)) }
+                tryOrError { deleteNotesUseCase(notes) }
             }
         }
     }
-
-    private fun getCheckedNotes(notes: List<Note>) = notes.filter { it.isChecked }
 
     fun searchNotes(query: String) {
         viewModelScope.launch(dispatcher) {
@@ -100,7 +91,10 @@ class NotesViewModel @Inject constructor(
     fun swipeNotes(oldIndex: Int, newIndex: Int) {
         _uiState.update { state ->
             with((state.asSuccess())) {
-                copy(notes = notes.toMutableList().apply { add(newIndex, removeAt(oldIndex)) })
+                copy(notes = notes.toMutableList()
+                    .apply { add(newIndex, removeAt(oldIndex)) }
+                    .mapIndexed { index, note -> note.copy(index = index) }
+                )
             }
         }
     }

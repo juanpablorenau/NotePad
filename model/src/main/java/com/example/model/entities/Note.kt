@@ -221,6 +221,4 @@ data class Note(
         }
         return totalText
     }
-
-    fun sortItemsByIndex() = copy(items = items.sortedBy { item -> item.index })
 }

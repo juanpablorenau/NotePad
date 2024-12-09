@@ -37,10 +37,11 @@ class UseCaseModule {
 
     @Provides
     fun providesDeleteNotesUseCase(
-        repository: NoteRepository,
+        deleteNoteUseCase: DeleteNoteUseCase,
+        updateNoteUseCase: UpdateNoteUseCase,
         @DefaultDispatcher dispatcher: CoroutineDispatcher,
     ): DeleteNotesUseCase {
-        return DeleteNotesUseCase(repository, dispatcher)
+        return DeleteNotesUseCase(deleteNoteUseCase, updateNoteUseCase, dispatcher)
     }
 
     @Provides
