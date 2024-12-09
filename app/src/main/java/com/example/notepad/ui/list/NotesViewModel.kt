@@ -40,6 +40,8 @@ class NotesViewModel @Inject constructor(
     private val _uiState = MutableStateFlow<NotesUiState>(NotesUiState.Loading)
     val uiState = _uiState.asStateFlow()
 
+    private var originalNotes = emptyList<Note>()
+
     private fun setSuccessNotes(notes: List<Note>, columnsCount: Int) {
         _uiState.value = NotesUiState.Success(notes, columnsCount)
     }
@@ -84,18 +86,20 @@ class NotesViewModel @Inject constructor(
         viewModelScope.launch(dispatcher) {
             _uiState.update { state ->
                 with((state.asSuccess())) {
+                    originalNotes = notes
                     copy(notes = notes.filter { note -> note.contains(query) })
                 }
             }
         }
     }
 
-    fun restoreNotes(originalNotes: List<Note>) {
+    fun restoreNotes() {
         _uiState.update { state ->
             with((state.asSuccess())) {
                 copy(notes = originalNotes)
             }
         }
+        originalNotes = emptyList()
     }
 
     fun swipeNotes(oldIndex: Int, newIndex: Int) {

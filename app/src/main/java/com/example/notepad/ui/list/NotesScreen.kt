@@ -87,7 +87,7 @@ fun NotesScreen(
                 notes = state.notes,
                 columnsCount = state.columnsCount,
                 onSearch = { searchText -> viewModel.searchNotes(searchText) },
-                restoreNotes = { notes -> viewModel.restoreNotes(notes) },
+                restoreNotes = { viewModel.restoreNotes() },
                 checkNote = { id -> viewModel.checkNote(id) },
                 swipeNotes = { oldIndex, newIndex -> viewModel.swipeNotes(oldIndex, newIndex) },
                 deleteNotes = { viewModel.deleteNotes() },
@@ -106,7 +106,7 @@ fun SuccessScreen(
     notes: List<Note> = mockNoteList,
     columnsCount: Int = 2,
     onSearch: (String) -> Unit = {},
-    restoreNotes: (List<Note>) -> Unit = {},
+    restoreNotes: () -> Unit = {},
     checkNote: (id: String) -> Unit = {},
     swipeNotes: (oldIndex: Int, newIndex: Int) -> Unit = { _, _ -> },
     deleteNotes: () -> Unit = {},
@@ -305,7 +305,7 @@ fun NotesContent(
     notes: List<Note> = mockNoteList,
     columnsCount: Int = 2,
     onSearch: (String) -> Unit = {},
-    restoreNotes: (List<Note>) -> Unit = {},
+    restoreNotes: () -> Unit = {},
     checkNote: (id: String) -> Unit = {},
     swipeNotes: (oldIndex: Int, newIndex: Int) -> Unit = { _, _ -> },
     navigate: (String) -> Unit = {},
@@ -321,7 +321,6 @@ fun NotesContent(
         )
     ) {
         SearchNote(
-            notes = notes,
             onSearch = onSearch,
             restoreNotes = restoreNotes,
             getSearchBarVisible = getSearchBarVisible
@@ -339,13 +338,11 @@ fun NotesContent(
 
 @Composable
 private fun SearchNote(
-    notes: List<Note> = mockNoteList,
     onSearch: (String) -> Unit = {},
-    restoreNotes: (List<Note>) -> Unit = {},
+    restoreNotes: () -> Unit = {},
     getSearchBarVisible: () -> Boolean = { false },
 ) {
     val focusRequester = remember { FocusRequester() }
-    val originalNotes by remember { mutableStateOf(notes) }
     var searchText by remember { mutableStateOf("") }
     val keyboardController = LocalSoftwareKeyboardController.current
 
@@ -378,7 +375,7 @@ private fun SearchNote(
         value = searchText,
         onValueChange = { newText ->
             searchText = newText
-            if (searchText.isBlank()) restoreNotes(originalNotes)
+            if (searchText.isBlank()) restoreNotes()
             else onSearch(searchText.lowercase())
         },
         singleLine = true,
@@ -399,7 +396,7 @@ private fun SearchNote(
                     modifier = Modifier.clickable(onClick = {
                         searchText = ""
                         keyboardController?.hide()
-                        restoreNotes(originalNotes)
+                        restoreNotes()
                     })
                 )
             }
