@@ -36,4 +36,13 @@ class PreferencesRepositoryImpl @Inject constructor(
             dataStoreSource.putString(Preference.LANGUAGE.key, languageKey)
         }
     }
+
+    override fun getColumnsCount(): Flow<Int> =
+        dataStoreSource.getInteger(Preference.COLUMNS_COUNT.key, 2).flowOn(dispatcher)
+
+    override suspend fun setColumnsCount(count: Int) {
+        withContext(dispatcher) {
+            dataStoreSource.putInteger(Preference.COLUMNS_COUNT.key, count)
+        }
+    }
 }

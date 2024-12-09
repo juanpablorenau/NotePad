@@ -51,7 +51,8 @@ import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import androidx.lifecycle.compose.LifecycleResumeEffect
+import androidx.lifecycle.Lifecycle
+import androidx.lifecycle.compose.LifecycleEventEffect
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.NavHostController
 import com.example.model.entities.Note
@@ -75,10 +76,8 @@ fun NotesScreen(
     val viewModel = LocalContext.current.getViewModel<NotesViewModel>()
     val uiState: NotesUiState by viewModel.uiState.collectAsStateWithLifecycle()
 
-    LifecycleResumeEffect(Unit) {
-        viewModel.getNotes()
-        onPauseOrDispose { if (uiState is NotesUiState.Success) viewModel.updateNotes() }
-    }
+    LifecycleEventEffect(Lifecycle.Event.ON_START) { viewModel.initData() }
+    LifecycleEventEffect(Lifecycle.Event.ON_PAUSE) { viewModel.updateData() }
 
     when (val state = uiState) {
         is NotesUiState.Loading -> LoadingScreen()
@@ -86,14 +85,14 @@ fun NotesScreen(
         is NotesUiState.Success ->
             SuccessScreen(
                 notes = state.notes,
-                itemsView = state.itemsView,
+                columnsCount = state.columnsCount,
                 onSearch = { searchText -> viewModel.searchNotes(searchText) },
                 restoreNotes = { notes -> viewModel.restoreNotes(notes) },
                 checkNote = { id -> viewModel.checkNote(id) },
                 swipeNotes = { oldIndex, newIndex -> viewModel.swipeNotes(oldIndex, newIndex) },
                 deleteNotes = { viewModel.deleteNotes() },
                 pinUpNotes = { viewModel.pinUpCheckedNotes() },
-                changeItemsView = { viewModel.changeItemsView() },
+                changeItemsView = { viewModel.setColumnsCount() },
                 selectAllNotes = { select -> viewModel.selectAllNotes(select) },
                 navigate = { route -> navController.navigate(route) },
                 openDrawer = { openDrawer() },
@@ -105,7 +104,7 @@ fun NotesScreen(
 @Composable
 fun SuccessScreen(
     notes: List<Note> = mockNoteList,
-    itemsView: Int = 2,
+    columnsCount: Int = 2,
     onSearch: (String) -> Unit = {},
     restoreNotes: (List<Note>) -> Unit = {},
     checkNote: (id: String) -> Unit = {},
@@ -123,7 +122,7 @@ fun SuccessScreen(
         topBar = {
             NotesTopBar(
                 notes = notes,
-                itemsView = itemsView,
+                columnsCount = columnsCount,
                 deleteNotes = deleteNotes,
                 pinUpNotes = pinUpNotes,
                 changeItemsView = changeItemsView,
@@ -136,7 +135,7 @@ fun SuccessScreen(
             NotesContent(
                 padding = padding,
                 notes = notes,
-                itemsView = itemsView,
+                columnsCount = columnsCount,
                 onSearch = onSearch,
                 restoreNotes = restoreNotes,
                 checkNote = checkNote,
@@ -155,7 +154,7 @@ fun SuccessScreen(
 @Composable
 fun NotesTopBar(
     notes: List<Note> = mockNoteList,
-    itemsView: Int = 2,
+    columnsCount: Int = 2,
     deleteNotes: () -> Unit = {},
     pinUpNotes: () -> Unit = {},
     changeItemsView: () -> Unit = {},
@@ -190,11 +189,11 @@ fun NotesTopBar(
         actions = {
             if (notes.none { it.isChecked }) {
                 DisplayText(
-                    description = if (itemsView == 1) R.string.grid else R.string.list
+                    description = if (columnsCount == 1) R.string.grid else R.string.list
                 ) {
                     IconButton(onClick = { changeItemsView() }) {
                         Icon(
-                            painter = painterResource(id = if (itemsView == 1) R.drawable.ic_grid_view else R.drawable.ic_list),
+                            painter = painterResource(id = if (columnsCount == 1) R.drawable.ic_grid_view else R.drawable.ic_list),
                             contentDescription = "Grid icon",
                             tint = MaterialTheme.colorScheme.primary
                         )
@@ -304,7 +303,7 @@ fun NotesTopBar(
 fun NotesContent(
     padding: PaddingValues = PaddingValues(),
     notes: List<Note> = mockNoteList,
-    itemsView: Int = 2,
+    columnsCount: Int = 2,
     onSearch: (String) -> Unit = {},
     restoreNotes: (List<Note>) -> Unit = {},
     checkNote: (id: String) -> Unit = {},
@@ -329,7 +328,7 @@ fun NotesContent(
         )
         NotesStaggeredGrid(
             notes = notes,
-            itemsView = itemsView,
+            columnsCount = columnsCount,
             checkNote = checkNote,
             swipeNotes = swipeNotes,
             navigate = navigate,

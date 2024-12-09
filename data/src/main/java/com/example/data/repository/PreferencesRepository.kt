@@ -8,4 +8,6 @@ interface PreferencesRepository {
     suspend fun setIsDarkTheme(darkTheme: Boolean)
     fun getLanguage(): Flow<Language>
     suspend fun setLanguage(languageKey: String)
+    fun getColumnsCount(): Flow<Int>
+    suspend fun setColumnsCount(count: Int)
 }

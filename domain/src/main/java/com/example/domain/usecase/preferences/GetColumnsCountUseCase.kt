@@ -5,9 +5,9 @@ import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.withContext
 import javax.inject.Inject
 
-class GetLanguageUseCase @Inject constructor(
+class GetColumnsCountUseCase @Inject constructor(
     private val repository: PreferencesRepository,
     private val dispatcher: CoroutineDispatcher,
 ) {
-    suspend operator fun invoke() = withContext(dispatcher) { repository.getLanguage() }
+    suspend operator fun invoke() = withContext(dispatcher) { repository.getColumnsCount() }
 }

@@ -36,6 +36,10 @@ class NoteRepositoryImpl @Inject constructor(
         withContext(dispatcher) { noteDataSource.updateNote(noteDto.toDb(note)) }
     }
 
+    override suspend fun updateEmbeddedNote(note: Note) {
+        withContext(dispatcher) { noteDataSource.updateEmbeddedNote(noteDto.toDb(note)) }
+    }
+
     override suspend fun deleteNote(note: Note) {
         withContext(dispatcher) { noteDataSource.deleteNote(note) }
     }

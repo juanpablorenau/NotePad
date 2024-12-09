@@ -54,7 +54,7 @@ import com.example.notepad.utils.mockNoteList
 @Composable
 fun NotesStaggeredGrid(
     notes: List<Note> = mockNoteList,
-    itemsView: Int = 2,
+    columnsCount: Int = 2,
     checkNote: (id: String) -> Unit = {},
     swipeNotes: (oldIndex: Int, newIndex: Int) -> Unit = { _, _ -> },
     navigate: (String) -> Unit = {},
@@ -66,7 +66,7 @@ fun NotesStaggeredGrid(
     }
 
     LazyVerticalStaggeredGrid(
-        columns = StaggeredGridCells.Fixed(itemsView),
+        columns = StaggeredGridCells.Fixed(columnsCount),
         modifier = Modifier.fillMaxSize(),
         state = gridState,
         verticalItemSpacing = 8.dp,

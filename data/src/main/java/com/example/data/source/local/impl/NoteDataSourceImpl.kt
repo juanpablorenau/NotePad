@@ -37,6 +37,10 @@ class NoteDataSourceImpl @Inject constructor(
         }
     }
 
+    override suspend fun updateEmbeddedNote(note: NoteDb) {
+        noteDao.updateNote(note.note)
+    }
+
     override suspend fun deleteNote(note: Note) {
         transactionProvider.runAsTransaction {
             noteDao.deleteNote(note.id)

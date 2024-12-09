@@ -5,6 +5,8 @@ import androidx.lifecycle.viewModelScope
 import com.example.domain.usecase.note.DeleteNotesUseCase
 import com.example.domain.usecase.note.GetNotesUseCase
 import com.example.domain.usecase.note.UpdateNotesUseCase
+import com.example.domain.usecase.preferences.GetColumnsCountUseCase
+import com.example.domain.usecase.preferences.SetColumnsCountUseCase
 import com.example.model.entities.Note
 import com.example.notepad.di.MainDispatcher
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -12,13 +14,14 @@ import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.catch
+import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 
 sealed class NotesUiState {
     data object Loading : NotesUiState()
-    data class Success(val notes: List<Note>, val itemsView: Int = 2) : NotesUiState()
+    data class Success(val notes: List<Note>, val columnsCount: Int = 2) : NotesUiState()
     data object Error : NotesUiState()
 
     fun asSuccess() = this as Success
@@ -30,34 +33,41 @@ class NotesViewModel @Inject constructor(
     private val getNotesUseCase: GetNotesUseCase,
     private val updateNotesUseCase: UpdateNotesUseCase,
     private val deleteNotesUseCase: DeleteNotesUseCase,
+    private val getColumnsCountUseCase: GetColumnsCountUseCase,
+    private val setColumnsCountUseCase: SetColumnsCountUseCase
 ) : ViewModel() {
 
     private val _uiState = MutableStateFlow<NotesUiState>(NotesUiState.Loading)
     val uiState = _uiState.asStateFlow()
 
-    private fun setSuccessState(notes: List<Note>) {
-        _uiState.value = when (val state = _uiState.value) {
-            is NotesUiState.Success -> NotesUiState.Success(notes, state.itemsView)
-            else -> NotesUiState.Success(notes)
-        }
+    private fun setSuccessNotes(notes: List<Note>, columnsCount: Int) {
+        _uiState.value = NotesUiState.Success(notes, columnsCount)
     }
 
     private fun setErrorState() {
         _uiState.value = NotesUiState.Error
     }
 
-    fun getNotes() {
+    fun initData() {
         viewModelScope.launch(dispatcher) {
-            getNotesUseCase()
+            val combinedFlows = combine(getNotesUseCase(), getColumnsCountUseCase())
+            { notes, columnsCount -> notes to columnsCount }
+
+            combinedFlows
                 .catch { setErrorState() }
-                .collect { notes -> setSuccessState(notes) }
+                .collect { data -> setSuccessNotes(data.first, data.second) }
         }
     }
 
-    fun updateNotes() {
+    fun updateData() {
+        if (_uiState.value !is NotesUiState.Success) return
+
         viewModelScope.launch(dispatcher) {
             with(_uiState.value.asSuccess()) {
-                tryOrError { updateNotesUseCase(notes) }
+                tryOrError {
+                    updateNotesUseCase(notes)
+                    setColumnsCountUseCase(if (columnsCount == 2) 1 else 2)
+                }
             }
         }
     }
@@ -103,7 +113,8 @@ class NotesViewModel @Inject constructor(
         _uiState.update { state ->
             with((state.asSuccess())) {
                 copy(notes = notes.map { note ->
-                    if (note.id == id) note.copy(isChecked = !note.isChecked) else note
+                    if (note.id == id) note.copy(isChecked = !note.isChecked)
+                    else note
                 })
             }
         }
@@ -124,10 +135,10 @@ class NotesViewModel @Inject constructor(
     private fun allCheckedArePinned(notes: List<Note>) =
         notes.filter { it.isChecked }.all { it.isPinned }
 
-    fun changeItemsView() {
+    fun setColumnsCount() {
         _uiState.update { state ->
             with((state.asSuccess())) {
-                copy(itemsView = if (itemsView == 2) 1 else 2)
+                copy(columnsCount = if (columnsCount == 2) 1 else 2)
             }
         }
     }
