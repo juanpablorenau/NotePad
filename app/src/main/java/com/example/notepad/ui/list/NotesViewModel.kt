@@ -68,7 +68,7 @@ class NotesViewModel @Inject constructor(
             with(_uiState.value.asSuccess()) {
                 tryOrError {
                     updateNotesUseCase(notes)
-                    setColumnsCountUseCase(if (columnsCount == 2) 1 else 2)
+                    setColumnsCountUseCase(columnsCount)
                 }
             }
         }
