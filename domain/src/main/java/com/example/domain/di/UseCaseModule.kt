@@ -7,7 +7,7 @@ import com.example.data.repository.PreferencesRepository
 import com.example.domain.usecase.formattext.DeleteFormatTextUseCase
 import com.example.domain.usecase.note.DeleteNoteUseCase
 import com.example.domain.usecase.note.DeleteNotesUseCase
-import com.example.domain.usecase.note.GetNoteDetailUseCase
+import com.example.domain.usecase.note.GetNoteUseCase
 import com.example.domain.usecase.note.GetNotesUseCase
 import com.example.domain.usecase.note.InsertNoteUseCase
 import com.example.domain.usecase.note.UpdateNoteUseCase
@@ -60,8 +60,8 @@ class UseCaseModule {
     fun providesGetNoteDetailUseCase(
         repository: NoteRepository,
         @DefaultDispatcher dispatcher: CoroutineDispatcher,
-    ): GetNoteDetailUseCase {
-        return GetNoteDetailUseCase(repository, dispatcher)
+    ): GetNoteUseCase {
+        return GetNoteUseCase(repository, dispatcher)
     }
 
     @Provides

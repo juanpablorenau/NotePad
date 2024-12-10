@@ -77,7 +77,7 @@ fun NoteDetailContent(
             .fillMaxSize()
             .padding(
                 top = padding.calculateTopPadding(),
-                bottom = padding.calculateBottomPadding() + 12.dp,
+                bottom = padding.calculateBottomPadding() + 16.dp,
                 start = 12.dp,
                 end = 12.dp
             ),
