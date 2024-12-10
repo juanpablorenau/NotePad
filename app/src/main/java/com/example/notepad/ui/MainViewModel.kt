@@ -2,8 +2,10 @@ package com.example.notepad.ui
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.example.domain.usecase.preferences.GetDrawerItemIndexUseCase
 import com.example.domain.usecase.preferences.GetIsDarkThemeUseCase
 import com.example.domain.usecase.preferences.GetLanguageUseCase
+import com.example.domain.usecase.preferences.SetDrawerItemIndexUseCase
 import com.example.model.enums.Language
 import com.example.notepad.di.MainDispatcher
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -18,7 +20,9 @@ import javax.inject.Inject
 class MainViewModel @Inject constructor(
     @MainDispatcher private val dispatcher: CoroutineDispatcher,
     private val getIsDarkThemeUseCase: GetIsDarkThemeUseCase,
-    private val getLanguageUseCase: GetLanguageUseCase
+    private val getLanguageUseCase: GetLanguageUseCase,
+    private val getDrawerItemIndexUseCase: GetDrawerItemIndexUseCase,
+    private val setDrawerItemIndexUseCase: SetDrawerItemIndexUseCase
 ) : ViewModel() {
 
     private val _isDarkTheme = MutableSharedFlow<Boolean>(replay = 1)
@@ -27,9 +31,13 @@ class MainViewModel @Inject constructor(
     private val _language = MutableSharedFlow<Language>(replay = 1)
     val language: SharedFlow<Language> = _language.asSharedFlow()
 
+    private val _drawerItemIndex = MutableSharedFlow<Int>(replay = 1)
+    val drawerItemIndex: SharedFlow<Int> = _drawerItemIndex.asSharedFlow()
+
     init {
         getIsDarkTheme()
         getLanguage()
+        getDrawerItemIndex()
     }
 
     private fun getIsDarkTheme() {
@@ -42,5 +50,15 @@ class MainViewModel @Inject constructor(
         viewModelScope.launch(dispatcher) {
             getLanguageUseCase().collect { language -> _language.emit(language) }
         }
+    }
+
+    private fun getDrawerItemIndex() {
+        viewModelScope.launch(dispatcher) {
+            getDrawerItemIndexUseCase().collect { index -> _drawerItemIndex.emit(index) }
+        }
+    }
+
+    fun setDrawerItemIndex(index: Int) {
+        viewModelScope.launch(dispatcher) { setDrawerItemIndexUseCase(index) }
     }
 }

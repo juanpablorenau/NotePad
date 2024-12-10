@@ -1,4 +1,4 @@
-package com.example.domain.usecase.detail
+package com.example.domain.usecase.note
 
 import com.example.data.repository.NoteRepository
 import com.example.model.entities.Note
@@ -14,7 +14,7 @@ class UpdateNoteUseCase @Inject constructor(
         withContext(dispatcher) {
             repository.updateNote(
                 note
-                    .setFocusOnLastItem()
+                    .removeFocus()
                     .setCursorOnLastPosition()
             )
         }

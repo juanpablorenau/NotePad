@@ -185,9 +185,9 @@ data class Note(
     ) =
         copy(items = items.map { current ->
             if (current.isFocused) {
-                current.checkIfExistsFormatWithSameIndexes(formatType, formatText, deleteFormat) ?:
-                current.checkIfMatchingFormat(formatType, formatText) ?:
-                current.addFormatTextInCursor(formatText.copy(id = getUUID()))
+                current.checkIfExistsFormatWithSameIndexes(formatType, formatText, deleteFormat)
+                    ?: current.checkIfMatchingFormat(formatType, formatText)
+                    ?: current.addFormatTextInCursor(formatText.copy(id = getUUID()))
             } else current
         })
 
@@ -200,12 +200,7 @@ data class Note(
 
     fun getFocusedItem() = items.firstOrNull { it.isFocused }
 
-    fun setFocusOnLastItem() = copy(items = items
-        .mapIndexed { index, noteItem ->
-            if (index == items.lastIndex) noteItem.initFocus()
-            else noteItem.removeFocus()
-        }
-    )
+    fun removeFocus() = copy(items = items.map { it.removeFocus() })
 
     fun setCursorOnLastPosition() =
         copy(items = items.map { noteItem -> noteItem.setCursorOnLastPosition() })
@@ -226,6 +221,4 @@ data class Note(
         }
         return totalText
     }
-
-    fun sortItemsByIndex() = copy(items = items.sortedBy { item -> item.index })
 }

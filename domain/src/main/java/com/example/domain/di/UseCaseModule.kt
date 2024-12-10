@@ -4,17 +4,21 @@ import com.example.data.repository.FormatTextRepository
 import com.example.data.repository.NoteItemRepository
 import com.example.data.repository.NoteRepository
 import com.example.data.repository.PreferencesRepository
-import com.example.domain.usecase.detail.DeleteFormatTextUseCase
-import com.example.domain.usecase.detail.DeleteNoteItemUseCase
-import com.example.domain.usecase.detail.DeleteNoteUseCase
-import com.example.domain.usecase.detail.GetNoteDetailUseCase
-import com.example.domain.usecase.detail.InsertNoteUseCase
-import com.example.domain.usecase.detail.UpdateNoteUseCase
-import com.example.domain.usecase.list.DeleteNotesUseCase
-import com.example.domain.usecase.list.GetNotesUseCase
-import com.example.domain.usecase.list.UpdateNotesUseCase
+import com.example.domain.usecase.formattext.DeleteFormatTextUseCase
+import com.example.domain.usecase.note.DeleteNoteUseCase
+import com.example.domain.usecase.note.DeleteNotesUseCase
+import com.example.domain.usecase.note.GetNoteDetailUseCase
+import com.example.domain.usecase.note.GetNotesUseCase
+import com.example.domain.usecase.note.InsertNoteUseCase
+import com.example.domain.usecase.note.UpdateNoteUseCase
+import com.example.domain.usecase.note.UpdateNotesUseCase
+import com.example.domain.usecase.noteitem.DeleteNoteItemUseCase
+import com.example.domain.usecase.preferences.GetColumnsCountUseCase
+import com.example.domain.usecase.preferences.GetDrawerItemIndexUseCase
 import com.example.domain.usecase.preferences.GetIsDarkThemeUseCase
 import com.example.domain.usecase.preferences.GetLanguageUseCase
+import com.example.domain.usecase.preferences.SetColumnsCountUseCase
+import com.example.domain.usecase.preferences.SetDrawerItemIndexUseCase
 import com.example.domain.usecase.preferences.SetIsDarkThemeUseCase
 import com.example.domain.usecase.preferences.SetLanguageUseCase
 import dagger.Module
@@ -37,10 +41,11 @@ class UseCaseModule {
 
     @Provides
     fun providesDeleteNotesUseCase(
-        repository: NoteRepository,
+        deleteNoteUseCase: DeleteNoteUseCase,
+        updateNoteUseCase: UpdateNoteUseCase,
         @DefaultDispatcher dispatcher: CoroutineDispatcher,
     ): DeleteNotesUseCase {
-        return DeleteNotesUseCase(repository, dispatcher)
+        return DeleteNotesUseCase(deleteNoteUseCase, updateNoteUseCase, dispatcher)
     }
 
     @Provides
@@ -122,4 +127,28 @@ class UseCaseModule {
         repository: PreferencesRepository,
         @DefaultDispatcher dispatcher: CoroutineDispatcher,
     ): SetIsDarkThemeUseCase = SetIsDarkThemeUseCase(repository, dispatcher)
+
+    @Provides
+    fun provideGetColumnsCountUseCase(
+        repository: PreferencesRepository,
+        @DefaultDispatcher dispatcher: CoroutineDispatcher,
+    ): GetColumnsCountUseCase = GetColumnsCountUseCase(repository, dispatcher)
+
+    @Provides
+    fun provideSetColumnsCountUseCase(
+        repository: PreferencesRepository,
+        @DefaultDispatcher dispatcher: CoroutineDispatcher,
+    ): SetColumnsCountUseCase = SetColumnsCountUseCase(repository, dispatcher)
+
+    @Provides
+    fun provideGetDrawerItemIndexUseCase(
+        repository: PreferencesRepository,
+        @DefaultDispatcher dispatcher: CoroutineDispatcher,
+    ): GetDrawerItemIndexUseCase = GetDrawerItemIndexUseCase(repository, dispatcher)
+
+    @Provides
+    fun provideSetDrawerItemIndexUseCase(
+        repository: PreferencesRepository,
+        @DefaultDispatcher dispatcher: CoroutineDispatcher,
+    ): SetDrawerItemIndexUseCase = SetDrawerItemIndexUseCase(repository, dispatcher)
 }

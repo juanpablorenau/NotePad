@@ -6,6 +6,13 @@ import kotlinx.coroutines.flow.Flow
 interface PreferencesRepository {
     fun getIsDarkTheme(): Flow<Boolean>
     suspend fun setIsDarkTheme(darkTheme: Boolean)
+
     fun getLanguage(): Flow<Language>
     suspend fun setLanguage(languageKey: String)
+
+    fun getColumnsCount(): Flow<Int>
+    suspend fun setColumnsCount(count: Int)
+
+    fun getDrawerItemIndex(): Flow<Int>
+    suspend fun setDrawerItemIndex(index: Int)
 }

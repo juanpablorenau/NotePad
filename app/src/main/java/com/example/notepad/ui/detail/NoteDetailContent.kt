@@ -14,6 +14,7 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.lazy.rememberLazyListState
@@ -118,11 +119,12 @@ fun NoteHeader(
     Row(
         modifier = Modifier
             .fillMaxWidth()
-            .padding(end = 16.dp),
+            .padding(24.dp),
+        verticalAlignment = Alignment.Top,
         horizontalArrangement = Arrangement.SpaceBetween
     ) {
         BasicTextField(
-            modifier = Modifier.padding(24.dp),
+            modifier = Modifier.weight(1f),
             value = titleFieldValue,
             onValueChange = { newText -> titleFieldValue = newText },
             textStyle = TextStyle(
@@ -138,10 +140,10 @@ fun NoteHeader(
         )
 
         if (note.isPinned) {
+            Spacer(modifier = Modifier.width(4.dp))
+
             Icon(
-                modifier = Modifier
-                    .size(24.dp)
-                    .align(Alignment.CenterVertically),
+                modifier = Modifier.size(24.dp),
                 painter = painterResource(id = R.drawable.ic_pin),
                 contentDescription = "Pinned icon",
                 tint = MaterialTheme.colorScheme.secondary,
@@ -176,8 +178,9 @@ fun NoteBody(
     LazyColumn(
         modifier = Modifier
             .fillMaxWidth()
+            .fillMaxHeight()
             .padding(horizontal = 24.dp)
-            .fillMaxHeight(0.95f)
+            .padding(bottom = 24.dp)
             .clickable(
                 indication = null,
                 interactionSource = remember { MutableInteractionSource() }

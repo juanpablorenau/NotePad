@@ -1,4 +1,4 @@
-package com.example.domain.usecase.detail
+package com.example.domain.usecase.formattext
 
 import com.example.data.repository.FormatTextRepository
 import kotlinx.coroutines.CoroutineDispatcher
@@ -9,7 +9,6 @@ class DeleteFormatTextUseCase @Inject constructor(
     private val repository: FormatTextRepository,
     private val dispatcher: CoroutineDispatcher,
 ) {
-
     suspend operator fun invoke(formatTextId: String) =
         withContext(dispatcher) { repository.deleteFormatText(formatTextId) }
 }

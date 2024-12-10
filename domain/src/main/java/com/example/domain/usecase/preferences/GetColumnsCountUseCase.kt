@@ -5,9 +5,9 @@ import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.flow.flowOn
 import javax.inject.Inject
 
-class GetIsDarkThemeUseCase @Inject constructor(
+class GetColumnsCountUseCase @Inject constructor(
     private val repository: PreferencesRepository,
     private val dispatcher: CoroutineDispatcher,
 ) {
-    operator fun invoke() = repository.getIsDarkTheme().flowOn(dispatcher)
+    operator fun invoke() = repository.getColumnsCount().flowOn(dispatcher)
 }

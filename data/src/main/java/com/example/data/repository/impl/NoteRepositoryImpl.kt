@@ -5,8 +5,6 @@ import com.example.data.repository.dto.NoteDto
 import com.example.data.source.local.NoteDataSource
 import com.example.model.entities.Note
 import kotlinx.coroutines.CoroutineDispatcher
-import kotlinx.coroutines.async
-import kotlinx.coroutines.awaitAll
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.flow.flowOn
@@ -38,10 +36,8 @@ class NoteRepositoryImpl @Inject constructor(
         withContext(dispatcher) { noteDataSource.updateNote(noteDto.toDb(note)) }
     }
 
-    override suspend fun updateNotes(notes: List<Note>) {
-        withContext(dispatcher) {
-            notes.map { async { noteDataSource.updateNote(noteDto.toDb(it)) } }.awaitAll()
-        }
+    override suspend fun updateEmbeddedNote(note: Note) {
+        withContext(dispatcher) { noteDataSource.updateEmbeddedNote(noteDto.toDb(note)) }
     }
 
     override suspend fun deleteNote(note: Note) {

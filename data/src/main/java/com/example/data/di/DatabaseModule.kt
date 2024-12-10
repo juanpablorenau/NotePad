@@ -8,6 +8,7 @@ import com.example.data.source.local.dao.FormatTextDao
 import com.example.data.source.local.dao.NoteDao
 import com.example.data.source.local.dao.NoteItemDao
 import com.example.data.source.local.dao.TableDao
+import com.example.data.utils.Constants.DATABASE_NAME
 import com.example.data.utils.TransactionProvider
 import dagger.Module
 import dagger.Provides
@@ -26,7 +27,7 @@ object DatabaseModule {
         return Room.databaseBuilder(
             context.applicationContext,
             AppDatabase::class.java,
-            "NotePad.db"
+            DATABASE_NAME
         ).fallbackToDestructiveMigration().build()
     }
 

@@ -56,7 +56,8 @@ fun TextItem(
         text = annotatedString,
         overflow = TextOverflow.Ellipsis,
         maxLines = maxLines,
-        fontSize = 12.sp
+        fontSize = 12.sp,
+        color = MaterialTheme.colorScheme.secondary
     )
 }
 

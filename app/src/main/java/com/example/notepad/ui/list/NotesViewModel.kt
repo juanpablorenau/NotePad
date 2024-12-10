@@ -2,9 +2,11 @@ package com.example.notepad.ui.list
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.example.domain.usecase.list.DeleteNotesUseCase
-import com.example.domain.usecase.list.GetNotesUseCase
-import com.example.domain.usecase.list.UpdateNotesUseCase
+import com.example.domain.usecase.note.DeleteNotesUseCase
+import com.example.domain.usecase.note.GetNotesUseCase
+import com.example.domain.usecase.note.UpdateNotesUseCase
+import com.example.domain.usecase.preferences.GetColumnsCountUseCase
+import com.example.domain.usecase.preferences.SetColumnsCountUseCase
 import com.example.model.entities.Note
 import com.example.notepad.di.MainDispatcher
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -12,13 +14,14 @@ import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.catch
+import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 
 sealed class NotesUiState {
     data object Loading : NotesUiState()
-    data class Success(val notes: List<Note>, val itemsView: Int = 2) : NotesUiState()
+    data class Success(val notes: List<Note>, val columnsCount: Int = 2) : NotesUiState()
     data object Error : NotesUiState()
 
     fun asSuccess() = this as Success
@@ -30,41 +33,43 @@ class NotesViewModel @Inject constructor(
     private val getNotesUseCase: GetNotesUseCase,
     private val updateNotesUseCase: UpdateNotesUseCase,
     private val deleteNotesUseCase: DeleteNotesUseCase,
+    private val getColumnsCountUseCase: GetColumnsCountUseCase,
+    private val setColumnsCountUseCase: SetColumnsCountUseCase
 ) : ViewModel() {
 
     private val _uiState = MutableStateFlow<NotesUiState>(NotesUiState.Loading)
     val uiState = _uiState.asStateFlow()
 
-    private fun setSuccessState(notes: List<Note>) {
-        _uiState.value = when (val state = _uiState.value) {
-            is NotesUiState.Success -> NotesUiState.Success(notes, state.itemsView)
-            else -> NotesUiState.Success(notes)
-        }
+    private var originalNotes = emptyList<Note>()
+
+    private fun setSuccessNotes(notes: List<Note>, columnsCount: Int) {
+        _uiState.value = NotesUiState.Success(notes, columnsCount)
     }
 
     private fun setErrorState() {
         _uiState.value = NotesUiState.Error
     }
 
-    fun getNotes() {
+    fun initData() {
         viewModelScope.launch(dispatcher) {
-            getNotesUseCase()
+            val combinedFlows = combine(getNotesUseCase(), getColumnsCountUseCase())
+            { notes, columnsCount -> notes to columnsCount }
+
+            combinedFlows
                 .catch { setErrorState() }
-                .collect { notes -> setSuccessState(getSortedNotes(notes)) }
+                .collect { data -> setSuccessNotes(data.first, data.second) }
         }
     }
 
-    private fun getSortedNotes(notes: List<Note>): List<Note> {
-        val (pinNotes, unPinNotes) = notes.partition { it.isPinned }
-        return pinNotes.sortedBy { it.index } + unPinNotes.sortedBy { it.index }
-    }
+    fun updateData() {
+        if (_uiState.value !is NotesUiState.Success) return
 
-    fun updateNotes() {
         viewModelScope.launch(dispatcher) {
             with(_uiState.value.asSuccess()) {
-                notes.mapIndexed { index, note -> note.copy(index = index) }
-            }.also { notes ->
-                tryOrError { updateNotesUseCase(notes) }
+                tryOrError {
+                    updateNotesUseCase(notes)
+                    setColumnsCountUseCase(if (columnsCount == 2) 1 else 2)
+                }
             }
         }
     }
@@ -72,35 +77,38 @@ class NotesViewModel @Inject constructor(
     fun deleteNotes() {
         viewModelScope.launch(dispatcher) {
             with(_uiState.value.asSuccess()) {
-                tryOrError { deleteNotesUseCase(getCheckedNotes(notes)) }
+                tryOrError { deleteNotesUseCase(notes) }
             }
         }
     }
-
-    private fun getCheckedNotes(notes: List<Note>) = notes.filter { it.isChecked }
 
     fun searchNotes(query: String) {
         viewModelScope.launch(dispatcher) {
             _uiState.update { state ->
                 with((state.asSuccess())) {
+                    originalNotes = notes
                     copy(notes = notes.filter { note -> note.contains(query) })
                 }
             }
         }
     }
 
-    fun restoreNotes(originalNotes: List<Note>) {
+    fun restoreNotes() {
         _uiState.update { state ->
             with((state.asSuccess())) {
                 copy(notes = originalNotes)
             }
         }
+        originalNotes = emptyList()
     }
 
     fun swipeNotes(oldIndex: Int, newIndex: Int) {
         _uiState.update { state ->
             with((state.asSuccess())) {
-                copy(notes = notes.toMutableList().apply { add(newIndex, removeAt(oldIndex)) })
+                copy(notes = notes.toMutableList()
+                    .apply { add(newIndex, removeAt(oldIndex)) }
+                    .mapIndexed { index, note -> note.copy(index = index) }
+                )
             }
         }
     }
@@ -109,7 +117,8 @@ class NotesViewModel @Inject constructor(
         _uiState.update { state ->
             with((state.asSuccess())) {
                 copy(notes = notes.map { note ->
-                    if (note.id == id) note.copy(isChecked = !note.isChecked) else note
+                    if (note.id == id) note.copy(isChecked = !note.isChecked)
+                    else note
                 })
             }
         }
@@ -130,10 +139,10 @@ class NotesViewModel @Inject constructor(
     private fun allCheckedArePinned(notes: List<Note>) =
         notes.filter { it.isChecked }.all { it.isPinned }
 
-    fun changeItemsView() {
+    fun setColumnsCount() {
         _uiState.update { state ->
             with((state.asSuccess())) {
-                copy(itemsView = if (itemsView == 2) 1 else 2)
+                copy(columnsCount = if (columnsCount == 2) 1 else 2)
             }
         }
     }
