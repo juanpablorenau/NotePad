@@ -1,9 +1,28 @@
 package com.example.notepad.ui.drawer
 
 import androidx.compose.foundation.background
-import androidx.compose.foundation.layout.*
-import androidx.compose.material3.*
-import androidx.compose.runtime.*
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.WindowInsets
+import androidx.compose.foundation.layout.fillMaxHeight
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.statusBars
+import androidx.compose.foundation.layout.width
+import androidx.compose.material3.DrawerValue
+import androidx.compose.material3.Icon
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.ModalDrawerSheet
+import androidx.compose.material3.ModalNavigationDrawer
+import androidx.compose.material3.NavigationDrawerItem
+import androidx.compose.material3.NavigationDrawerItemDefaults
+import androidx.compose.material3.Text
+import androidx.compose.material3.rememberDrawerState
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.RectangleShape
@@ -24,7 +43,9 @@ import kotlinx.coroutines.launch
 @Composable
 fun DrawerNotes(
     isDarkTheme: Boolean = false,
-    language: Language = Language.EN
+    language: Language = Language.EN,
+    drawerItemIndex: Int,
+    changeDrawerItemIndex: (Int) -> Unit = {}
 ) {
     val navController = rememberNavController()
     val drawerState = rememberDrawerState(DrawerValue.Closed)
@@ -51,7 +72,9 @@ fun DrawerNotes(
         drawerContent = {
             DrawerContent(
                 navigateToNotes = navigateToNotes,
-                navigateToSettings = navigateToSettings
+                navigateToSettings = navigateToSettings,
+                drawerItemIndex = drawerItemIndex,
+                changeDrawerItemIndex = changeDrawerItemIndex
             )
         },
         content = {
@@ -68,8 +91,10 @@ fun DrawerNotes(
 
 @Composable
 fun DrawerContent(
+    drawerItemIndex: Int = 0,
     navigateToNotes: () -> Unit = {},
     navigateToSettings: () -> Unit = {},
+    changeDrawerItemIndex: (Int) -> Unit = {}
 ) {
     ModalDrawerSheet(
         modifier = Modifier.fillMaxHeight(),
@@ -79,7 +104,9 @@ fun DrawerContent(
         content = {
             DrawerSheetContent(
                 navigateToNotes = navigateToNotes,
-                navigateToSettings = navigateToSettings
+                navigateToSettings = navigateToSettings,
+                drawerItemIndex = drawerItemIndex,
+                changeDrawerItemIndex = changeDrawerItemIndex
             )
         }
     )
@@ -88,14 +115,18 @@ fun DrawerContent(
 @Preview(showBackground = true)
 @Composable
 fun DrawerSheetContent(
+    drawerItemIndex: Int = 0,
     navigateToNotes: () -> Unit = {},
     navigateToSettings: () -> Unit = {},
+    changeDrawerItemIndex: (Int) -> Unit = {}
 ) {
     Column {
         DrawerHeader()
         DrawerBody(
             navigateToNotes = navigateToNotes,
-            navigateToSettings = navigateToSettings
+            navigateToSettings = navigateToSettings,
+            drawerItemIndex = drawerItemIndex,
+            changeDrawerItemIndex = changeDrawerItemIndex
         )
     }
 }
@@ -136,7 +167,7 @@ fun DrawerHeader() {
 }
 
 data class DrawerItem(
-    val id: Int = 0,
+    val index: Int = 0,
     val icon: Painter,
     val text: String = "",
     val selected: Boolean = false,
@@ -146,8 +177,10 @@ data class DrawerItem(
 @Preview(showBackground = true)
 @Composable
 fun DrawerBody(
+    drawerItemIndex: Int = 0,
     navigateToNotes: () -> Unit = {},
     navigateToSettings: () -> Unit = {},
+    changeDrawerItemIndex: (Int) -> Unit = {}
 ) {
     Column(
         modifier = Modifier
@@ -157,29 +190,27 @@ fun DrawerBody(
 
         val drawerItems = listOf(
             DrawerItem(
-                id = 0,
+                index = 0,
                 icon = painterResource(id = R.drawable.ic_sticky_note),
                 text = stringResource(id = R.string.notes_title),
                 onClick = navigateToNotes
             ),
             DrawerItem(
-                id = 1,
+                index = 1,
                 icon = painterResource(id = R.drawable.ic_settings),
                 text = stringResource(id = R.string.settings),
                 onClick = navigateToSettings
             ),
         )
 
-        var selectedItemId by remember { mutableIntStateOf(drawerItems.first().id) }
-
-        drawerItems.forEach{ item ->
+        drawerItems.forEach { item ->
             DrawerItemComponent(
                 icon = item.icon,
                 text = item.text,
-                selected = item.id == selectedItemId,
+                selected = item.index == drawerItemIndex,
                 onClick = {
                     item.onClick()
-                    selectedItemId = item.id
+                    changeDrawerItemIndex(item.index)
                 }
             )
 

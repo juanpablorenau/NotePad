@@ -5,6 +5,7 @@ import androidx.activity.compose.setContent
 import androidx.appcompat.app.AppCompatActivity
 import androidx.appcompat.app.AppCompatDelegate
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.core.os.LocaleListCompat
@@ -25,6 +26,7 @@ class MainActivity : AppCompatActivity() {
         setContent {
             val isDarkTheme = remember { mutableStateOf(false) }
             val language = remember { mutableStateOf(Language.EN) }
+            val drawerItemIndex = remember { mutableIntStateOf(0) }
 
             LaunchedEffect(Unit) {
                 viewModel.isDarkTheme.collect { isDarkTheme.value = it }
@@ -38,7 +40,18 @@ class MainActivity : AppCompatActivity() {
                 }
             }
 
-            NotePadTheme(isDarkTheme.value) { DrawerNotes(isDarkTheme.value, language.value) }
+            LaunchedEffect(Unit) {
+                viewModel.drawerItemIndex.collect { drawerItemIndex.intValue = it }
+            }
+
+            NotePadTheme(isDarkTheme.value) {
+                DrawerNotes(
+                    isDarkTheme = isDarkTheme.value,
+                    language = language.value,
+                    drawerItemIndex = drawerItemIndex.intValue,
+                    changeDrawerItemIndex = { index -> viewModel.setDrawerItemIndex(index) }
+                )
+            }
         }
     }
 }
