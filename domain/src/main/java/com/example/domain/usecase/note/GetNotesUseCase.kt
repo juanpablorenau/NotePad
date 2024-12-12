@@ -11,8 +11,8 @@ class GetNotesUseCase @Inject constructor(
     private val repository: NoteRepository,
     private val dispatcher: CoroutineDispatcher,
 ) {
-    operator fun invoke() =
-        repository.getNotes()
+    operator fun invoke(query: String) =
+        repository.getNotes(query)
             .map { notes -> getSortedNotes(notes) }
             .flowOn(dispatcher)
 

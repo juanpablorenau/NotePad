@@ -17,6 +17,8 @@ class NoteDataSourceImpl @Inject constructor(
 
     override fun getNotes(): Flow<List<NoteDb>> = noteDao.getNotes()
 
+    override fun searchNotes(query: String): Flow<List<NoteDb>> = noteDao.searchNotes(query)
+
     override suspend fun getNoteById(id: String): NoteDb? = noteDao.getNoteById(id)
 
     override suspend fun insertNote(note: NoteDb) {
