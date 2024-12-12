@@ -18,10 +18,14 @@ class NoteRepositoryImpl @Inject constructor(
     private val noteDto: NoteDto,
 ) : NoteRepository {
 
-    override fun getNotes(): Flow<List<Note>> =
-        noteDataSource.getNotes()
+    override fun getNotes(query: String): Flow<List<Note>> {
+        val notesFlow = if (query.isEmpty()) noteDataSource.getNotes()
+        else noteDataSource.searchNotes(query)
+
+        return notesFlow
             .transform { notes -> emit(notes.map { noteDto.toDomain(it) }) }
             .flowOn(dispatcher)
+    }
 
     override fun getNoteById(id: String): Flow<Note> = flow {
         noteDataSource.getNoteById(id)?.also { emit(noteDto.toDomain(it)) }

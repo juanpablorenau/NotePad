@@ -11,10 +11,12 @@ import com.example.model.entities.Note
 import com.example.notepad.di.MainDispatcher
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.CoroutineDispatcher
+import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.catch
 import kotlinx.coroutines.flow.combine
+import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import javax.inject.Inject
@@ -40,7 +42,7 @@ class NotesViewModel @Inject constructor(
     private val _uiState = MutableStateFlow<NotesUiState>(NotesUiState.Loading)
     val uiState = _uiState.asStateFlow()
 
-    private var originalNotes = emptyList<Note>()
+    private val _query = MutableStateFlow("")
 
     private fun setSuccessNotes(notes: List<Note>, columnsCount: Int) {
         _uiState.value = NotesUiState.Success(notes, columnsCount)
@@ -50,27 +52,28 @@ class NotesViewModel @Inject constructor(
         _uiState.value = NotesUiState.Error
     }
 
+    @OptIn(ExperimentalCoroutinesApi::class)
     fun initData() {
         viewModelScope.launch(dispatcher) {
-            val combinedFlows = combine(getNotesUseCase(), getColumnsCountUseCase())
-            { notes, columnsCount -> notes to columnsCount }
-
-            combinedFlows
+            _query
+                .flatMapLatest { query ->
+                    combine(getNotesUseCase(query), getColumnsCountUseCase())
+                    { notes, columnsCount -> notes to columnsCount }
+                }
                 .catch { setErrorState() }
-                .collect { data -> setSuccessNotes(data.first, data.second) }
+                .collect { (notes, columnsCount) -> setSuccessNotes(notes, columnsCount) }
         }
     }
 
-    fun updateData() {
-        if (_uiState.value !is NotesUiState.Success) return
-
+    private fun updateNotes(notes: List<Note>) {
         viewModelScope.launch(dispatcher) {
-            with(_uiState.value.asSuccess()) {
-                tryOrError {
-                    updateNotesUseCase(notes)
-                    setColumnsCountUseCase(if (columnsCount == 2) 1 else 2)
-                }
-            }
+            tryOrError { updateNotesUseCase(notes) }
+        }
+    }
+
+    private fun updateColumnsCount(columnsCount: Int) {
+        viewModelScope.launch(dispatcher) {
+            tryOrError { setColumnsCountUseCase(columnsCount) }
         }
     }
 
@@ -82,25 +85,34 @@ class NotesViewModel @Inject constructor(
         }
     }
 
-    fun searchNotes(query: String) {
-        viewModelScope.launch(dispatcher) {
-            _uiState.update { state ->
-                with((state.asSuccess())) {
-                    originalNotes = notes
-                    copy(notes = notes.filter { note -> note.contains(query) })
-                }
+    fun updateQuery(query: String) {
+        _query.update { query }
+    }
+
+    fun setColumnsCount() {
+        with(_uiState.value.asSuccess()) {
+            updateColumnsCount(if (columnsCount == 2) 1 else 2)
+        }
+    }
+
+    fun pinUpCheckedNotes() {
+        _uiState.update { state ->
+            with((state.asSuccess())) {
+                val arePinned = allCheckedArePinned(notes)
+                copy(notes = notes
+                    .map { note ->
+                        if (note.isChecked) note.copy(isPinned = !arePinned, isChecked = false)
+                        else note
+                    }
+                    .sortedBy { !it.isPinned }
+                    .also { notes -> updateNotes(notes) }
+                )
             }
         }
     }
 
-    fun restoreNotes() {
-        _uiState.update { state ->
-            with((state.asSuccess())) {
-                copy(notes = originalNotes)
-            }
-        }
-        originalNotes = emptyList()
-    }
+    private fun allCheckedArePinned(notes: List<Note>) =
+        notes.filter { it.isChecked }.all { it.isPinned }
 
     fun swipeNotes(oldIndex: Int, newIndex: Int) {
         _uiState.update { state ->
@@ -108,6 +120,7 @@ class NotesViewModel @Inject constructor(
                 copy(notes = notes.toMutableList()
                     .apply { add(newIndex, removeAt(oldIndex)) }
                     .mapIndexed { index, note -> note.copy(index = index) }
+                    .also { notes -> updateNotes(notes) }
                 )
             }
         }
@@ -120,29 +133,6 @@ class NotesViewModel @Inject constructor(
                     if (note.id == id) note.copy(isChecked = !note.isChecked)
                     else note
                 })
-            }
-        }
-    }
-
-    fun pinUpCheckedNotes() {
-        _uiState.update { state ->
-            with((state.asSuccess())) {
-                val arePinned = allCheckedArePinned(notes)
-                copy(notes = notes.map { note ->
-                    if (note.isChecked) note.copy(isPinned = !arePinned, isChecked = false)
-                    else note
-                }.sortedBy { !it.isPinned })
-            }
-        }
-    }
-
-    private fun allCheckedArePinned(notes: List<Note>) =
-        notes.filter { it.isChecked }.all { it.isPinned }
-
-    fun setColumnsCount() {
-        _uiState.update { state ->
-            with((state.asSuccess())) {
-                copy(columnsCount = if (columnsCount == 2) 1 else 2)
             }
         }
     }

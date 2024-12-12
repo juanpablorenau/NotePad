@@ -7,6 +7,7 @@ import kotlinx.coroutines.flow.Flow
 interface NoteDataSource {
 
     fun getNotes(): Flow<List<NoteDb>>
+    fun searchNotes(query: String): Flow<List<NoteDb>>
     suspend fun getNoteById(id: String): NoteDb?
     suspend fun insertNote(note: NoteDb)
     suspend fun updateNote(note: NoteDb)

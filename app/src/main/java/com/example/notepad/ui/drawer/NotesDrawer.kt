@@ -22,7 +22,11 @@ import androidx.compose.material3.NavigationDrawerItemDefaults
 import androidx.compose.material3.Text
 import androidx.compose.material3.rememberDrawerState
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.saveable.rememberSaveable
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.RectangleShape
@@ -44,8 +48,6 @@ import kotlinx.coroutines.launch
 fun DrawerNotes(
     isDarkTheme: Boolean = false,
     language: Language = Language.EN,
-    drawerItemIndex: Int,
-    changeDrawerItemIndex: (Int) -> Unit = {}
 ) {
     val navController = rememberNavController()
     val drawerState = rememberDrawerState(DrawerValue.Closed)
@@ -73,8 +75,6 @@ fun DrawerNotes(
             DrawerContent(
                 navigateToNotes = navigateToNotes,
                 navigateToSettings = navigateToSettings,
-                drawerItemIndex = drawerItemIndex,
-                changeDrawerItemIndex = changeDrawerItemIndex
             )
         },
         content = {
@@ -91,10 +91,8 @@ fun DrawerNotes(
 
 @Composable
 fun DrawerContent(
-    drawerItemIndex: Int = 0,
     navigateToNotes: () -> Unit = {},
     navigateToSettings: () -> Unit = {},
-    changeDrawerItemIndex: (Int) -> Unit = {}
 ) {
     ModalDrawerSheet(
         modifier = Modifier.fillMaxHeight(),
@@ -105,8 +103,6 @@ fun DrawerContent(
             DrawerSheetContent(
                 navigateToNotes = navigateToNotes,
                 navigateToSettings = navigateToSettings,
-                drawerItemIndex = drawerItemIndex,
-                changeDrawerItemIndex = changeDrawerItemIndex
             )
         }
     )
@@ -115,18 +111,14 @@ fun DrawerContent(
 @Preview(showBackground = true)
 @Composable
 fun DrawerSheetContent(
-    drawerItemIndex: Int = 0,
     navigateToNotes: () -> Unit = {},
     navigateToSettings: () -> Unit = {},
-    changeDrawerItemIndex: (Int) -> Unit = {}
 ) {
     Column {
         DrawerHeader()
         DrawerBody(
             navigateToNotes = navigateToNotes,
             navigateToSettings = navigateToSettings,
-            drawerItemIndex = drawerItemIndex,
-            changeDrawerItemIndex = changeDrawerItemIndex
         )
     }
 }
@@ -177,40 +169,39 @@ data class DrawerItem(
 @Preview(showBackground = true)
 @Composable
 fun DrawerBody(
-    drawerItemIndex: Int = 0,
     navigateToNotes: () -> Unit = {},
     navigateToSettings: () -> Unit = {},
-    changeDrawerItemIndex: (Int) -> Unit = {}
 ) {
+    val drawerItems = listOf(
+        DrawerItem(
+            index = 0,
+            icon = painterResource(id = R.drawable.ic_sticky_note),
+            text = stringResource(id = R.string.notes_title),
+            onClick = navigateToNotes
+        ),
+        DrawerItem(
+            index = 1,
+            icon = painterResource(id = R.drawable.ic_settings),
+            text = stringResource(id = R.string.settings),
+            onClick = navigateToSettings
+        ),
+    )
+
+    var selectedItemId by rememberSaveable { mutableIntStateOf(drawerItems.first().index) }
+
     Column(
         modifier = Modifier
             .fillMaxWidth()
             .padding(top = 16.dp),
     ) {
-
-        val drawerItems = listOf(
-            DrawerItem(
-                index = 0,
-                icon = painterResource(id = R.drawable.ic_sticky_note),
-                text = stringResource(id = R.string.notes_title),
-                onClick = navigateToNotes
-            ),
-            DrawerItem(
-                index = 1,
-                icon = painterResource(id = R.drawable.ic_settings),
-                text = stringResource(id = R.string.settings),
-                onClick = navigateToSettings
-            ),
-        )
-
         drawerItems.forEach { item ->
             DrawerItemComponent(
                 icon = item.icon,
                 text = item.text,
-                selected = item.index == drawerItemIndex,
+                selected = item.index == selectedItemId,
                 onClick = {
                     item.onClick()
-                    changeDrawerItemIndex(item.index)
+                    selectedItemId = item.index
                 }
             )
 

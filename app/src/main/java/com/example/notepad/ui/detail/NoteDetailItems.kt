@@ -1,5 +1,6 @@
 package com.example.notepad.ui.detail
 
+import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.border
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.interaction.collectIsPressedAsState
@@ -11,6 +12,8 @@ import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.relocation.BringIntoViewRequester
+import androidx.compose.foundation.relocation.bringIntoViewRequester
 import androidx.compose.foundation.text.BasicTextField
 import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
@@ -25,6 +28,7 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -52,7 +56,9 @@ import com.example.notepad.utils.mockCell
 import com.example.notepad.utils.mockCheckBoxItem
 import com.example.notepad.utils.mockTableItem
 import com.example.notepad.utils.mockTextItem
+import kotlinx.coroutines.launch
 
+@OptIn(ExperimentalFoundationApi::class)
 @Preview(showBackground = true)
 @Composable
 fun TextFieldItem(
@@ -72,6 +78,8 @@ fun TextFieldItem(
         val focusRequester = remember(id) { FocusRequester() }
         val interactionSource = remember(id) { MutableInteractionSource() }
         val isPressed = interactionSource.collectIsPressedAsState()
+        val bringIntoViewRequester = remember(id) { BringIntoViewRequester() }
+        val coroutineScope = rememberCoroutineScope()
 
         LaunchedEffect(id, isFocused) {
             if (isFocused) focusRequester.requestFocus() else focusRequester.freeFocus()
@@ -85,6 +93,7 @@ fun TextFieldItem(
             modifier = Modifier
                 .fillMaxWidth()
                 .focusRequester(focusRequester)
+                .bringIntoViewRequester(bringIntoViewRequester)
                 .onKeyEvent {
                     if (it.key == Key.Backspace && text.isEmpty()) deleteTextField(this).let { true }
                     else false
@@ -101,6 +110,13 @@ fun TextFieldItem(
                         cursorEndIndex = newTextField.selection.end
                     )
                 )
+            },
+            onTextLayout = { textLayoutResult ->
+                coroutineScope.launch {
+                    bringIntoViewRequester.bringIntoView(
+                        textLayoutResult.getCursorRect(cursorEndIndex)
+                    )
+                }
             },
         )
     }

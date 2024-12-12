@@ -6,7 +6,7 @@ import kotlinx.coroutines.flow.flowOn
 import kotlinx.coroutines.flow.map
 import javax.inject.Inject
 
-class GetNoteDetailUseCase @Inject constructor(
+class GetNoteUseCase @Inject constructor(
     private val repository: NoteRepository,
     private val dispatcher: CoroutineDispatcher,
 ) {

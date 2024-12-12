@@ -7,18 +7,16 @@ import com.example.data.repository.PreferencesRepository
 import com.example.domain.usecase.formattext.DeleteFormatTextUseCase
 import com.example.domain.usecase.note.DeleteNoteUseCase
 import com.example.domain.usecase.note.DeleteNotesUseCase
-import com.example.domain.usecase.note.GetNoteDetailUseCase
+import com.example.domain.usecase.note.GetNoteUseCase
 import com.example.domain.usecase.note.GetNotesUseCase
 import com.example.domain.usecase.note.InsertNoteUseCase
 import com.example.domain.usecase.note.UpdateNoteUseCase
 import com.example.domain.usecase.note.UpdateNotesUseCase
 import com.example.domain.usecase.noteitem.DeleteNoteItemUseCase
 import com.example.domain.usecase.preferences.GetColumnsCountUseCase
-import com.example.domain.usecase.preferences.GetDrawerItemIndexUseCase
 import com.example.domain.usecase.preferences.GetIsDarkThemeUseCase
 import com.example.domain.usecase.preferences.GetLanguageUseCase
 import com.example.domain.usecase.preferences.SetColumnsCountUseCase
-import com.example.domain.usecase.preferences.SetDrawerItemIndexUseCase
 import com.example.domain.usecase.preferences.SetIsDarkThemeUseCase
 import com.example.domain.usecase.preferences.SetLanguageUseCase
 import dagger.Module
@@ -60,8 +58,8 @@ class UseCaseModule {
     fun providesGetNoteDetailUseCase(
         repository: NoteRepository,
         @DefaultDispatcher dispatcher: CoroutineDispatcher,
-    ): GetNoteDetailUseCase {
-        return GetNoteDetailUseCase(repository, dispatcher)
+    ): GetNoteUseCase {
+        return GetNoteUseCase(repository, dispatcher)
     }
 
     @Provides
@@ -139,16 +137,4 @@ class UseCaseModule {
         repository: PreferencesRepository,
         @DefaultDispatcher dispatcher: CoroutineDispatcher,
     ): SetColumnsCountUseCase = SetColumnsCountUseCase(repository, dispatcher)
-
-    @Provides
-    fun provideGetDrawerItemIndexUseCase(
-        repository: PreferencesRepository,
-        @DefaultDispatcher dispatcher: CoroutineDispatcher,
-    ): GetDrawerItemIndexUseCase = GetDrawerItemIndexUseCase(repository, dispatcher)
-
-    @Provides
-    fun provideSetDrawerItemIndexUseCase(
-        repository: PreferencesRepository,
-        @DefaultDispatcher dispatcher: CoroutineDispatcher,
-    ): SetDrawerItemIndexUseCase = SetDrawerItemIndexUseCase(repository, dispatcher)
 }

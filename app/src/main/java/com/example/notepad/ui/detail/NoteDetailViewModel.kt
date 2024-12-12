@@ -4,7 +4,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.domain.usecase.formattext.DeleteFormatTextUseCase
 import com.example.domain.usecase.note.DeleteNoteUseCase
-import com.example.domain.usecase.note.GetNoteDetailUseCase
+import com.example.domain.usecase.note.GetNoteUseCase
 import com.example.domain.usecase.note.InsertNoteUseCase
 import com.example.domain.usecase.note.UpdateNoteUseCase
 import com.example.domain.usecase.noteitem.DeleteNoteItemUseCase
@@ -30,15 +30,15 @@ sealed class NoteDetailUiState {
     data object Loading : NoteDetailUiState()
     data class Success(val note: Note) : NoteDetailUiState()
     data object Error : NoteDetailUiState()
-}
 
-fun NoteDetailUiState.asSuccess() = this as NoteDetailUiState.Success
+    fun asSuccess() = this as Success
+}
 
 @HiltViewModel
 class NoteDetailViewModel @Inject constructor(
     @MainDispatcher private val dispatcher: CoroutineDispatcher,
     private val insertNoteUseCase: InsertNoteUseCase,
-    private val getNoteDetailUseCase: GetNoteDetailUseCase,
+    private val getNoteUseCase: GetNoteUseCase,
     private val updateNoteUseCase: UpdateNoteUseCase,
     private val deleteNoteUseCase: DeleteNoteUseCase,
     private val deleteNoteItemUseCase: DeleteNoteItemUseCase,
@@ -72,7 +72,7 @@ class NoteDetailViewModel @Inject constructor(
 
     private fun getNoteById(id: String) {
         viewModelScope.launch(dispatcher) {
-            getNoteDetailUseCase(id)
+            getNoteUseCase(id)
                 .catch { setErrorState() }
                 .collect { note -> setSuccessState(note) }
         }

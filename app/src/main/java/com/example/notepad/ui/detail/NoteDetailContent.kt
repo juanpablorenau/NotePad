@@ -35,6 +35,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.focus.FocusDirection
+import androidx.compose.ui.graphics.SolidColor
 import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
@@ -77,7 +78,7 @@ fun NoteDetailContent(
             .fillMaxSize()
             .padding(
                 top = padding.calculateTopPadding(),
-                bottom = padding.calculateBottomPadding() + 12.dp,
+                bottom = padding.calculateBottomPadding() + 16.dp,
                 start = 12.dp,
                 end = 12.dp
             ),
@@ -132,6 +133,7 @@ fun NoteHeader(
                 fontSize = 24.sp,
                 color = MaterialTheme.colorScheme.secondary
             ),
+            cursorBrush = SolidColor(MaterialTheme.colorScheme.secondary),
             keyboardOptions = KeyboardOptions.Default.copy(imeAction = ImeAction.Done),
             keyboardActions = KeyboardActions(
                 onDone = {

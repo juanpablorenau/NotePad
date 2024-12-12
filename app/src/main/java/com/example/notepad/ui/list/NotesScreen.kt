@@ -77,7 +77,6 @@ fun NotesScreen(
     val uiState: NotesUiState by viewModel.uiState.collectAsStateWithLifecycle()
 
     LifecycleEventEffect(Lifecycle.Event.ON_START) { viewModel.initData() }
-    LifecycleEventEffect(Lifecycle.Event.ON_PAUSE) { viewModel.updateData() }
 
     when (val state = uiState) {
         is NotesUiState.Loading -> LoadingScreen()
@@ -86,13 +85,13 @@ fun NotesScreen(
             SuccessScreen(
                 notes = state.notes,
                 columnsCount = state.columnsCount,
-                onSearch = { searchText -> viewModel.searchNotes(searchText) },
-                restoreNotes = { viewModel.restoreNotes() },
+                onSearch = { searchText -> viewModel.updateQuery(searchText) },
+                restoreNotes = { viewModel.updateQuery("") },
                 checkNote = { id -> viewModel.checkNote(id) },
                 swipeNotes = { oldIndex, newIndex -> viewModel.swipeNotes(oldIndex, newIndex) },
                 deleteNotes = { viewModel.deleteNotes() },
                 pinUpNotes = { viewModel.pinUpCheckedNotes() },
-                changeItemsView = { viewModel.setColumnsCount() },
+                changeColumnsCount = { viewModel.setColumnsCount() },
                 selectAllNotes = { select -> viewModel.selectAllNotes(select) },
                 navigate = { route -> navController.navigate(route) },
                 openDrawer = { openDrawer() },
@@ -111,7 +110,7 @@ fun SuccessScreen(
     swipeNotes: (oldIndex: Int, newIndex: Int) -> Unit = { _, _ -> },
     deleteNotes: () -> Unit = {},
     pinUpNotes: () -> Unit = {},
-    changeItemsView: () -> Unit = {},
+    changeColumnsCount: () -> Unit = {},
     selectAllNotes: (Boolean) -> Unit = {},
     navigate: (String) -> Unit = {},
     openDrawer: () -> Unit = {},
@@ -125,7 +124,7 @@ fun SuccessScreen(
                 columnsCount = columnsCount,
                 deleteNotes = deleteNotes,
                 pinUpNotes = pinUpNotes,
-                changeItemsView = changeItemsView,
+                changeColumnsCount = changeColumnsCount,
                 selectAllNotes = selectAllNotes,
                 setSearchBarVisible = { isSearchBarVisible = !isSearchBarVisible },
                 openDrawer = { openDrawer() }
@@ -157,7 +156,7 @@ fun NotesTopBar(
     columnsCount: Int = 2,
     deleteNotes: () -> Unit = {},
     pinUpNotes: () -> Unit = {},
-    changeItemsView: () -> Unit = {},
+    changeColumnsCount: () -> Unit = {},
     selectAllNotes: (Boolean) -> Unit = {},
     setSearchBarVisible: () -> Unit = {},
     openDrawer: () -> Unit = {},
@@ -191,7 +190,7 @@ fun NotesTopBar(
                 DisplayText(
                     description = if (columnsCount == 1) R.string.grid else R.string.list
                 ) {
-                    IconButton(onClick = { changeItemsView() }) {
+                    IconButton(onClick = { changeColumnsCount() }) {
                         Icon(
                             painter = painterResource(id = if (columnsCount == 1) R.drawable.ic_grid_view else R.drawable.ic_list),
                             contentDescription = "Grid icon",
