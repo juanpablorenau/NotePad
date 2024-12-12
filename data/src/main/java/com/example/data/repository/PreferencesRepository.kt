@@ -12,7 +12,4 @@ interface PreferencesRepository {
 
     fun getColumnsCount(): Flow<Int>
     suspend fun setColumnsCount(count: Int)
-
-    fun getDrawerItemIndex(): Flow<Int>
-    suspend fun setDrawerItemIndex(index: Int)
 }

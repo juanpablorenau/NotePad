@@ -14,11 +14,9 @@ import com.example.domain.usecase.note.UpdateNoteUseCase
 import com.example.domain.usecase.note.UpdateNotesUseCase
 import com.example.domain.usecase.noteitem.DeleteNoteItemUseCase
 import com.example.domain.usecase.preferences.GetColumnsCountUseCase
-import com.example.domain.usecase.preferences.GetDrawerItemIndexUseCase
 import com.example.domain.usecase.preferences.GetIsDarkThemeUseCase
 import com.example.domain.usecase.preferences.GetLanguageUseCase
 import com.example.domain.usecase.preferences.SetColumnsCountUseCase
-import com.example.domain.usecase.preferences.SetDrawerItemIndexUseCase
 import com.example.domain.usecase.preferences.SetIsDarkThemeUseCase
 import com.example.domain.usecase.preferences.SetLanguageUseCase
 import dagger.Module
@@ -139,16 +137,4 @@ class UseCaseModule {
         repository: PreferencesRepository,
         @DefaultDispatcher dispatcher: CoroutineDispatcher,
     ): SetColumnsCountUseCase = SetColumnsCountUseCase(repository, dispatcher)
-
-    @Provides
-    fun provideGetDrawerItemIndexUseCase(
-        repository: PreferencesRepository,
-        @DefaultDispatcher dispatcher: CoroutineDispatcher,
-    ): GetDrawerItemIndexUseCase = GetDrawerItemIndexUseCase(repository, dispatcher)
-
-    @Provides
-    fun provideSetDrawerItemIndexUseCase(
-        repository: PreferencesRepository,
-        @DefaultDispatcher dispatcher: CoroutineDispatcher,
-    ): SetDrawerItemIndexUseCase = SetDrawerItemIndexUseCase(repository, dispatcher)
 }

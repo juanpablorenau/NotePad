@@ -45,14 +45,4 @@ class PreferencesRepositoryImpl @Inject constructor(
             dataStoreSource.putInteger(Preference.COLUMNS_COUNT.key, count)
         }
     }
-
-    override fun getDrawerItemIndex(): Flow<Int> =
-        dataStoreSource.getInteger(Preference.DRAWER_ITEM_INDEX.key, 0).flowOn(dispatcher)
-
-
-    override suspend fun setDrawerItemIndex(index: Int) {
-        withContext(dispatcher){
-            dataStoreSource.putInteger(Preference.DRAWER_ITEM_INDEX.key, index)
-        }
-    }
 }
