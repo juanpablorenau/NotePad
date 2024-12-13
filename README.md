@@ -2,7 +2,7 @@
 
 ## Description
 
-**NotePad** is a note-taking app that combines the simplicity and efficiency of the iOS Notes app with the power and customization capabilities of Android. Designed to cater to both basic and advanced users, FlexNote allows you to organize your ideas, lists, and projects intuitively while personalizing every detail to match your unique style.
+**NotePad** is a note-taking app that combines the simplicity and funtionalities of the iOS Notes app with the power and customization capabilities of Android. Designed to cater to both basic and advanced users, FlexNote allows you to organize your ideas, lists, and projects intuitively while personalizing every detail to match your unique style.
 
 ## Images
 <img width="353" alt="image" src="https://github.com/user-attachments/assets/97bb4eb8-72e5-4e60-a0dc-bc7528b9bbec" />
