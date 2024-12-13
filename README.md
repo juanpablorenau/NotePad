@@ -2,7 +2,7 @@
 
 ## Description
 
-**NotePad** is an Android application developed in Kotlin that consumes the PokeAPI to display a list of pokemon and their details from the TV series.
+**NotePad** is a note-taking app that combines the simplicity and efficiency of the iOS Notes app with the power and customization capabilities of Android. Designed to cater to both basic and advanced users, FlexNote allows you to organize your ideas, lists, and projects intuitively while personalizing every detail to match your unique style.
 
 ## Features
 
