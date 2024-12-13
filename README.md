@@ -1,3 +1,3 @@
 # NotePad
 
-![image](https://github.com/user-attachments/assets/c20b1680-08f7-4e86-b069-cc2295ef2775)
+<img width="353" alt="image" src="https://github.com/user-attachments/assets/97bb4eb8-72e5-4e60-a0dc-bc7528b9bbec" />
